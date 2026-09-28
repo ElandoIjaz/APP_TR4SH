@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/pages/halaman_beranda.dart';
+import 'package:test23/pages/halaman_konten.dart';
 import 'package:test23/pages/halaman_login.dart';
+import 'package:test23/pages/halaman_produk.dart';
 import 'package:test23/pages/halaman_tracking.dart';
 import 'package:test23/widgets/akun/banner_dampak_positif.dart';
 import 'package:test23/widgets/akun/card_menu_akun.dart';
@@ -298,7 +300,15 @@ class _HalamanAkunState extends State<HalamanAkun> {
       bottomNavigationBar: TrashBottomNav(
         currentIndex: _currentNavIndex,
         onTap: (index) {
-          if (index == 2) {
+          if (index == 0) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HalamanKonten()),
+            );
+          } else if (index == 1) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HalamanProduk()),
+            );
+          } else if (index == 2) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HalamanBeranda()),
             );

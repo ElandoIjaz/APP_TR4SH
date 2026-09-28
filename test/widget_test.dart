@@ -123,5 +123,23 @@ void main() {
     expect(find.text('Selesai'), findsOneWidget);
     await tester.tap(find.text('Selesai'));
     await tester.pumpAndSettle();
+
+    // Test navigating to HalamanKonten via bottom nav 'Konten'
+    await tester.tap(find.text('Konten'));
+    await tester.pumpAndSettle();
+
+    // Verify HalamanKonten elements
+    expect(find.text('SOROTAN UTAMA'), findsOneWidget);
+    expect(find.text('Cara Mendaur Ulang Botol Plastik Minuman'), findsOneWidget);
+    expect(find.text('Wawasan Komunitas'), findsOneWidget);
+
+    // Test navigating to HalamanProduk via bottom nav 'Produk'
+    await tester.tap(find.text('Produk'));
+    await tester.pumpAndSettle();
+
+    // Verify HalamanProduk elements
+    expect(find.text('ECO MARKETPLACE'), findsOneWidget);
+    expect(find.text('Karya Daur Ulang Penuh Makna'), findsOneWidget);
+    expect(find.text('Pot Bunga dari Botol Plastik Daur Ulang'), findsOneWidget);
   });
 }

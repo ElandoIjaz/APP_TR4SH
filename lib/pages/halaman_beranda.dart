@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/pages/halaman_akun.dart';
+import 'package:test23/pages/halaman_konten.dart';
+import 'package:test23/pages/halaman_produk.dart';
 import 'package:test23/pages/halaman_tracking.dart';
 import 'package:test23/widgets/beranda/card_bank_sampah.dart';
 import 'package:test23/widgets/beranda/card_riwayat_sampah.dart';
@@ -569,7 +571,15 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       bottomNavigationBar: TrashBottomNav(
         currentIndex: _currentNavIndex,
         onTap: (index) {
-          if (index == 4) {
+          if (index == 0) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const HalamanKonten()),
+            );
+          } else if (index == 1) {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const HalamanProduk()),
+            );
+          } else if (index == 4) {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const HalamanAkun()),
             );

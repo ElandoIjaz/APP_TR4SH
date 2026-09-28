@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/pages/halaman_akun.dart';
 import 'package:test23/pages/halaman_beranda.dart';
+import 'package:test23/pages/halaman_konten.dart';
+import 'package:test23/pages/halaman_produk.dart';
 import 'package:test23/widgets/tracking/card_estimasi_berat.dart';
 import 'package:test23/widgets/tracking/card_tracking_chart.dart';
 import 'package:test23/widgets/tracking/grid_kategori_setor.dart';
@@ -223,7 +225,15 @@ class _HalamanTrackingState extends State<HalamanTracking> {
       bottomNavigationBar: TrashBottomNav(
         currentIndex: _currentNavIndex,
         onTap: (index) {
-          if (index == 2) {
+          if (index == 0) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HalamanKonten()),
+            );
+          } else if (index == 1) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HalamanProduk()),
+            );
+          } else if (index == 2) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HalamanBeranda()),
             );
