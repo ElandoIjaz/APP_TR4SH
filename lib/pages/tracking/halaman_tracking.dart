@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/lokasi_service.dart';
-import 'package:test23/pages/halaman_akun.dart';
-import 'package:test23/pages/halaman_beranda.dart';
-import 'package:test23/pages/halaman_konten.dart';
-import 'package:test23/pages/halaman_produk.dart';
+import 'package:test23/pages/akun/halaman_akun.dart';
+import 'package:test23/pages/beranda/halaman_beranda.dart';
+import 'package:test23/pages/konten/halaman_konten.dart';
+import 'package:test23/pages/produk/halaman_produk.dart';
 import 'package:test23/widgets/tracking/card_auto_track_lokasi.dart';
 import 'package:test23/widgets/tracking/card_estimasi_berat.dart';
 import 'package:test23/widgets/tracking/card_tracking_chart.dart';

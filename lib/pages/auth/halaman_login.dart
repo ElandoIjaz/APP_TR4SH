@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:test23/pages/halaman_beranda.dart';
-import 'package:test23/pages/halaman_daftar.dart';
-import 'package:test23/pages/halaman_lupa_pw.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:test23/pages/beranda/halaman_beranda.dart';
+import 'package:test23/pages/auth/halaman_daftar.dart';
+import 'package:test23/pages/auth/halaman_lupa_pw.dart';
 
 class HalamanLogin extends StatefulWidget {
   const HalamanLogin({super.key});

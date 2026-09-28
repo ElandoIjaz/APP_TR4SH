@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test23/data/lokasi_service.dart';
-import 'package:test23/pages/halaman_beranda.dart';
-import 'package:test23/pages/halaman_pilih_lokasi_akurat.dart';
-import 'package:test23/pages/halaman_tracking.dart';
+import 'package:test23/pages/beranda/halaman_beranda.dart';
+import 'package:test23/pages/akun/halaman_pilih_lokasi_akurat.dart';
+import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:test23/widgets/tracking/card_auto_track_lokasi.dart';
 
 void main() {

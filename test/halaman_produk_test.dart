@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:test23/pages/halaman_detail_produk.dart';
-import 'package:test23/pages/halaman_keranjang.dart';
-import 'package:test23/pages/halaman_produk.dart';
+import 'package:test23/pages/produk/halaman_detail_produk.dart';
+import 'package:test23/pages/produk/halaman_keranjang.dart';
+import 'package:test23/pages/produk/halaman_produk.dart';
 
 void main() {
   testWidgets('HalamanProduk, Detail, Filter, and Keranjang work seamlessly', (WidgetTester tester) async {

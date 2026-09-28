@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/user_account_data.dart';
-import 'package:test23/pages/halaman_pilih_lokasi_akurat.dart';
+import 'package:test23/pages/akun/halaman_pilih_lokasi_akurat.dart';
 
 class HalamanAlamatPengiriman extends StatefulWidget {
   const HalamanAlamatPengiriman({super.key});

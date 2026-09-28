@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/lokasi_service.dart';
-import 'package:test23/pages/halaman_akun.dart';
-import 'package:test23/pages/halaman_konten.dart';
-import 'package:test23/pages/halaman_pilih_lokasi_akurat.dart';
-import 'package:test23/pages/halaman_produk.dart';
-import 'package:test23/pages/halaman_tracking.dart';
+import 'package:test23/pages/akun/halaman_akun.dart';
+import 'package:test23/pages/konten/halaman_konten.dart';
+import 'package:test23/pages/akun/halaman_pilih_lokasi_akurat.dart';
+import 'package:test23/pages/produk/halaman_produk.dart';
+import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:test23/widgets/beranda/card_bank_sampah.dart';
 import 'package:test23/widgets/beranda/card_riwayat_sampah.dart';
 import 'package:test23/widgets/beranda/card_video_tutorial.dart';

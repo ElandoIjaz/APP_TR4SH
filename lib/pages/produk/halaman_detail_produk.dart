@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/produk_data.dart';
-import 'package:test23/pages/halaman_keranjang.dart';
+import 'package:test23/pages/produk/halaman_keranjang.dart';
 
 class HalamanDetailProduk extends StatefulWidget {
   final ProdukItem product;

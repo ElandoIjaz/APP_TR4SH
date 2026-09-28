@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:test23/pages/halaman_konten.dart';
+import 'package:test23/pages/konten/halaman_konten.dart';
 
 void main() {
   testWidgets('HalamanKonten renders correctly with all elements from design', (WidgetTester tester) async {

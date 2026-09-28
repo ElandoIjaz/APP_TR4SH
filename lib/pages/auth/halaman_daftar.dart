@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:test23/pages/halaman_login.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:test23/pages/auth/halaman_login.dart';
 
 class HalamanDaftar extends StatefulWidget {
   const HalamanDaftar({super.key});
