@@ -1,0 +1,312 @@
+import 'package:flutter/material.dart';
+import 'package:test23/pages/halaman_beranda.dart';
+import 'package:test23/pages/halaman_daftar.dart';
+import 'package:test23/pages/halaman_lupa_pw.dart';
+
+class HalamanLogin extends StatefulWidget {
+  const HalamanLogin({super.key});
+
+  @override
+  State<HalamanLogin> createState() => _HalamanLoginState();
+}
+
+class _HalamanLoginState extends State<HalamanLogin> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  // Warna tema – hijau TR4SH
+  static const Color _hijauUtama = Color(0xFF8DD832);
+  static const Color _hijauMuda = Color(0xFFE8F5C8);
+  static const Color _abuLatar = Color(0xFFF2F2F2);
+
+  void _login() async {
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Username dan kata sandi tidak boleh kosong!'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    // Simulasi proses login (delay 1 detik)
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    // Navigasi ke halaman beranda TR4SH!
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const HalamanBeranda()),
+    );
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: _abuLatar,
+      appBar: AppBar(
+        backgroundColor: _abuLatar,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () {
+            if (Navigator.canPop(context)) Navigator.pop(context);
+          },
+        ),
+        title: const Text(
+          'Masuk Akun',
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: CircleAvatar(
+              backgroundColor: Color(0xFF2D2D2D),
+              radius: 20,
+              child: const Icon(Icons.person, color: Colors.white, size: 22),
+            ),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 20),
+
+              // ── Judul ──
+              const Text(
+                'Masuk Akun',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Masuk untuk melanjutkan ke akun Anda.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 13, color: Colors.grey),
+              ),
+              const SizedBox(height: 32),
+
+              // ── Label Username ──
+              const Text(
+                'Username atau No. Telepon',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              // ── Field Username ──
+              TextField(
+                controller: _usernameController,
+                keyboardType: TextInputType.text,
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: 'Masukkan username atau no. telepon',
+                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                  filled: true,
+                  fillColor: _hijauMuda,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: _hijauUtama, width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // ── Row: Label Kata Sandi + Lupa ──
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Kata Sandi',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) => const HalamanLupaPw()),
+                      );
+                    },
+                    child: const Text(
+                      'Lupa Kata Sandi?',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: _hijauUtama,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // ── Field Kata Sandi ──
+              TextField(
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                style: const TextStyle(fontSize: 14),
+                decoration: InputDecoration(
+                  hintText: '••••••••',
+                  hintStyle:
+                      const TextStyle(color: Colors.grey, fontSize: 14),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(Icons.lock_outline,
+                        color: Colors.grey[600], size: 20),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscurePassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: Colors.grey[600],
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      setState(
+                          () => _obscurePassword = !_obscurePassword);
+                    },
+                  ),
+                  filled: true,
+                  fillColor: _hijauMuda,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: _hijauUtama, width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+
+              // ── Tombol Masuk ──
+              SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _hijauUtama,
+                    foregroundColor: Colors.black87,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.black87,
+                          ),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Masuk',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward, size: 20),
+                          ],
+                        ),
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // ── Daftar Sekarang ──
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Belum punya akun?  ',
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (_) => const HalamanDaftar()),
+                      );
+                    },
+                    child: const Text(
+                      'Daftar Sekarang',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: _hijauUtama,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
