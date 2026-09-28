@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/pages/halaman_alamat_pengiriman.dart';
+import 'package:test23/pages/halaman_bantuan_faq.dart';
 import 'package:test23/pages/halaman_beranda.dart';
 import 'package:test23/pages/halaman_konten.dart';
 import 'package:test23/pages/halaman_login.dart';
+import 'package:test23/pages/halaman_notifikasi.dart';
+import 'package:test23/pages/halaman_pengaturan_akun.dart';
+import 'package:test23/pages/halaman_poin_hadiah.dart';
 import 'package:test23/pages/halaman_produk.dart';
+import 'package:test23/pages/halaman_riwayat_setor.dart';
+import 'package:test23/pages/halaman_riwayat_transaksi.dart';
 import 'package:test23/pages/halaman_tracking.dart';
 import 'package:test23/widgets/akun/banner_dampak_positif.dart';
 import 'package:test23/widgets/akun/card_menu_akun.dart';
@@ -242,14 +249,16 @@ class _HalamanAkunState extends State<HalamanAkun> {
 
               // ── 1. Header (HeaderAkun) ──
               HeaderAkun(
-                onNotificationTap: () => _showMenuDetail(
-                  'Notifikasi',
-                  'Tidak ada notifikasi baru saat ini. Semua setoran sampah Anda telah diproses.',
-                ),
-                onSettingsTap: () => _showMenuDetail(
-                  'Pengaturan Aplikasi',
-                  'Pengaturan preferensi bahasa, notifikasi push, dan keamanan akun Anda.',
-                ),
+                onNotificationTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
+                  );
+                },
+                onSettingsTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const HalamanPengaturanAkun()),
+                  );
+                },
               ),
 
               const SizedBox(height: 16),
@@ -276,10 +285,40 @@ class _HalamanAkunState extends State<HalamanAkun> {
               // ── 5. Menu List Card (CardMenuAkun) ──
               CardMenuAkun(
                 onMenuTap: (menuTitle) {
-                  _showMenuDetail(
-                    menuTitle,
-                    'Informasi detail dan pengaturan untuk menu $menuTitle.',
-                  );
+                  if (menuTitle == 'Riwayat Transaksi') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HalamanRiwayatTransaksi()),
+                    );
+                  } else if (menuTitle == 'Riwayat Setor Sampah') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HalamanRiwayatSetor()),
+                    );
+                  } else if (menuTitle == 'Poin & Hadiah') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HalamanPoinHadiah()),
+                    );
+                  } else if (menuTitle == 'Alamat Pengiriman') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HalamanAlamatPengiriman()),
+                    );
+                  } else if (menuTitle == 'Notifikasi') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
+                    );
+                  } else if (menuTitle == 'Bantuan & FAQ') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HalamanBantuanFaq()),
+                    );
+                  } else if (menuTitle == 'Pengaturan Akun') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HalamanPengaturanAkun()),
+                    );
+                  } else {
+                    _showMenuDetail(
+                      menuTitle,
+                      'Informasi detail dan pengaturan untuk menu $menuTitle.',
+                    );
+                  }
                 },
               ),
 

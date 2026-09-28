@@ -50,7 +50,7 @@ class _CardProdukGridState extends State<CardProdukGrid> {
               child: Stack(
                 children: [
                   AspectRatio(
-                    aspectRatio: 1.05,
+                    aspectRatio: 1.15,
                     child: Image.asset(
                       product.image,
                       fit: BoxFit.cover,
@@ -115,120 +115,127 @@ class _CardProdukGridState extends State<CardProdukGrid> {
             ),
 
             // ── Product Details ──
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Material Tag
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F6EE),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(
-                          Icons.recycling_rounded,
-                          size: 10,
-                          color: Color(0xFF1E8850),
+                        // Material Tag
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F6EE),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.recycling_rounded,
+                                size: 10,
+                                color: Color(0xFF1E8850),
+                              ),
+                              const SizedBox(width: 3),
+                              Text(
+                                product.materialTag,
+                                style: const TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1E8850),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(width: 3),
+
+                        const SizedBox(height: 4),
+
+                        // Rating Row
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 14,
+                              color: Color(0xFFF9A825),
+                            ),
+                            const SizedBox(width: 3),
+                            Text(
+                              '${product.rating}',
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.darkGreen,
+                              ),
+                            ),
+                            const SizedBox(width: 2),
+                            Text(
+                              '(${product.reviewCount})',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        // Title (2 lines)
                         Text(
-                          product.materialTag,
+                          product.title,
                           style: const TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1E8850),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.darkGreen,
+                            height: 1.25,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+
+                    // Price & Add to Cart Button
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Rp${_formatPrice(product.price)}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.darkGreen,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        GestureDetector(
+                          onTap: widget.onAddToCart,
+                          child: Container(
+                            width: 30,
+                            height: 30,
+                            decoration: const BoxDecoration(
+                              color: AppColors.limeAccent,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.shopping_bag_outlined,
+                              size: 16,
+                              color: AppColors.darkGreen,
+                            ),
                           ),
                         ),
                       ],
                     ),
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  // Rating Row
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.star_rounded,
-                        size: 14,
-                        color: Color(0xFFF9A825),
-                      ),
-                      const SizedBox(width: 3),
-                      Text(
-                        '${product.rating}',
-                        style: const TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.darkGreen,
-                        ),
-                      ),
-                      const SizedBox(width: 2),
-                      Text(
-                        '(${product.reviewCount})',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  // Title (2 lines)
-                  SizedBox(
-                    height: 32,
-                    child: Text(
-                      product.title,
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.darkGreen,
-                        height: 1.25,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Price & Add to Cart Button
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Rp${_formatPrice(product.price)}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.darkGreen,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: widget.onAddToCart,
-                        child: Container(
-                          width: 30,
-                          height: 30,
-                          decoration: const BoxDecoration(
-                            color: AppColors.limeAccent,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.shopping_bag_outlined,
-                            size: 16,
-                            color: AppColors.darkGreen,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

@@ -353,7 +353,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 14,
-                    childAspectRatio: 0.64,
+                    childAspectRatio: 0.58,
                   ),
                   itemBuilder: (context, index) {
                     final item = _filteredProducts[index];

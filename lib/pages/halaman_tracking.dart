@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/pages/halaman_akun.dart';
 import 'package:test23/pages/halaman_beranda.dart';
 import 'package:test23/pages/halaman_konten.dart';
 import 'package:test23/pages/halaman_produk.dart';
+import 'package:test23/widgets/tracking/card_auto_track_lokasi.dart';
 import 'package:test23/widgets/tracking/card_estimasi_berat.dart';
 import 'package:test23/widgets/tracking/card_tracking_chart.dart';
 import 'package:test23/widgets/tracking/grid_kategori_setor.dart';
@@ -133,7 +135,30 @@ class _HalamanTrackingState extends State<HalamanTracking> {
               'Potensi Poin yang diperoleh: +$totalPoints EcoPoints',
               style: const TextStyle(fontSize: 13, color: Color(0xFF266147), fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F8F4),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFDCEFE3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.my_location_rounded, size: 16, color: Color(0xFF00C853)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Auto-Track Titik Jemput: ${LokasiTrackingService.currentAddress}',
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF235E40)),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               height: 46,
@@ -177,7 +202,14 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
               const SizedBox(height: 16),
 
-              // ── 2. Card 1: Riwayat Setor Sampah (Line Chart & Trend) ──
+              // ── 2. Card: Auto-Track Lokasi Penjemputan Sampah ──
+              CardAutoTrackLokasi(
+                onLocationUpdated: () => setState(() {}),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ── 3. Card 1: Riwayat Setor Sampah (Line Chart & Trend) ──
               CardTrackingChart(
                 onCategoryFilterChanged: (filterName) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -192,7 +224,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
               const SizedBox(height: 16),
 
-              // ── 3. Card 2: ESTIMASI JUMLAH / BERAT (Counter & Input) ──
+              // ── 4. Card 2: ESTIMASI JUMLAH / BERAT (Counter & Input) ──
               CardEstimasiBerat(
                 categoryName: _selectedCategory,
                 itemUnit: _selectedUnit,

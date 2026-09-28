@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/pages/halaman_akun.dart';
 import 'package:test23/pages/halaman_konten.dart';
+import 'package:test23/pages/halaman_pilih_lokasi_akurat.dart';
 import 'package:test23/pages/halaman_produk.dart';
 import 'package:test23/pages/halaman_tracking.dart';
 import 'package:test23/widgets/beranda/card_bank_sampah.dart';
@@ -132,7 +134,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -151,25 +153,63 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             const Text(
               'Setor Sampah Mandiri',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             const Text(
               'Pilih jenis sampah yang ingin kamu tukarkan menjadi poin.',
               style: TextStyle(fontSize: 13, color: AppColors.textMuted),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             _buildSetorItem(Icons.water_drop_outlined, 'Plastik (PET/HDPE)', 'Rp 3.500 / kg (+150 Poin)'),
             _buildSetorItem(Icons.inventory_2_outlined, 'Kertas & Karton', 'Rp 2.200 / kg (+100 Poin)'),
             _buildSetorItem(Icons.delete_outline_rounded, 'Logam & Kaleng', 'Rp 9.000 / kg (+300 Poin)'),
             _buildSetorItem(Icons.wine_bar_rounded, 'Kaca & Beling', 'Rp 1.000 / kg (+50 Poin)'),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
+
+            // Live Auto-Tracked GPS Pickup Location (Compact)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F8F4),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFDCEFE3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.my_location_rounded, size: 14, color: Color(0xFF00C853)),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Auto-Track GPS: ${LokasiTrackingService.currentAddress} (${LokasiTrackingService.currentAccuracy})',
+                      style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.darkGreen),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const HalamanPilihLokasiAkurat()),
+                      );
+                    },
+                    child: const Text(
+                      'GMaps >',
+                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
             SizedBox(
               width: double.infinity,
-              height: 48,
+              height: 46,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.limeAccent,
@@ -180,8 +220,8 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 onPressed: () {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Jadwal penjemputan sampah berhasil dibuat!'),
+                    SnackBar(
+                      content: Text('Jadwal penjemputan sampah berhasil dibuat ke ${LokasiTrackingService.currentAddress}!'),
                       backgroundColor: AppColors.darkGreen,
                     ),
                   );
@@ -189,7 +229,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 child: const Text('Buat Jadwal Penjemputan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
           ],
         ),
       ),
