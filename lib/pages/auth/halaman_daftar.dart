@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 
 class HalamanDaftar extends StatefulWidget {
@@ -107,16 +107,6 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
             fontSize: 18,
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: CircleAvatar(
-              backgroundColor: const Color(0xFF2D2D2D),
-              radius: 20,
-              child: const Icon(Icons.person, color: Colors.white, size: 22),
-            ),
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
