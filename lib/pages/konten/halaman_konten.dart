@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
@@ -61,26 +62,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
     }
   }
 
-  String? _extractYoutubeId(String? url) {
-    if (url == null || url.trim().isEmpty) return null;
-    final regExp = RegExp(
-      r'(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/|watch\?.+&v=))([\w-]{11})',
-      caseSensitive: false,
-    );
-    final match = regExp.firstMatch(url);
-    return match?.group(1);
-  }
-
-  String? _getYoutubeThumbnail(String? url) {
-    final ytId = _extractYoutubeId(url);
-    if (ytId != null && ytId.isNotEmpty) {
-      return 'https://img.youtube.com/vi/$ytId/hqdefault.jpg';
-    }
-    if (url != null && (url.startsWith('http://') || url.startsWith('https://'))) {
-      return url;
-    }
-    return null;
-  }
+  String? _getYoutubeThumbnail(String? url) => KontenValidator.getYoutubeThumbnail(url);
 
   List<dynamic> get _filteredEdukasi {
     if (_listEdukasiPublik.isEmpty) return [];
@@ -121,12 +103,19 @@ class _HalamanKontenState extends State<HalamanKonten> {
 
   // ── 1. Video Player Modal ──
   void _showVideoPlayerModal([Map<String, dynamic>? item]) {
-    final isDynamic = item != null;
-    final title = isDynamic ? (item['title']?.toString() ?? 'Cara Mendaur Ulang Botol Plastik Minuman') : 'Cara Mendaur Ulang Botol Plastik Minuman';
-    final desc = isDynamic ? (item['description']?.toString() ?? 'Pelajari cara mendaur ulang botol plastik menjadi barang bernilai jual tinggi.') : 'Diputar oleh Ibu Anin • Durasi: 12:45 menit • Kategori: Plastik An-organik';
-    final author = isDynamic ? (item['penulis']?.toString() ?? 'Ibu Anin') : 'Ibu Anin';
-    final mediaUrl = isDynamic ? (item['media_url']?.toString() ?? '') : '';
-    final jenis = isDynamic ? (item['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan') : 'Plastik An-organik';
+    final currentItem = item ?? (_listEdukasiPublik.isNotEmpty && _listEdukasiPublik.first is Map ? Map<String, dynamic>.from(_listEdukasiPublik.first as Map) : null);
+    final title = currentItem?['title']?.toString() ?? 'Video Edukasi TR4SH';
+    final desc = currentItem?['description']?.toString() ?? 'Pelajari langkah bijak memilah dan mengolah sampah untuk lingkungan yang lebih asri.';
+    String author = 'Administrator';
+    if (currentItem != null) {
+      if (currentItem['penulis'] != null && currentItem['penulis'].toString().isNotEmpty) {
+        author = currentItem['penulis'].toString();
+      } else if (currentItem['user'] is Map && (currentItem['user'] as Map)['nama'] != null) {
+        author = (currentItem['user'] as Map)['nama'].toString();
+      }
+    }
+    final mediaUrl = currentItem?['media_url']?.toString() ?? '';
+    final jenis = currentItem?['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan';
     final thumbUrl = _getYoutubeThumbnail(mediaUrl);
 
     showModalBottomSheet(
@@ -447,17 +436,19 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 border: Border.all(color: AppColors.cardBorder),
               ),
               child: Row(
-                children: const [
-                  CircleAvatar(
+                children: [
+                  const CircleAvatar(
                     radius: 16,
                     backgroundColor: Color(0xFFD6F5E1),
                     child: Icon(Icons.article_rounded, color: AppColors.darkGreen, size: 18),
                   ),
-                  SizedBox(width: 12),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Tutorial baru "Cara Mendaur Ulang Botol Plastik Minuman" baru saja diterbitkan!',
-                      style: TextStyle(fontSize: 12.5, color: AppColors.darkGreen),
+                      _listEdukasiPublik.isNotEmpty
+                          ? 'Konten baru "${_listEdukasiPublik.first['title']}" baru saja diterbitkan!'
+                          : 'Konten edukasi baru telah disetujui dan siap ditonton!',
+                      style: const TextStyle(fontSize: 12.5, color: AppColors.darkGreen),
                     ),
                   ),
                 ],
@@ -512,7 +503,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 children: [
                   _buildCommentItem('Farhan Rizky', 'Sangat inspiratif! Tutup botol HDPE juga bisa dijadikan tatakan cangkir teh yang estetik.'),
                   _buildCommentItem('Siti Rahmawati', 'Langkah pemilahannya sangat detail dan gampang diikuti di rumah tangga.'),
-                  _buildCommentItem('Dewi Lestari', 'Terima kasih tipsnya Ibu Anin, langsung dipraktikkan hari ini!'),
+                  _buildCommentItem('Dewi Lestari', 'Terima kasih atas materi edukasinya, ilmunya sangat praktis untuk dipraktikkan!'),
                 ],
               ),
             ),
@@ -780,7 +771,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
+                              Wrap(
+                                spacing: 4,
+                                runSpacing: 4,
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -788,16 +782,20 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                       color: const Color(0xFFD8F4E4),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
-                                    child: Text(
-                                      jenis,
-                                      style: const TextStyle(
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xFF1B6B44),
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(maxWidth: 115),
+                                      child: Text(
+                                        jenis,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFF1B6B44),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 4),
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                                     decoration: BoxDecoration(
@@ -985,16 +983,27 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 const SizedBox(height: 16),
 
                 // ── 4. Sorotan Utama (Featured Video Card) ──
-                CardSorotanUtama(
-                  onPlayTap: _showVideoPlayerModal,
-                  onCommentTap: _showCommentsSheet,
-                  onShareTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Tautan video berhasil disalin ke clipboard!'),
-                        duration: Duration(milliseconds: 900),
-                        backgroundColor: AppColors.darkGreen,
-                      ),
+                Builder(
+                  builder: (context) {
+                    final featuredItem = _filteredEdukasi.isNotEmpty
+                        ? (_filteredEdukasi.first is Map ? Map<String, dynamic>.from(_filteredEdukasi.first as Map) : null)
+                        : (_listEdukasiPublik.isNotEmpty && _listEdukasiPublik.first is Map
+                            ? Map<String, dynamic>.from(_listEdukasiPublik.first as Map)
+                            : null);
+
+                    return CardSorotanUtama(
+                      item: featuredItem,
+                      onPlayTap: () => _showVideoPlayerModal(featuredItem),
+                      onCommentTap: _showCommentsSheet,
+                      onShareTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Tautan video berhasil disalin ke clipboard!'),
+                            duration: Duration(milliseconds: 900),
+                            backgroundColor: AppColors.darkGreen,
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

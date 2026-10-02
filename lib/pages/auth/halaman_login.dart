@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/auth/halaman_daftar.dart';
@@ -23,13 +24,18 @@ class _HalamanLoginState extends State<HalamanLogin> {
   static const Color _abuLatar = Color(0xFFF2F2F2);
 
   void _login() async {
-    final username = _usernameController.text.trim();
-    final password = _passwordController.text.trim();
+    final username = _usernameController.text;
+    final password = _passwordController.text;
 
-    if (username.isEmpty || password.isEmpty) {
+    final error = AuthValidator.validateLogin(
+      username: username,
+      password: password,
+    );
+
+    if (error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Username dan kata sandi tidak boleh kosong!'),
+        SnackBar(
+          content: Text(error),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
         ),

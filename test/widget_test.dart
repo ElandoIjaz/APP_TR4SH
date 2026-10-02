@@ -130,7 +130,6 @@ void main() {
 
     // Verify HalamanKonten elements
     expect(find.text('SOROTAN UTAMA'), findsOneWidget);
-    expect(find.text('Cara Mendaur Ulang Botol Plastik Minuman'), findsOneWidget);
     expect(find.text('Wawasan Komunitas'), findsOneWidget);
 
     // Test navigating to HalamanProduk via bottom nav 'Produk'

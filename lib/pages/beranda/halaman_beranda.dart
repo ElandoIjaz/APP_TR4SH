@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
@@ -62,26 +63,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     }
   }
 
-  String? _extractYoutubeId(String? url) {
-    if (url == null || url.trim().isEmpty) return null;
-    final regExp = RegExp(
-      r'(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/|watch\?.+&v=))([\w-]{11})',
-      caseSensitive: false,
-    );
-    final match = regExp.firstMatch(url);
-    return match?.group(1);
-  }
-
-  String? _getYoutubeThumbnail(String? url) {
-    final ytId = _extractYoutubeId(url);
-    if (ytId != null && ytId.isNotEmpty) {
-      return 'https://img.youtube.com/vi/$ytId/hqdefault.jpg';
-    }
-    if (url != null && (url.startsWith('http://') || url.startsWith('https://'))) {
-      return url;
-    }
-    return null;
-  }
+  String? _getYoutubeThumbnail(String? url) => KontenValidator.getYoutubeThumbnail(url);
 
   void _showNotificationSheet() {
     showModalBottomSheet(

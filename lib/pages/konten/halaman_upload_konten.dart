@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
 
@@ -60,45 +61,13 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
   }
 
   void _onUrlChanged() {
-    final rawUrl = _urlController.text.trim();
-    final id = _extractYoutubeId(rawUrl);
+    final rawUrl = _urlController.text;
+    final id = KontenValidator.extractYoutubeId(rawUrl);
     if (id != _detectedYoutubeId) {
       setState(() {
         _detectedYoutubeId = id;
       });
     }
-  }
-
-  String? _extractYoutubeId(String url) {
-    if (url.isEmpty) return null;
-    final cleanUrl = url.trim();
-
-    // Pola 1: youtu.be/ID
-    final regShort = RegExp(r'youtu\.be\/([a-zA-Z0-9_\-]{11})');
-    final matchShort = regShort.firstMatch(cleanUrl);
-    if (matchShort != null) return matchShort.group(1);
-
-    // Pola 2: youtube.com/watch?v=ID
-    final regWatch = RegExp(r'[?&]v=([a-zA-Z0-9_\-]{11})');
-    final matchWatch = regWatch.firstMatch(cleanUrl);
-    if (matchWatch != null) return matchWatch.group(1);
-
-    // Pola 3: youtube.com/shorts/ID
-    final regShorts = RegExp(r'youtube\.com\/shorts\/([a-zA-Z0-9_\-]{11})');
-    final matchShorts = regShorts.firstMatch(cleanUrl);
-    if (matchShorts != null) return matchShorts.group(1);
-
-    // Pola 4: youtube.com/embed/ID
-    final regEmbed = RegExp(r'youtube\.com\/embed\/([a-zA-Z0-9_\-]{11})');
-    final matchEmbed = regEmbed.firstMatch(cleanUrl);
-    if (matchEmbed != null) return matchEmbed.group(1);
-
-    // Jika user langsung memasukkan 11 karakter ID video
-    if (RegExp(r'^[a-zA-Z0-9_\-]{11}$').hasMatch(cleanUrl)) {
-      return cleanUrl;
-    }
-
-    return null;
   }
 
   Future<void> _muatKontenSaya() async {
@@ -114,30 +83,26 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
   }
 
   Future<void> _kirimKonten() async {
-    final title = _titleController.text.trim();
-    final url = _urlController.text.trim();
-    final desc = _descController.text.trim();
+    final title = _titleController.text;
+    final url = _urlController.text;
+    final desc = _descController.text;
 
-    if (url.isEmpty) {
-      _showSnackBar('Link video YouTube wajib diisi!', Colors.redAccent);
-      return;
-    }
-    if (_detectedYoutubeId == null) {
-      _showSnackBar('Format link YouTube tidak valid. Mohon periksa kembali!', Colors.redAccent);
-      return;
-    }
-    if (title.isEmpty) {
-      _showSnackBar('Judul konten tidak boleh kosong!', Colors.redAccent);
-      return;
-    }
-    if (desc.isEmpty) {
-      _showSnackBar('Deskripsi konten tidak boleh kosong!', Colors.redAccent);
+    // Bersih dan rapi: Logic if-else form diekstrak ke KontenValidator
+    final error = KontenValidator.validateUploadForm(
+      rawUrl: url,
+      detectedYoutubeId: _detectedYoutubeId,
+      title: title,
+      description: desc,
+    );
+
+    if (error != null) {
+      _showSnackBar(error, Colors.redAccent);
       return;
     }
 
     setState(() => _isLoading = true);
 
-    final normalizedUrl = 'https://www.youtube.com/watch?v=$_detectedYoutubeId';
+    final normalizedUrl = KontenValidator.normalizeYoutubeUrl(url)!;
 
     final res = await ApiService.uploadKonten(
       idUser: UserAccountData.currentUserId,
@@ -822,7 +787,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
     final desc = item['description']?.toString() ?? '';
     final mediaUrl = item['media_url']?.toString() ?? '';
     final alasan = item['alasan_penolakan']?.toString();
-    final youtubeId = _extractYoutubeId(mediaUrl);
+    final youtubeId = KontenValidator.extractYoutubeId(mediaUrl);
 
     Color badgeBg;
     Color badgeText;

@@ -35,16 +35,10 @@ void main() {
 
     // 4. Verify Sorotan Utama Card
     expect(find.text('SOROTAN UTAMA'), findsOneWidget);
-    expect(find.text('1 Menit Lalu'), findsOneWidget);
     expect(find.text('HD'), findsOneWidget);
-    expect(find.text('1080p'), findsOneWidget);
-    expect(find.text('04:12'), findsOneWidget);
-    expect(find.text('12:45'), findsOneWidget);
-    expect(find.text('Plastik • An-organik'), findsOneWidget);
-    expect(find.text('by: Ibu Anin'), findsOneWidget);
-    expect(find.text('Cara Mendaur Ulang Botol Plastik Minuman'), findsOneWidget);
+    expect(find.text('YouTube'), findsOneWidget);
     expect(find.text('1,4k'), findsOneWidget);
-    expect(find.text('238'), findsOneWidget);
+    expect(find.text('Komentar'), findsOneWidget);
     expect(find.text('Bagikan'), findsOneWidget);
 
     // 5. Verify Wawasan Komunitas Section
@@ -82,7 +76,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // 9. Test Interaction: Tapping Comments opens Comments Sheet
-    await tester.tap(find.text('238'));
+    await tester.tap(find.text('Komentar'));
     await tester.pumpAndSettle();
     expect(find.text('Komentar (238)'), findsOneWidget);
     expect(find.text('Farhan Rizky'), findsOneWidget);

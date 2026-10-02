@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/core/validators/konten_validator.dart';
 
 class CardSorotanUtama extends StatefulWidget {
+  final Map<String, dynamic>? item;
+  final String? title;
+  final String? description;
+  final String? author;
+  final String? category;
+  final String? mediaUrl;
+  final String? timeAgo;
   final VoidCallback? onPlayTap;
   final VoidCallback? onBookmarkTap;
   final VoidCallback? onCommentTap;
@@ -9,6 +17,13 @@ class CardSorotanUtama extends StatefulWidget {
 
   const CardSorotanUtama({
     super.key,
+    this.item,
+    this.title,
+    this.description,
+    this.author,
+    this.category,
+    this.mediaUrl,
+    this.timeAgo,
     this.onPlayTap,
     this.onBookmarkTap,
     this.onCommentTap,
@@ -23,6 +38,56 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
   bool _isLiked = false;
   int _likeCount = 1420;
   bool _isBookmarked = false;
+
+  String get _title {
+    if (widget.title != null && widget.title!.trim().isNotEmpty) return widget.title!.trim();
+    if (widget.item != null && widget.item!['title'] != null && widget.item!['title'].toString().trim().isNotEmpty) {
+      return widget.item!['title'].toString().trim();
+    }
+    return 'Edukasi Pengolahan Sampah';
+  }
+
+  String get _description {
+    if (widget.description != null && widget.description!.trim().isNotEmpty) return widget.description!.trim();
+    if (widget.item != null && widget.item!['description'] != null && widget.item!['description'].toString().trim().isNotEmpty) {
+      return widget.item!['description'].toString().trim();
+    }
+    return 'Pelajari langkah praktis memilah dan mengolah sampah untuk lingkungan yang lebih asri.';
+  }
+
+  String get _author {
+    if (widget.author != null && widget.author!.trim().isNotEmpty) return widget.author!.trim();
+    if (widget.item != null) {
+      if (widget.item!['penulis'] != null && widget.item!['penulis'].toString().trim().isNotEmpty) {
+        return widget.item!['penulis'].toString().trim();
+      }
+      if (widget.item!['user'] != null && widget.item!['user'] is Map && widget.item!['user']['nama'] != null) {
+        return widget.item!['user']['nama'].toString().trim();
+      }
+    }
+    return 'Administrator';
+  }
+
+  String get _category {
+    if (widget.category != null && widget.category!.trim().isNotEmpty) return widget.category!.trim();
+    if (widget.item != null && widget.item!['jenis_edukasi'] != null && widget.item!['jenis_edukasi'].toString().trim().isNotEmpty) {
+      return widget.item!['jenis_edukasi'].toString().trim();
+    }
+    return 'Edukasi Lingkungan';
+  }
+
+  String get _mediaUrl {
+    if (widget.mediaUrl != null && widget.mediaUrl!.trim().isNotEmpty) return widget.mediaUrl!.trim();
+    if (widget.item != null && widget.item!['media_url'] != null) {
+      return widget.item!['media_url'].toString().trim();
+    }
+    return '';
+  }
+
+  String get _timeAgo {
+    if (widget.timeAgo != null && widget.timeAgo!.isNotEmpty) return widget.timeAgo!;
+    return 'Terbaru';
+  }
 
   void _toggleLike() {
     setState(() {
@@ -52,6 +117,8 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
 
   @override
   Widget build(BuildContext context) {
+    final thumbUrl = KontenValidator.getYoutubeThumbnail(_mediaUrl);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
@@ -71,16 +138,16 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                 ),
               ),
               Row(
-                children: const [
-                  Icon(
+                children: [
+                  const Icon(
                     Icons.access_time_rounded,
                     size: 13,
                     color: AppColors.textMuted,
                   ),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Text(
-                    '1 Menit Lalu',
-                    style: TextStyle(
+                    _timeAgo,
+                    style: const TextStyle(
                       fontSize: 11,
                       color: AppColors.textMuted,
                       fontWeight: FontWeight.w500,
@@ -117,28 +184,34 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                     alignment: Alignment.center,
                     children: [
                       // Video Thumbnail Image
-                      Image.asset(
-                        'assets/images/konten_video_thumb.jpg',
-                        height: 195,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          // Fallback to waste_guide or gradient container
-                          return Image.asset(
-                            'assets/images/waste_guide.jpg',
+                      if (thumbUrl != null && thumbUrl.startsWith('http'))
+                        Image.network(
+                          thumbUrl,
+                          height: 195,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
                             height: 195,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              height: 195,
-                              color: AppColors.darkGreen,
-                              child: const Center(
-                                child: Icon(Icons.play_circle_outline, size: 60, color: Colors.white),
-                              ),
+                            color: AppColors.darkGreen,
+                            child: const Center(
+                              child: Icon(Icons.videocam_rounded, size: 60, color: Colors.white),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        )
+                      else
+                        Image.asset(
+                          'assets/images/waste_guide.jpg',
+                          height: 195,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            height: 195,
+                            color: AppColors.darkGreen,
+                            child: const Center(
+                              child: Icon(Icons.play_circle_outline, size: 60, color: Colors.white),
+                            ),
+                          ),
+                        ),
 
                       // Gradient Bottom Scrim for duration contrast
                       Positioned(
@@ -190,7 +263,7 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Text(
-                                '1080p',
+                                'YouTube',
                                 style: TextStyle(
                                   color: AppColors.darkGreen,
                                   fontSize: 10,
@@ -266,7 +339,7 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                         child: Row(
                           children: [
                             const Text(
-                              '04:12',
+                              '00:00',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 10.5,
@@ -284,7 +357,7 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                                       color: Colors.white.withValues(alpha: 0.35),
                                     ),
                                     FractionallySizedBox(
-                                      widthFactor: 0.35,
+                                      widthFactor: 0.65,
                                       child: Container(
                                         height: 3.5,
                                         color: AppColors.limeAccent,
@@ -296,7 +369,7 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                             ),
                             const SizedBox(width: 8),
                             const Text(
-                              '12:45',
+                              'Video Edukasi',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 10.5,
@@ -316,28 +389,33 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Tag & Author Row
+                      // Tag & Author Row (Safe from overflow)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFD8F4E4),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Text(
-                              'Plastik • An-organik',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF1B6B44),
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD8F4E4),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                _category,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF1B6B44),
+                                ),
                               ),
                             ),
                           ),
-                          const Text(
-                            'by: Ibu Anin',
-                            style: TextStyle(
+                          const SizedBox(width: 8),
+                          Text(
+                            'by: $_author',
+                            style: const TextStyle(
                               fontSize: 11.5,
                               color: AppColors.textMuted,
                               fontWeight: FontWeight.w500,
@@ -349,26 +427,30 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                       const SizedBox(height: 10),
 
                       // Title
-                      const Text(
-                        'Cara Mendaur Ulang Botol Plastik Minuman',
-                        style: TextStyle(
+                      Text(
+                        _title,
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: AppColors.darkGreen,
                           height: 1.25,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
 
                       const SizedBox(height: 6),
 
                       // Description
-                      const Text(
-                        'Pelajari langkah praktis memilah dan mengkreasikan botol untuk produk sirkular bernilai tinggi.',
-                        style: TextStyle(
+                      Text(
+                        _description,
+                        style: const TextStyle(
                           fontSize: 12.5,
                           color: Color(0xFF5E7569),
                           height: 1.35,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
 
                       const SizedBox(height: 14),
@@ -398,7 +480,7 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                                         style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w700,
-                                          color: AppColors.darkGreen,
+                                          color: Color(0xFF285943),
                                         ),
                                       ),
                                     ],
@@ -412,10 +494,10 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                               InkWell(
                                 onTap: widget.onCommentTap,
                                 borderRadius: BorderRadius.circular(8),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                   child: Row(
-                                    children: const [
+                                    children: [
                                       Icon(
                                         Icons.chat_bubble_outline_rounded,
                                         size: 16,
@@ -423,11 +505,11 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                                       ),
                                       SizedBox(width: 5),
                                       Text(
-                                        '238',
+                                        'Komentar',
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w700,
-                                          color: AppColors.darkGreen,
+                                          color: Color(0xFF285943),
                                         ),
                                       ),
                                     ],
@@ -437,26 +519,26 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                             ],
                           ),
 
-                          // Share Button
+                          // Share
                           InkWell(
                             onTap: widget.onShareTap,
                             borderRadius: BorderRadius.circular(8),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                               child: Row(
-                                children: const [
+                                children: [
                                   Icon(
                                     Icons.share_outlined,
-                                    size: 17,
+                                    size: 16,
                                     color: Color(0xFF285943),
                                   ),
-                                  SizedBox(width: 5),
+                                  SizedBox(width: 4),
                                   Text(
                                     'Bagikan',
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
-                                      color: AppColors.darkGreen,
+                                      color: Color(0xFF285943),
                                     ),
                                   ),
                                 ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 
@@ -25,21 +26,21 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
   static const Color _abuLatar = Color(0xFFF2F2F2);
 
   void _daftar() async {
-    final nama = _namaController.text.trim();
-    final username = _usernameController.text.trim();
-    final telepon = _teleponController.text.trim();
-    final password = _passwordController.text.trim();
+    final nama = _namaController.text;
+    final username = _usernameController.text;
+    final telepon = _teleponController.text;
+    final password = _passwordController.text;
 
-    if (nama.isEmpty || username.isEmpty || telepon.isEmpty || password.isEmpty) {
-      _showSnackBar('Semua kolom harus diisi!', Colors.redAccent);
-      return;
-    }
-    if (password.length < 6) {
-      _showSnackBar('Kata sandi minimal 6 karakter!', Colors.redAccent);
-      return;
-    }
-    if (!_setuju) {
-      _showSnackBar('Anda harus menyetujui Syarat & Ketentuan!', Colors.redAccent);
+    final error = AuthValidator.validateRegister(
+      nama: nama,
+      username: username,
+      telepon: telepon,
+      password: password,
+      setuju: _setuju,
+    );
+
+    if (error != null) {
+      _showSnackBar(error, Colors.redAccent);
       return;
     }
 
