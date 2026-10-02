@@ -13,12 +13,15 @@ void main() {
   group('ApiConfig Tests', () {
     test('BaseUrl and endpoints format properly', () {
       expect(ApiConfig.baseUrl, contains(':8000/api'));
-      expect(ApiConfig.login, equals('${ApiConfig.baseUrl}/login'));
-      expect(ApiConfig.register, equals('${ApiConfig.baseUrl}/register'));
-      expect(ApiConfig.logout, equals('${ApiConfig.baseUrl}/logout'));
-      expect(ApiConfig.setorSampah, equals('${ApiConfig.baseUrl}/setor-sampah'));
-      expect(ApiConfig.riwayatSetor, equals('${ApiConfig.baseUrl}/riwayat-setor'));
-      expect(ApiConfig.listProduk, equals('${ApiConfig.baseUrl}/produk'));
+      expect(ApiConfig.login, equals('${ApiConfig.baseUrl}/auth/login'));
+      expect(ApiConfig.register, equals('${ApiConfig.baseUrl}/auth/register'));
+      expect(ApiConfig.logout, equals('${ApiConfig.baseUrl}/auth/logout'));
+      expect(ApiConfig.setorSampah, equals('${ApiConfig.baseUrl}/sampah/setor'));
+      expect(ApiConfig.riwayatSetor, equals('${ApiConfig.baseUrl}/sampah/riwayat'));
+      expect(ApiConfig.listPrakarya, equals('${ApiConfig.baseUrl}/prakarya'));
+      expect(ApiConfig.listProduk, equals('${ApiConfig.baseUrl}/prakarya'));
+      expect(ApiConfig.uploadEdukasi, equals('${ApiConfig.baseUrl}/edukasi/upload'));
+      expect(ApiConfig.userKonten(1), equals('${ApiConfig.baseUrl}/edukasi/user/1'));
     });
   });
 
@@ -63,6 +66,16 @@ void main() {
         alamatJemput: 'Jl. Riau No. 45',
       );
       expect(res.success, isFalse);
+    });
+
+    test('uploadKonten handles offline server gracefully', () async {
+      final res = await ApiService.uploadKonten(
+        title: 'Tutorial Daur Ulang Galon Bekas',
+        mediaUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        description: 'Langkah mudah memotong dan mengecat galon bekas.',
+      );
+      expect(res.success, isFalse);
+      expect(res.message, isNotEmpty);
     });
   });
 }

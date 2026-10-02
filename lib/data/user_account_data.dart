@@ -100,6 +100,40 @@ class UserAccountData {
   UserAccountData._();
 
   static int userPoints = 500;
+  static int? currentUserId;
+  static String currentNama = 'Bintang Pratama';
+  static String currentUsername = 'bintang_eco';
+  static String currentPhone = '0812-3456-7890';
+  static String? currentFoto;
+  static String currentStatusAkun = 'aktif';
+  static double totalSampahKg = 0.0;
+  static int totalSetoran = 0;
+
+  static void updateFromUserData(Map<String, dynamic> user) {
+    if (user['id_user'] != null) {
+      currentUserId = int.tryParse(user['id_user'].toString());
+    }
+    if (user['nama_lengkap'] != null && user['nama_lengkap'].toString().isNotEmpty) {
+      currentNama = user['nama_lengkap'].toString();
+    }
+    if (user['username'] != null && user['username'].toString().isNotEmpty) {
+      currentUsername = user['username'].toString();
+    }
+    if (user['foto'] != null) {
+      currentFoto = user['foto'].toString();
+    }
+    if (user['status_akun'] != null) {
+      currentStatusAkun = user['status_akun'].toString();
+    }
+  }
+
+  static void resetSession() {
+    currentUserId = null;
+    currentNama = 'Tamu';
+    currentUsername = '';
+    currentFoto = null;
+    userPoints = 0;
+  }
 
   static List<AlamatModel> listAlamat = [
     AlamatModel(

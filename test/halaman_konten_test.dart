@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 
@@ -97,9 +97,8 @@ void main() {
     );
     await tester.tap(find.text('Mulai Berbagi Ide'));
     await tester.pumpAndSettle();
-    expect(find.text('Kirim Karya Sirkular Anda'), findsOneWidget);
-    expect(find.text('Kirim Konten Sekarang'), findsOneWidget);
-    await tester.tap(find.text('Kirim Konten Sekarang'));
-    await tester.pumpAndSettle();
+    expect(find.text('Unggah Konten Edukasi'), findsOneWidget);
+    expect(find.text('Link Video YouTube *'), findsOneWidget);
+    expect(find.text('Kirim Konten'), findsOneWidget);
   });
 }

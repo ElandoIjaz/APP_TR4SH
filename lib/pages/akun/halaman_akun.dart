@@ -1,9 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/data/api_service.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_alamat_pengiriman.dart';
 import 'package:test23/pages/akun/halaman_bantuan_faq.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
+import 'package:test23/pages/konten/halaman_upload_konten.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:test23/pages/akun/halaman_notifikasi.dart';
 import 'package:test23/pages/akun/halaman_pengaturan_akun.dart';
@@ -34,6 +37,19 @@ class _HalamanAkunState extends State<HalamanAkun> {
   String _namaLengkap = 'Bintang Pratama';
   String _username = '@bintang_eco';
   String _nomorTelepon = '081234567890';
+
+  @override
+  void initState() {
+    super.initState();
+    if (UserAccountData.currentNama.isNotEmpty) {
+      _namaLengkap = UserAccountData.currentNama;
+    }
+    if (UserAccountData.currentUsername.isNotEmpty) {
+      _username = UserAccountData.currentUsername.startsWith('@')
+          ? UserAccountData.currentUsername
+          : '@${UserAccountData.currentUsername}';
+    }
+  }
 
   void _showEditProfileModal() {
     final nameCtrl = TextEditingController(text: _namaLengkap);
@@ -163,9 +179,11 @@ class _HalamanAkunState extends State<HalamanAkun> {
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.of(context).pushAndRemoveUntil(
+            onPressed: () async {
+              final navigator = Navigator.of(context);
+              navigator.pop();
+              await ApiService.logout();
+              navigator.pushAndRemoveUntil(
                 MaterialPageRoute(builder: (_) => const HalamanLogin()),
                 (route) => false,
               );
@@ -292,6 +310,10 @@ class _HalamanAkunState extends State<HalamanAkun> {
                   } else if (menuTitle == 'Riwayat Setor Sampah') {
                     Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const HalamanRiwayatSetor()),
+                    );
+                  } else if (menuTitle == 'Konten Edukasi Saya') {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HalamanUploadKonten()),
                     );
                   } else if (menuTitle == 'Poin & Hadiah') {
                     Navigator.of(context).push(

@@ -42,6 +42,12 @@ class CardMenuAkun extends StatelessWidget {
           ),
           const Divider(height: 1, indent: 64, endIndent: 20, color: Color(0xFFEDF5F0)),
           _buildMenuItem(
+            icon: Icons.video_library_rounded,
+            title: 'Konten Edukasi Saya',
+            onTap: () => onMenuTap('Konten Edukasi Saya'),
+          ),
+          const Divider(height: 1, indent: 64, endIndent: 20, color: Color(0xFFEDF5F0)),
+          _buildMenuItem(
             icon: Icons.redeem_rounded,
             title: 'Poin & Hadiah',
             trailingBadge: Container(

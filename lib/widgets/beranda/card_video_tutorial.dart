@@ -7,6 +7,10 @@ class CardVideoTutorial extends StatefulWidget {
   final String duration;
   final String title;
   final String subtitle;
+  final String sectionTitle;
+  final String? thumbnailUrl;
+  final String? author;
+  final String? badgeText;
 
   const CardVideoTutorial({
     super.key,
@@ -15,6 +19,10 @@ class CardVideoTutorial extends StatefulWidget {
     this.duration = '03:40 min',
     this.title = 'Panduan Pilah Sampah Rumah Tangga',
     this.subtitle = 'Langkah mudah memisahkan sampah organik & anorganik',
+    this.sectionTitle = 'Cara Menabung Sampah',
+    this.thumbnailUrl,
+    this.author,
+    this.badgeText,
   });
 
   @override
@@ -35,9 +43,9 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Cara Menabung Sampah',
-                style: TextStyle(
+              Text(
+                widget.sectionTitle,
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
                   color: AppColors.darkGreen,
@@ -84,25 +92,16 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        Image.asset(
-                          'assets/images/waste_guide.jpg',
-                          height: 180,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              height: 180,
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [Color(0xFF25664B), Color(0xFF104A34)],
-                                ),
-                              ),
-                              child: const Center(
-                                child: Icon(Icons.recycling_rounded, size: 60, color: Colors.white38),
-                              ),
-                            );
-                          },
-                        ),
+                        if (widget.thumbnailUrl != null && widget.thumbnailUrl!.startsWith('http'))
+                          Image.network(
+                            widget.thumbnailUrl!,
+                            height: 180,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => _buildFallbackThumbnail(),
+                          )
+                        else
+                          _buildFallbackThumbnail(),
 
                         // Play Button
                         Container(
@@ -125,6 +124,34 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                             color: AppColors.darkGreen,
                           ),
                         ),
+
+                        // Badge Top-Left if present
+                        if (widget.badgeText != null)
+                          Positioned(
+                            top: 12,
+                            left: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.limeAccent,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                widget.badgeText!,
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.darkGreen,
+                                ),
+                              ),
+                            ),
+                          ),
 
                         // Duration Badge
                         Positioned(
@@ -179,11 +206,25 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                             const SizedBox(height: 4),
                             Text(
                               widget.subtitle,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textMuted,
+                                height: 1.3,
                               ),
                             ),
+                            if (widget.author != null && widget.author!.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                'Oleh: ${widget.author}',
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  color: Color(0xFF2E7D32),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -212,6 +253,28 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFallbackThumbnail() {
+    return Image.asset(
+      'assets/images/waste_guide.jpg',
+      height: 180,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          height: 180,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF25664B), Color(0xFF104A34)],
+            ),
+          ),
+          child: const Center(
+            child: Icon(Icons.recycling_rounded, size: 60, color: Colors.white38),
+          ),
+        );
+      },
     );
   }
 }

@@ -1,5 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/data/api_service.dart';
 import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
@@ -24,6 +26,62 @@ class HalamanBeranda extends StatefulWidget {
 class _HalamanBerandaState extends State<HalamanBeranda> {
   int _currentNavIndex = 2; // Default to 'Beranda' (Index 2)
   bool _isBookmarked = false;
+  List<dynamic> _listEdukasi = [];
+  bool _isLoadingEdukasi = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBerandaEdukasi();
+  }
+
+  Future<void> _loadBerandaEdukasi() async {
+    try {
+      final res = await ApiService.fetchBeranda();
+      if (res.success && res.data is Map && res.data['edukasi_terbaru'] is List) {
+        final list = res.data['edukasi_terbaru'] as List;
+        if (mounted) {
+          setState(() {
+            _listEdukasi = list;
+            _isLoadingEdukasi = false;
+          });
+          return;
+        }
+      }
+      final edukasiRes = await ApiService.fetchEdukasi();
+      if (edukasiRes.success && edukasiRes.data is List && mounted) {
+        setState(() {
+          _listEdukasi = edukasiRes.data as List;
+          _isLoadingEdukasi = false;
+        });
+        return;
+      }
+    } catch (_) {}
+    if (mounted) {
+      setState(() => _isLoadingEdukasi = false);
+    }
+  }
+
+  String? _extractYoutubeId(String? url) {
+    if (url == null || url.trim().isEmpty) return null;
+    final regExp = RegExp(
+      r'(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|live\/|watch\?.+&v=))([\w-]{11})',
+      caseSensitive: false,
+    );
+    final match = regExp.firstMatch(url);
+    return match?.group(1);
+  }
+
+  String? _getYoutubeThumbnail(String? url) {
+    final ytId = _extractYoutubeId(url);
+    if (ytId != null && ytId.isNotEmpty) {
+      return 'https://img.youtube.com/vi/$ytId/hqdefault.jpg';
+    }
+    if (url != null && (url.startsWith('http://') || url.startsWith('https://'))) {
+      return url;
+    }
+    return null;
+  }
 
   void _showNotificationSheet() {
     showModalBottomSheet(
@@ -267,8 +325,15 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     );
   }
 
-  void _showVideoPlayerModal() {
+  void _showVideoPlayerModal([Map<String, dynamic>? item]) {
     bool isPlaying = true;
+    final isDynamic = item != null;
+    final title = isDynamic ? (item['title']?.toString() ?? 'Panduan Pilah Sampah Rumah Tangga') : 'Panduan Pilah Sampah Rumah Tangga';
+    final desc = isDynamic ? (item['description']?.toString() ?? 'Pelajari cara memilah sampah organik dan anorganik dari dapur rumah tangga Anda dengan metode 3R praktis untuk pemula.') : 'Pelajari cara memilah sampah organik dan anorganik dari dapur rumah tangga Anda dengan metode 3R praktis untuk pemula.';
+    final author = isDynamic ? (item['penulis']?.toString() ?? 'Komunitas TR4SH') : 'Admin TR4SH';
+    final mediaUrl = isDynamic ? (item['media_url']?.toString() ?? '') : '';
+    final thumbUrl = _getYoutubeThumbnail(mediaUrl);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -302,21 +367,36 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      Image.asset(
-                        'assets/images/waste_guide.jpg',
-                        height: 200,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
+                      if (thumbUrl != null && thumbUrl.startsWith('http'))
+                        Image.network(
+                          thumbUrl,
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
                             height: 200,
                             color: AppColors.darkGreen,
                             child: const Center(
                               child: Icon(Icons.videocam_rounded, size: 60, color: Colors.white),
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        )
+                      else
+                        Image.asset(
+                          'assets/images/waste_guide.jpg',
+                          height: 200,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 200,
+                              color: AppColors.darkGreen,
+                              child: const Center(
+                                child: Icon(Icons.videocam_rounded, size: 60, color: Colors.white),
+                              ),
+                            );
+                          },
+                        ),
                       Container(
                         height: 200,
                         color: Colors.black.withValues(alpha: 0.35),
@@ -338,12 +418,38 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                         ),
                       ),
                       Positioned(
+                        top: 12,
+                        left: 12,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.darkGreen,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified_rounded, size: 12, color: AppColors.limeAccent),
+                              SizedBox(width: 4),
+                              Text(
+                                'DISIMPANKAN KE PUBLIK',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const Positioned(
                         bottom: 12,
                         left: 12,
                         right: 12,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
+                          children: [
                             Text('01:15 / 03:40', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
                             Icon(Icons.fullscreen_rounded, color: Colors.white, size: 20),
                           ],
@@ -353,14 +459,64 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Panduan Pilah Sampah Rumah Tangga',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD8F4E4),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Oleh: $author',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1B6B44),
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    if (mediaUrl.isNotEmpty)
+                      InkWell(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(text: mediaUrl));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Tautan video berhasil disalin ke clipboard!'),
+                              backgroundColor: AppColors.darkGreen,
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F8F4),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFDCEFE3)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.link_rounded, size: 13, color: AppColors.darkGreen),
+                              SizedBox(width: 4),
+                              Text('Salin Link', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'Pelajari cara memilah sampah organik dan anorganik dari dapur rumah tangga Anda dengan metode 3R praktis untuk pemula.',
-                  style: TextStyle(fontSize: 13, color: AppColors.textMuted, height: 1.4),
+                Text(
+                  desc,
+                  style: const TextStyle(fontSize: 13, color: AppColors.textMuted, height: 1.4),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -409,6 +565,217 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildKontenBaruEdukasiCarousel() {
+    if (_isLoadingEdukasi) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          height: 120,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.cardBorder),
+          ),
+          child: const Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.darkGreen),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_listEdukasi.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.limeAccent,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(Icons.verified_rounded, size: 14, color: AppColors.darkGreen),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Konten Edukasi Baru Terupload',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
+                ],
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const HalamanKonten()),
+                  );
+                },
+                child: const Text(
+                  'Lihat Semua >',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF1E8850),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 185,
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            itemCount: _listEdukasi.length,
+            itemBuilder: (context, index) {
+              final item = _listEdukasi[index];
+              final itemMap = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+              final title = itemMap['title']?.toString() ?? 'Video Edukasi';
+              final author = itemMap['penulis']?.toString() ?? 'Komunitas TR4SH';
+              final mediaUrl = itemMap['media_url']?.toString() ?? '';
+              final thumb = _getYoutubeThumbnail(mediaUrl);
+
+              return GestureDetector(
+                onTap: () => _showVideoPlayerModal(itemMap),
+                child: Container(
+                  width: 220,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.cardBorder),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                        child: Stack(
+                          children: [
+                            if (thumb != null && thumb.startsWith('http'))
+                              Image.network(
+                                thumb,
+                                height: 105,
+                                width: 220,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stack) => Container(
+                                  height: 105,
+                                  width: 220,
+                                  color: AppColors.darkGreen,
+                                  child: const Icon(Icons.play_circle_outline, color: Colors.white, size: 36),
+                                ),
+                              )
+                            else
+                              Container(
+                                height: 105,
+                                width: 220,
+                                color: AppColors.darkGreen,
+                                child: const Icon(Icons.play_circle_outline, color: Colors.white, size: 36),
+                              ),
+                            Positioned(
+                              top: 6,
+                              left: 6,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AppColors.limeAccent,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Text(
+                                  'BARU DISETUJUI',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.darkGreen,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              right: 6,
+                              bottom: 6,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.65),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.play_arrow_rounded, color: Colors.white, size: 11),
+                                    SizedBox(width: 2),
+                                    Text('YouTube', style: TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.darkGreen,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              'Oleh: $author',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textMuted,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -543,66 +910,82 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     return Scaffold(
       backgroundColor: AppColors.bgScreen,
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 14),
+        child: RefreshIndicator(
+          onRefresh: _loadBerandaEdukasi,
+          color: AppColors.darkGreen,
+          backgroundColor: AppColors.limeAccent,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 14),
 
-              // ── 1. Top Header Bar & Greeting (HeaderBeranda) ──
-              HeaderBeranda(
-                onNotificationTap: _showNotificationSheet,
-                onProfileTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const HalamanAkun()),
-                  );
-                },
-              ),
+                // ── 1. Top Header Bar & Greeting (HeaderBeranda) ──
+                HeaderBeranda(
+                  onNotificationTap: _showNotificationSheet,
+                  onProfileTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HalamanAkun()),
+                    );
+                  },
+                ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // ── 2. Hero Card: "Bank Sampah Digital" ──
-              CardBankSampah(
-                onMulaiSetorTap: _showSetorSampahModal,
-              ),
+                // ── 2. Hero Card: "Bank Sampah Digital" ──
+                CardBankSampah(
+                  onMulaiSetorTap: _showSetorSampahModal,
+                ),
 
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // ── 3. Card Riwayat Setor Sampah (Chart & Summary) ──
-              const CardRiwayatSampah(),
+                // ── 3. Card Riwayat Setor Sampah (Chart & Summary) ──
+                const CardRiwayatSampah(),
 
-              const SizedBox(height: 22),
+                const SizedBox(height: 22),
 
-              // ── 4. Cara Menabung Sampah (Video Tutorial) ──
-              CardVideoTutorial(
-                onPlayTap: _showVideoPlayerModal,
-                onSeeAllTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Menampilkan semua tutorial menabung sampah...'),
-                      duration: Duration(seconds: 1),
-                    ),
-                  );
-                },
-              ),
+                // ── 4. Cara Menabung Sampah (Video Tutorial) ──
+                CardVideoTutorial(
+                  onPlayTap: () => _showVideoPlayerModal(_listEdukasi.isNotEmpty ? Map<String, dynamic>.from(_listEdukasi.first) : null),
+                  onSeeAllTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HalamanKonten()),
+                    );
+                  },
+                  thumbnailUrl: _listEdukasi.isNotEmpty ? _getYoutubeThumbnail(_listEdukasi.first['media_url']?.toString()) : null,
+                  title: _listEdukasi.isNotEmpty && _listEdukasi.first['title'] != null
+                      ? _listEdukasi.first['title'].toString()
+                      : 'Panduan Pilah Sampah Rumah Tangga',
+                  subtitle: _listEdukasi.isNotEmpty && _listEdukasi.first['description'] != null
+                      ? _listEdukasi.first['description'].toString()
+                      : 'Langkah mudah memisahkan sampah organik & anorganik',
+                  author: _listEdukasi.isNotEmpty ? _listEdukasi.first['penulis']?.toString() : null,
+                  badgeText: _listEdukasi.isNotEmpty ? 'BARU DISETUJUI' : null,
+                ),
 
-              const SizedBox(height: 22),
+                if (_listEdukasi.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  _buildKontenBaruEdukasiCarousel(),
+                ],
 
-              // ── 5. Kenali Jenis Sampah (2x2 Grid) ──
-              GridJenisSampah(
-                onCategoryTap: _showCategoryDetail,
-              ),
+                const SizedBox(height: 22),
 
-              const SizedBox(height: 18),
+                // ── 5. Kenali Jenis Sampah (2x2 Grid) ──
+                GridJenisSampah(
+                  onCategoryTap: _showCategoryDetail,
+                ),
 
-              // ── 6. Workshop Card Banner ──
-              CardWorkshop(
-                onDaftarTap: _showWorkshopModal,
-              ),
+                const SizedBox(height: 18),
 
-              const SizedBox(height: 24),
-            ],
+                // ── 6. Workshop Card Banner ──
+                CardWorkshop(
+                  onDaftarTap: _showWorkshopModal,
+                ),
+
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),

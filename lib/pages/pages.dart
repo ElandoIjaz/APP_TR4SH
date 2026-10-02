@@ -10,6 +10,7 @@ export 'beranda/halaman_beranda.dart';
 
 // Konten
 export 'konten/halaman_konten.dart';
+export 'konten/halaman_upload_konten.dart';
 
 // Produk / Marketplace
 export 'produk/halaman_detail_produk.dart';

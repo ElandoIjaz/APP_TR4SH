@@ -35,19 +35,35 @@ class ApiConfig {
     return 'http://$laptopWifiIp:$port/api';
   }
 
-  // ── Authentication Endpoints ──
-  static String get login => '$baseUrl/login';
-  static String get register => '$baseUrl/register';
-  static String get logout => '$baseUrl/logout';
-  static String get userProfile => '$baseUrl/user-profile';
+  // ── Health Check ──
+  static String get ping => '$baseUrl/ping';
 
-  // ── Setor Sampah & Tracking Endpoints ──
-  static String get setorSampah => '$baseUrl/setor-sampah';
-  static String get riwayatSetor => '$baseUrl/riwayat-setor';
+  // ── Authentication Endpoints ──
+  static String get login => '$baseUrl/auth/login';
+  static String get register => '$baseUrl/auth/register';
+  static String get logout => '$baseUrl/auth/logout';
+  static String userProfile(dynamic id) => '$baseUrl/auth/user/$id';
+
+  // ── Beranda Mobile (Single Fetch) ──
+  static String beranda({dynamic userId}) =>
+      userId != null ? '$baseUrl/beranda?id_user=$userId' : '$baseUrl/beranda';
+
+  // ── Setor Sampah & Kategori Endpoints ──
+  static String get kategoriSampah => '$baseUrl/sampah/kategori';
+  static String get riwayatSetor => '$baseUrl/sampah/riwayat';
+  static String get setorSampah => '$baseUrl/sampah/setor';
   static String get trackingLokasi => '$baseUrl/tracking-lokasi';
 
-  // ── Produk / Marketplace Endpoints ──
-  static String get listProduk => '$baseUrl/produk';
+  // ── Produk Prakarya / Marketplace Endpoints ──
+  static String get listPrakarya => '$baseUrl/prakarya';
+  static String detailPrakarya(dynamic id) => '$baseUrl/prakarya/$id';
+  static String get listProduk => listPrakarya; // Alias kompatibilitas
   static String get transaksi => '$baseUrl/transaksi';
   static String get riwayatTransaksi => '$baseUrl/riwayat-transaksi';
+
+  // ── Konten Edukasi & Upload Konten ──
+  static String get listEdukasi => '$baseUrl/edukasi';
+  static String detailEdukasi(dynamic id) => '$baseUrl/edukasi/$id';
+  static String get uploadEdukasi => '$baseUrl/edukasi/upload';
+  static String userKonten(dynamic userId) => '$baseUrl/edukasi/user/$userId';
 }

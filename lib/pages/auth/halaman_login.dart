@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/auth/halaman_daftar.dart';
 import 'package:test23/pages/auth/halaman_lupa_pw.dart';
@@ -30,6 +31,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
         const SnackBar(
           content: Text('Username dan kata sandi tidak boleh kosong!'),
           backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
         ),
       );
       return;
@@ -37,16 +39,38 @@ class _HalamanLoginState extends State<HalamanLogin> {
 
     setState(() => _isLoading = true);
 
-    // Simulasi proses login (delay 1 detik)
-    await Future.delayed(const Duration(seconds: 1));
+    // Memanggil API backend Laravel TR4SH (/api/auth/login)
+    final response = await ApiService.login(
+      username: username,
+      password: password,
+    );
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    // Navigasi ke halaman beranda TR4SH!
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HalamanBeranda()),
-    );
+    if (response.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response.message.isNotEmpty ? response.message : 'Login berhasil!'),
+          backgroundColor: _hijauUtama,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      // Navigasi ke halaman beranda TR4SH!
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HalamanBeranda()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response.message),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 
   @override

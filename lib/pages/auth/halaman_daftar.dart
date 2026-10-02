@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 
 class HalamanDaftar extends StatefulWidget {
@@ -33,8 +34,8 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
       _showSnackBar('Semua kolom harus diisi!', Colors.redAccent);
       return;
     }
-    if (password.length < 8) {
-      _showSnackBar('Kata sandi minimal 8 karakter!', Colors.redAccent);
+    if (password.length < 6) {
+      _showSnackBar('Kata sandi minimal 6 karakter!', Colors.redAccent);
       return;
     }
     if (!_setuju) {
@@ -44,20 +45,32 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
 
     setState(() => _isLoading = true);
 
-    // Simulasi proses pendaftaran
-    await Future.delayed(const Duration(seconds: 1));
+    // Memanggil API backend Laravel TR4SH (/api/auth/register)
+    final response = await ApiService.register(
+      username: username,
+      password: password,
+      namaLengkap: nama,
+      phone: telepon,
+    );
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    _showSnackBar('Pendaftaran berhasil! Silakan masuk.', _hijauUtama);
+    if (response.success) {
+      _showSnackBar(
+        response.message.isNotEmpty ? response.message : 'Pendaftaran berhasil! Silakan masuk.',
+        _hijauUtama,
+      );
 
-    // Kembali ke halaman login
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HalamanLogin()),
-    );
+      // Kembali ke halaman login
+      await Future.delayed(const Duration(milliseconds: 1000));
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HalamanLogin()),
+      );
+    } else {
+      _showSnackBar(response.message, Colors.redAccent);
+    }
   }
 
   void _showSnackBar(String message, Color color) {
