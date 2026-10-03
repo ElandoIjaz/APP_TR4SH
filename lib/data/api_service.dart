@@ -354,10 +354,57 @@ class ApiService {
 
       final Map<String, dynamic> body = _parseJson(response.body);
 
+      final listRaw = body['data'] is List ? (body['data'] as List) : [];
+      final double totalKg = (body['total_kg'] != null)
+          ? (double.tryParse(body['total_kg'].toString()) ?? 0.0)
+          : (listRaw.fold(0.0, (sum, item) => sum + (double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0)));
+      final int totalCount = (body['total'] != null)
+          ? (int.tryParse(body['total'].toString()) ?? listRaw.length)
+          : listRaw.length;
+
+      // Sinkronisasi data ke UserAccountData
+      UserAccountData.totalSampahKg = totalKg;
+      UserAccountData.totalSetoran = totalCount;
+
+      if (listRaw.isNotEmpty) {
+        UserAccountData.listRiwayatSetor = listRaw.map((item) {
+          final idSampah = item['id_sampah']?.toString() ?? '0';
+          final kategori = item['nama_kategori']?.toString() ?? (item['jenis_sampah']?.toString() ?? 'Sampah');
+          final berat = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
+          final tanggalRaw = item['created_at']?.toString() ?? '';
+
+          String tanggalFmt = tanggalRaw;
+          try {
+            if (tanggalRaw.isNotEmpty) {
+              final dt = DateTime.parse(tanggalRaw).toLocal();
+              const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+              tanggalFmt = '${dt.day} ${months[dt.month - 1]} ${dt.year}, ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+            }
+          } catch (_) {}
+
+          return RiwayatSetorModel(
+            id: 'SET-$idSampah',
+            tanggal: tanggalFmt.isNotEmpty ? tanggalFmt : 'Hari Ini',
+            kategori: kategori,
+            beratKg: berat,
+            poin: (berat * 15).round(),
+            lokasiBankSampah: (item['keterangan'] != null && item['keterangan'].toString().isNotEmpty)
+                ? item['keterangan'].toString()
+                : 'TR4SH Drop Point & Eco Hub',
+            status: 'Selesai',
+            estimasiCo2: '${(berat * 1.5).toStringAsFixed(1)} kg CO2e',
+          );
+        }).toList();
+      }
+
       return ApiResponse(
         success: response.statusCode == 200,
         message: body['message'] ?? 'Riwayat sampah berhasil dimuat.',
-        data: body['data'] ?? [],
+        data: {
+          'items': listRaw,
+          'total_kg': totalKg,
+          'total': totalCount,
+        },
         statusCode: response.statusCode,
       );
     } catch (e) {

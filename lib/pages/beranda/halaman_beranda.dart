@@ -4,6 +4,7 @@ import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/lokasi_service.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/akun/halaman_pilih_lokasi_akurat.dart';
@@ -265,6 +266,16 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                       backgroundColor: AppColors.darkGreen,
                     ),
                   );
+                  ApiService.kirimSetorSampah(
+                    idUser: UserAccountData.currentUserId ?? 1,
+                    idKategori: 1,
+                    jenisSampah: 'Plastik (PET/HDPE)',
+                    jumlah: 1.0,
+                    satuan: 'kg',
+                    keterangan: 'Jadwal jemput ke ${LokasiTrackingService.currentAddress}',
+                  ).then((_) {
+                    _loadBerandaEdukasi();
+                  });
                 },
                 child: const Text('Buat Jadwal Penjemputan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               ),
