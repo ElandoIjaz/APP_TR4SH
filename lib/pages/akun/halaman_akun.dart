@@ -363,7 +363,7 @@ class _HalamanAkunState extends State<HalamanAkun> {
         onTap: (index) {
           if (index == 0) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanKonten()),
+              MaterialPageRoute(builder: (_) => const HalamanBeranda()),
             );
           } else if (index == 1) {
             Navigator.of(context).pushReplacement(
@@ -371,7 +371,7 @@ class _HalamanAkunState extends State<HalamanAkun> {
             );
           } else if (index == 2) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanBeranda()),
+              MaterialPageRoute(builder: (_) => const HalamanKonten()),
             );
           } else if (index == 3) {
             Navigator.of(context).pushReplacement(

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
@@ -259,7 +259,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
         onTap: (index) {
           if (index == 0) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanKonten()),
+              MaterialPageRoute(builder: (_) => const HalamanBeranda()),
             );
           } else if (index == 1) {
             Navigator.of(context).pushReplacement(
@@ -267,7 +267,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
             );
           } else if (index == 2) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanBeranda()),
+              MaterialPageRoute(builder: (_) => const HalamanKonten()),
             );
           } else if (index == 4) {
             Navigator.of(context).pushReplacement(

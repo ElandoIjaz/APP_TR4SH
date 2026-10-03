@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -448,11 +448,11 @@ class _HalamanProdukState extends State<HalamanProduk> {
         onTap: (index) {
           if (index == 0) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanKonten()),
+              MaterialPageRoute(builder: (_) => const HalamanBeranda()),
             );
           } else if (index == 2) {
             Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanBeranda()),
+              MaterialPageRoute(builder: (_) => const HalamanKonten()),
             );
           } else if (index == 3) {
             Navigator.of(context).pushReplacement(

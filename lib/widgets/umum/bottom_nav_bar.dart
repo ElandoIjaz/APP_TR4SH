@@ -31,9 +31,9 @@ class TrashBottomNav extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, Icons.article_outlined, 'Konten'),
+              _buildNavItem(0, Icons.home_rounded, 'Beranda'),
               _buildNavItem(1, Icons.storefront_outlined, 'Produk'),
-              _buildNavItem(2, Icons.home_rounded, 'Beranda'),
+              _buildNavItem(2, Icons.article_outlined, 'Konten'),
               _buildNavItem(3, Icons.local_shipping_outlined, 'Tracking'),
               _buildNavItem(4, Icons.person_rounded, 'Akun'),
             ],

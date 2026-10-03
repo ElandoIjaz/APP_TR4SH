@@ -25,7 +25,7 @@ class HalamanBeranda extends StatefulWidget {
 }
 
 class _HalamanBerandaState extends State<HalamanBeranda> {
-  int _currentNavIndex = 2; // Default to 'Beranda' (Index 2)
+  int _currentNavIndex = 0; // Default to 'Beranda' (Index 0)
   bool _isBookmarked = false;
   List<dynamic> _listEdukasi = [];
   bool _isLoadingEdukasi = true;
@@ -976,7 +976,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       bottomNavigationBar: TrashBottomNav(
         currentIndex: _currentNavIndex,
         onTap: (index) {
-          if (index == 0) {
+          if (index == 2) {
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const HalamanKonten()),
             );
@@ -996,7 +996,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
             setState(() {
               _currentNavIndex = index;
             });
-            if (index != 2) {
+            if (index != 0) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Menu index $index dipilih'),

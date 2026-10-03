@@ -24,7 +24,7 @@ class HalamanKonten extends StatefulWidget {
 }
 
 class _HalamanKontenState extends State<HalamanKonten> {
-  final int _currentNavIndex = 0; // Konten is active (Index 0)
+  final int _currentNavIndex = 2; // Konten is active (Index 2)
   int _selectedCategoryIndex = 0;
   bool _isHeaderBookmarked = false;
   final TextEditingController _searchController = TextEditingController();
@@ -1072,13 +1072,13 @@ class _HalamanKontenState extends State<HalamanKonten> {
       bottomNavigationBar: TrashBottomNav(
         currentIndex: _currentNavIndex,
         onTap: (index) {
-          if (index == 1) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanProduk()),
-            );
-          } else if (index == 2) {
+          if (index == 0) {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HalamanBeranda()),
+            );
+          } else if (index == 1) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HalamanProduk()),
             );
           } else if (index == 3) {
             Navigator.of(context).pushReplacement(
@@ -1088,7 +1088,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HalamanAkun()),
             );
-          } else if (index != 0) {
+          } else if (index != 2) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Menu index $index dipilih'),
