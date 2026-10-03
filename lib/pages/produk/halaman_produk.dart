@@ -1,4 +1,7 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/produk_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
@@ -22,7 +25,7 @@ class HalamanProduk extends StatefulWidget {
 }
 
 class _HalamanProdukState extends State<HalamanProduk> {
-  final int _currentNavIndex = 1; // Produk is active (Index 1)
+  final int _currentNavIndex = 1;
   int _selectedCategoryIndex = 0;
   int _cartItemCount = 3;
   final TextEditingController _searchController = TextEditingController();
@@ -34,10 +37,30 @@ class _HalamanProdukState extends State<HalamanProduk> {
     'Aksesoris',
   ];
 
+  late Future<List<dynamic>> _futureProduk;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureProduk = fetchProdukApi();
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  // Fungsi Memanggil API Laravel via IP WiFi
+  Future<List<dynamic>> fetchProdukApi() async {
+    final response = await http.get(Uri.parse('http://192.168.1.8:8000/api/prakarya'));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body);
+      return data['data'] ?? []; 
+    } else {
+      throw Exception('Gagal memuat data dari server.');
+    }
   }
 
   void _openFilterModal() {
@@ -49,7 +72,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
         onApply: () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Filter produk berhasil diterapkan (18 hasil ditemukan)'),
+              content: Text('Filter produk berhasil diterapkan'),
               backgroundColor: AppColors.darkGreen,
             ),
           );
@@ -117,16 +140,6 @@ class _HalamanProdukState extends State<HalamanProduk> {
     );
   }
 
-  List<ProdukItem> get _filteredProducts {
-    if (_selectedCategoryIndex == 0) {
-      return ProdukData.listProduk;
-    }
-    final String selectedCategory = _categories[_selectedCategoryIndex];
-    return ProdukData.listProduk
-        .where((p) => p.category == selectedCategory)
-        .toList();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -137,7 +150,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── 1. Header (Logo ECO MARKETPLACE & Actions) ──
+              // ── 1. Header ──
               HeaderProduk(
                 cartItemCount: _cartItemCount,
                 onNotificationTap: _showNotificationSheet,
@@ -171,11 +184,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
                   padding: const EdgeInsets.only(left: 14, right: 6),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.search_rounded,
-                        color: AppColors.textMuted,
-                        size: 22,
-                      ),
+                      const Icon(Icons.search_rounded, color: AppColors.textMuted, size: 22),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextField(
@@ -207,11 +216,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
                               color: const Color(0xFFD6F3DD),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(
-                              Icons.tune_rounded,
-                              color: AppColors.darkGreen,
-                              size: 20,
-                            ),
+                            child: const Icon(Icons.tune_rounded, color: AppColors.darkGreen, size: 20),
                           ),
                         ),
                       ),
@@ -222,7 +227,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
 
               const SizedBox(height: 14),
 
-              // ── 3. Category Filter Chips (Horizontal) ──
+              // ── 3. Category Filter Chips ──
               SizedBox(
                 height: 36,
                 child: ListView.separated(
@@ -320,73 +325,98 @@ class _HalamanProdukState extends State<HalamanProduk> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          _selectedCategoryIndex = 0;
-                        });
-                      },
-                      child: const Text(
-                        'Lihat Semua >',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1E8850),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
 
               const SizedBox(height: 12),
 
-              // ── 6. 2-Column Product Grid ──
+              // ── 6. 2-Column Product Grid (FutureBuilder Data API) ──
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _filteredProducts.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 14,
-                    childAspectRatio: 0.58,
-                  ),
-                  itemBuilder: (context, index) {
-                    final item = _filteredProducts[index];
-                    return CardProdukGrid(
-                      product: item,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HalamanDetailProduk(product: item),
+                child: FutureBuilder<List<dynamic>>(
+                  future: _futureProduk,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(40),
+                          child: CircularProgressIndicator(color: AppColors.darkGreen),
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20),
+                          child: Text(
+                            'Gagal terhubung ke server.\nPastikan Laravel berjalan di 192.168.1.8',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.red),
                           ),
-                        );
-                      },
-                      onAddToCart: () {
-                        setState(() {
-                          _cartItemCount++;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('${item.title} dimasukkan ke keranjang!'),
-                            duration: const Duration(milliseconds: 900),
-                            backgroundColor: AppColors.darkGreen,
-                            action: SnackBarAction(
-                              label: 'Lihat',
-                              textColor: AppColors.limeAccent,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => const HalamanKeranjang()),
-                                );
-                              },
-                            ),
-                          ),
+                        ),
+                      );
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Text('Belum ada produk prakarya tersedia.'),
+                        ),
+                      );
+                    }
+
+                    // Logika Filter Kategori Lokal
+                    final String selectedKategori = _categories[_selectedCategoryIndex];
+                    final listProdukApi = snapshot.data!.where((p) {
+                      if (selectedKategori == 'Semua') return true;
+                      final String kategoriAPI = p['kategori'] ?? p['jenis'] ?? '';
+                      return kategoriAPI.toLowerCase().contains(selectedKategori.toLowerCase());
+                    }).toList();
+
+                    if (listProdukApi.isEmpty) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(30),
+                          child: Text('Tidak ada produk di kategori ini.'),
+                        ),
+                      );
+                    }
+
+                    return GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: listProdukApi.length,
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 14,
+                        childAspectRatio: 0.58,
+                      ),
+                      itemBuilder: (context, index) {
+                      final item = listProdukApi[index];
+                      print('DATA API PRODUK $index: $item');
+                        return CardProdukGrid(
+                          product: item,
+                          onTap: () {
+                            // Sementara lempar ke Halaman Detail dengan Dummy (agar tidak error)
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => HalamanDetailProduk(product: ProdukData.listProduk.first),
+                              ),
+                            );
+                          },
+                          onAddToCart: () {
+                            setState(() {
+                              _cartItemCount++;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('${item['nama_produk'] ?? 'Produk'} dimasukkan ke keranjang!'),
+                                duration: const Duration(milliseconds: 900),
+                                backgroundColor: AppColors.darkGreen,
+                              ),
+                            );
+                          },
                         );
                       },
                     );
