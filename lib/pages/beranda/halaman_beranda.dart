@@ -30,11 +30,42 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   bool _isBookmarked = false;
   List<dynamic> _listEdukasi = [];
   bool _isLoadingEdukasi = true;
+  List<dynamic> _listSampah = [];
+  double _totalKg = 0.0;
+  int _totalCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadBerandaEdukasi();
+    _loadRiwayatSampah();
+  }
+
+  Future<void> _loadRiwayatSampah() async {
+    try {
+      final res = await ApiService.fetchRiwayatSetor();
+      if (res.success && res.data is Map && mounted) {
+        final dataMap = res.data as Map;
+        final items = (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
+        final totalKg = (dataMap['total_kg'] is num) ? (dataMap['total_kg'] as num).toDouble() : 0.0;
+        final totalCount = (dataMap['total'] is int) ? (dataMap['total'] as int) : items.length;
+
+        setState(() {
+          _listSampah = items;
+          _totalKg = totalKg;
+          _totalCount = totalCount;
+        });
+        return;
+      }
+    } catch (_) {}
+
+    if (mounted) {
+      setState(() {
+        if (UserAccountData.totalSampahKg > 0) {
+          _totalKg = UserAccountData.totalSampahKg;
+        }
+      });
+    }
   }
 
   Future<void> _loadBerandaEdukasi() async {
@@ -275,6 +306,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                     keterangan: 'Jadwal jemput ke ${LokasiTrackingService.currentAddress}',
                   ).then((_) {
                     _loadBerandaEdukasi();
+                    _loadRiwayatSampah();
                   });
                 },
                 child: const Text('Buat Jadwal Penjemputan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
@@ -904,7 +936,12 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       backgroundColor: AppColors.bgScreen,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: _loadBerandaEdukasi,
+          onRefresh: () async {
+            await Future.wait([
+              _loadBerandaEdukasi(),
+              _loadRiwayatSampah(),
+            ]);
+          },
           color: AppColors.darkGreen,
           backgroundColor: AppColors.limeAccent,
           child: SingleChildScrollView(
@@ -933,8 +970,12 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
                 const SizedBox(height: 16),
 
-                // ── 3. Card Riwayat Setor Sampah (Chart & Summary) ──
-                const CardRiwayatSampah(),
+                // ── 3. Card Riwayat Setor Sampah (Chart & Summary Sinkron dengan Tracking) ──
+                CardRiwayatSampah(
+                  rawData: _listSampah,
+                  totalWeight: _totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8',
+                  trendBadge: _totalCount > 0 ? '+$_totalCount setoran' : '+28% minggu ini',
+                ),
 
                 const SizedBox(height: 22),
 

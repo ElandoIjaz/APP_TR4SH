@@ -362,15 +362,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   totalDisetor: '${_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'} kg',
                   trendPercent: _totalCount > 0 ? '+$_totalCount setoran tercatat' : '+28% dari minggu lalu',
                   rawData: _listSampah,
-                  onCategoryFilterChanged: (filterName) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Filter $filterName dipilih'),
-                        duration: const Duration(milliseconds: 600),
-                        backgroundColor: AppColors.darkGreen,
-                      ),
-                    );
-                  },
                 ),
 
                 const SizedBox(height: 16),
