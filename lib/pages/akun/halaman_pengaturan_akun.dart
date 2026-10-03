@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/core/validators/auth_validator.dart';
 
 class HalamanPengaturanAkun extends StatefulWidget {
   const HalamanPengaturanAkun({super.key});
@@ -84,9 +86,15 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                 TextField(
                   controller: currentPwController,
                   obscureText: obscureCurrent,
+                  maxLength: 32,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                    LengthLimitingTextInputFormatter(32),
+                  ],
                   decoration: InputDecoration(
                     hintText: 'Masukkan kata sandi lama',
                     hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    counterText: '',
                     filled: true,
                     fillColor: const Color(0xFFF9FCFA),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -109,15 +117,28 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('Kata Sandi Baru',
-                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    Text('Kata Sandi Baru',
+                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                    Text('6 - 32 karakter',
+                        style: TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
+                  ],
+                ),
                 const SizedBox(height: 6),
                 TextField(
                   controller: newPwController,
                   obscureText: obscureNew,
+                  maxLength: 32,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                    LengthLimitingTextInputFormatter(32),
+                  ],
                   decoration: InputDecoration(
-                    hintText: 'Minimal 8 karakter kombinasi',
+                    hintText: 'Minimal 6 karakter kombinasi (tanpa spasi)',
                     hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    counterText: '',
                     filled: true,
                     fillColor: const Color(0xFFF9FCFA),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -146,9 +167,15 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                 TextField(
                   controller: confirmPwController,
                   obscureText: obscureConfirm,
+                  maxLength: 32,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                    LengthLimitingTextInputFormatter(32),
+                  ],
                   decoration: InputDecoration(
                     hintText: 'Ulangi kata sandi baru',
                     hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    counterText: '',
                     filled: true,
                     fillColor: const Color(0xFFF9FCFA),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -185,6 +212,41 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               ),
               onPressed: () {
+                final curr = currentPwController.text.trim();
+                final newP = newPwController.text.trim();
+                final conf = confirmPwController.text.trim();
+
+                if (curr.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Kata sandi saat ini harus diisi!'),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                  );
+                  return;
+                }
+
+                final pwErr = AuthValidator.validatePassword(newP);
+                if (pwErr != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(pwErr),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                  );
+                  return;
+                }
+
+                if (newP != conf) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Konfirmasi kata sandi baru tidak cocok!'),
+                      backgroundColor: Colors.redAccent,
+                    ),
+                  );
+                  return;
+                }
+
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
