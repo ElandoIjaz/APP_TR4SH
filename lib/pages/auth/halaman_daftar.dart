@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
@@ -169,9 +170,11 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
               const SizedBox(height: 8),
               _buildTextField(
                 controller: _namaController,
-                hint: 'Nama Lengkap Anda',
+                hint: 'Nama Lengkap Anda (3-60 karakter)',
                 prefixIcon: Icons.badge_outlined,
                 keyboardType: TextInputType.name,
+                maxLength: 60,
+                inputFormatters: [LengthLimitingTextInputFormatter(60)],
               ),
               const SizedBox(height: 18),
 
@@ -180,33 +183,68 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
               const SizedBox(height: 8),
               _buildTextField(
                 controller: _usernameController,
-                hint: 'username_anda',
-                prefixIcon: Icons.alternate_email,
+                hint: 'username_anda (3-30 karakter, tanpa spasi/@)',
+                prefixIcon: Icons.account_circle_outlined,
                 keyboardType: TextInputType.text,
+                maxLength: 30,
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'[@\s]')),
+                  LengthLimitingTextInputFormatter(30),
+                ],
               ),
               const SizedBox(height: 18),
 
               // ── No. Telepon ──
-              _buildLabel('No. Telepon / WhatsApp'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildLabel('No. Telepon / WhatsApp'),
+                  const Text(
+                    '10 - 15 digit angka',
+                    style: TextStyle(fontSize: 11, color: Colors.black45, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               _buildTextField(
                 controller: _teleponController,
-                hint: '081234567890',
+                hint: '081234567890 (hanya angka)',
                 prefixIcon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
+                maxLength: 15,
+                showCounter: true,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(15),
+                ],
               ),
               const SizedBox(height: 18),
 
               // ── Kata Sandi ──
-              _buildLabel('Kata Sandi'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildLabel('Kata Sandi'),
+                  const Text(
+                    '6 - 32 karakter',
+                    style: TextStyle(fontSize: 11, color: Colors.black45, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
+                maxLength: 32,
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  LengthLimitingTextInputFormatter(32),
+                ],
                 style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'Minimal 8 karakter',
+                  hintText: 'Minimal 6 karakter, maks. 32 (tanpa spasi)',
                   hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                  counterText: '',
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Icon(Icons.lock_outline,
@@ -382,14 +420,21 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
     required String hint,
     required IconData prefixIcon,
     TextInputType keyboardType = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
+    int? maxLength,
+    bool showCounter = false,
   }) {
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      maxLength: maxLength,
       style: const TextStyle(fontSize: 14),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+        counterText: showCounter ? null : '',
+        counterStyle: const TextStyle(fontSize: 11, color: Colors.grey),
         prefixIcon: Padding(
           padding: const EdgeInsets.all(12),
           child: Icon(prefixIcon, color: Colors.grey[600], size: 20),

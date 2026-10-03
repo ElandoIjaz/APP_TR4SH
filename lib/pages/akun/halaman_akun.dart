@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_alamat_pengiriman.dart';
@@ -114,8 +116,15 @@ class _HalamanAkunState extends State<HalamanAkun> {
               const SizedBox(height: 12),
               TextField(
                 controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+                maxLength: 15,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(15),
+                ],
                 decoration: InputDecoration(
-                  labelText: 'Nomor Telepon',
+                  labelText: 'Nomor Telepon (10-15 digit)',
+                  counterText: '',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
@@ -131,10 +140,22 @@ class _HalamanAkunState extends State<HalamanAkun> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {
+                    final cleanPhone = phoneCtrl.text.trim();
+                    final hpError = AuthValidator.validateNomorHp(cleanPhone);
+                    if (hpError != null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(hpError),
+                          backgroundColor: Colors.redAccent,
+                        ),
+                      );
+                      return;
+                    }
+
                     setState(() {
                       _namaLengkap = nameCtrl.text.trim();
                       _username = userCtrl.text.trim();
-                      _nomorTelepon = phoneCtrl.text.trim();
+                      _nomorTelepon = cleanPhone;
                     });
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(

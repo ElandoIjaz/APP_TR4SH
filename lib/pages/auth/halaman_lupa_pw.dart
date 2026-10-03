@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 
 class HalamanLupaPw extends StatefulWidget {
@@ -155,6 +156,11 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
                     TextField(
                       controller: _usernameController,
                       keyboardType: TextInputType.text,
+                      maxLength: 50,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                        LengthLimitingTextInputFormatter(50),
+                      ],
                       style: const TextStyle(fontSize: 14),
                       decoration: InputDecoration(
                         hintText: 'Username atau 08xxxxxxxxxx',
@@ -162,6 +168,7 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
                           color: Colors.grey,
                           fontSize: 13,
                         ),
+                        counterText: '',
                         prefixIcon: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Icon(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
@@ -165,10 +166,21 @@ class _HalamanLoginState extends State<HalamanLogin> {
               TextField(
                 controller: _usernameController,
                 keyboardType: TextInputType.text,
+                maxLength: 50,
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  LengthLimitingTextInputFormatter(50),
+                ],
                 style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Masukkan username atau no. telepon',
                   hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Icon(Icons.person_outline_rounded,
+                        color: Colors.grey[600], size: 20),
+                  ),
+                  counterText: '',
                   filled: true,
                   fillColor: _hijauMuda,
                   contentPadding: const EdgeInsets.symmetric(
@@ -227,11 +239,17 @@ class _HalamanLoginState extends State<HalamanLogin> {
               TextField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
+                maxLength: 32,
+                inputFormatters: [
+                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  LengthLimitingTextInputFormatter(32),
+                ],
                 style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
                   hintText: '••••••••',
                   hintStyle:
                       const TextStyle(color: Colors.grey, fontSize: 14),
+                  counterText: '',
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Icon(Icons.lock_outline,

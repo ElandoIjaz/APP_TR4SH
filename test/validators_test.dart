@@ -210,6 +210,28 @@ void main() {
       expect(
         AuthValidator.validateRegister(
           nama: 'John Doe',
+          username: 'john@gmail.com',
+          telepon: '08123456789',
+          password: 'secretpassword',
+          setuju: true,
+        ),
+        'Username tidak boleh menggunakan simbol "@" (bukan email/gmail)!',
+      );
+
+      expect(
+        AuthValidator.validateRegister(
+          nama: 'John Doe',
+          username: 'john doe',
+          telepon: '08123456789',
+          password: 'secretpassword',
+          setuju: true,
+        ),
+        'Username tidak boleh mengandung spasi!',
+      );
+
+      expect(
+        AuthValidator.validateRegister(
+          nama: 'John Doe',
           username: 'johndoe',
           telepon: '08123456789',
           password: '123',
@@ -229,6 +251,74 @@ void main() {
         'Anda harus menyetujui Syarat & Ketentuan!',
       );
 
+      // Testing batasan No. HP yang masuk akal
+      expect(
+        AuthValidator.validateRegister(
+          nama: 'John Doe',
+          username: 'johndoe',
+          telepon: '08123abc789',
+          password: 'secretpassword',
+          setuju: true,
+        ),
+        'Nomor telepon hanya boleh berisi angka!',
+      );
+
+      expect(
+        AuthValidator.validateRegister(
+          nama: 'John Doe',
+          username: 'johndoe',
+          telepon: '081234',
+          password: 'secretpassword',
+          setuju: true,
+        ),
+        'Nomor telepon minimal 10 digit!',
+      );
+
+      expect(
+        AuthValidator.validateRegister(
+          nama: 'John Doe',
+          username: 'johndoe',
+          telepon: '08123456789012345',
+          password: 'secretpassword',
+          setuju: true,
+        ),
+        'Nomor telepon maksimal 15 digit!',
+      );
+
+      expect(
+        AuthValidator.validateRegister(
+          nama: 'John Doe',
+          username: 'johndoe',
+          telepon: '1234567890',
+          password: 'secretpassword',
+          setuju: true,
+        ),
+        'Format nomor HP tidak valid (harus diawali 08, 628, atau 8)!',
+      );
+
+      // Testing batasan Kata Sandi yang masuk akal
+      expect(
+        AuthValidator.validateRegister(
+          nama: 'John Doe',
+          username: 'johndoe',
+          telepon: '08123456789',
+          password: 'passwordyangsangatpanjangmelebihitigapuluhduakarakter',
+          setuju: true,
+        ),
+        'Kata sandi maksimal 32 karakter!',
+      );
+
+      expect(
+        AuthValidator.validateRegister(
+          nama: 'John Doe',
+          username: 'johndoe',
+          telepon: '08123456789',
+          password: 'pass word123',
+          setuju: true,
+        ),
+        'Kata sandi tidak boleh mengandung spasi!',
+      );
+
       expect(
         AuthValidator.validateRegister(
           nama: 'John Doe',
@@ -239,6 +329,20 @@ void main() {
         ),
         isNull,
       );
+    });
+
+    test('AuthValidator validateNomorHp and validatePassword standalone helpers', () {
+      expect(AuthValidator.validateNomorHp('081234567890'), isNull);
+      expect(AuthValidator.validateNomorHp('6281234567890'), isNull);
+      expect(AuthValidator.validateNomorHp('81234567890'), isNull);
+      expect(AuthValidator.validateNomorHp('08123'), 'Nomor telepon minimal 10 digit!');
+      expect(AuthValidator.validateNomorHp('08123456789012345'), 'Nomor telepon maksimal 15 digit!');
+      expect(AuthValidator.validateNomorHp('0812abc456'), 'Nomor telepon hanya boleh berisi angka!');
+
+      expect(AuthValidator.validatePassword('password123'), isNull);
+      expect(AuthValidator.validatePassword('12345'), 'Kata sandi minimal 6 karakter!');
+      expect(AuthValidator.validatePassword('a' * 33), 'Kata sandi maksimal 32 karakter!');
+      expect(AuthValidator.validatePassword('pass word'), 'Kata sandi tidak boleh mengandung spasi!');
     });
   });
 }

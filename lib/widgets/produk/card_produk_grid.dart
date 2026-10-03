@@ -24,12 +24,12 @@ class _CardProdukGridState extends State<CardProdukGrid> {
   Widget build(BuildContext context) {
     final product = widget.product;
     
-    // Ekstraksi data dari API Laravel (Disempurnakan)
-    final String namaProduk = product['nama_product'] ?? 'Tanpa Nama'; // Menggunakan nama_product
+    // Ekstraksi data dari API Laravel (Disempurnakan dengan fallback)
+    final String namaProduk = product['nama_product'] ?? product['nama_produk'] ?? product['title'] ?? 'Tanpa Nama';
     final int harga = int.tryParse(product['harga'].toString()) ?? 0;
     
     // Penanganan URL Gambar yang aman
-    final String fotoUrl = product['foto'] ?? 'https://via.placeholder.com/150';
+    final String fotoUrl = product['foto'] ?? product['gambar'] ?? product['image'] ?? 'https://via.placeholder.com/150';
 
     // Dummy data untuk mempertahankan desain UI aslimu
     const String badgeDummy = 'Eco Friendly';

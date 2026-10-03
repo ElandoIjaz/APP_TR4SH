@@ -52,16 +52,36 @@ class _HalamanProdukState extends State<HalamanProduk> {
     super.dispose();
   }
 
-  // Fungsi Memanggil API Laravel via IP WiFi
+  // Fungsi Memanggil API Laravel via IP WiFi dengan fallback offline/mock
   Future<List<dynamic>> fetchProdukApi() async {
-    final response = await http.get(Uri.parse(ApiConfig.listPrakarya));
+    try {
+      final response = await http.get(Uri.parse(ApiConfig.listPrakarya)).timeout(
+        const Duration(seconds: 4),
+      );
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
+        final list = data['data'] as List?;
+        if (list != null && list.isNotEmpty) {
+          return list;
+        }
+      }
+    } catch (_) {}
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = json.decode(response.body);
-      return data['data'] ?? []; 
-    } else {
-      throw Exception('Gagal memuat data dari server.');
-    }
+    // Fallback data lokal jika server offline / unit test
+    return ProdukData.listProduk.map((p) => {
+      'id': p.id,
+      'nama_product': p.title,
+      'nama_produk': p.title,
+      'title': p.title,
+      'harga': p.price,
+      'foto': p.image,
+      'gambar': p.image,
+      'kategori': p.category,
+      'deskripsi': p.materialTag,
+      'hemat_plastik': p.plasticSaved,
+      'terjual': p.soldCount,
+      'rating': p.rating,
+    }).toList();
   }
 
   void _openFilterModal() {
@@ -393,8 +413,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
                         childAspectRatio: 0.58,
                       ),
                       itemBuilder: (context, index) {
-                      final item = listProdukApi[index];
-                      print('DATA API PRODUK $index: $item');
+                        final item = listProdukApi[index];
                         return CardProdukGrid(
                           product: item,
                           onTap: () {
