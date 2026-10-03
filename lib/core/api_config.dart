@@ -1,34 +1,88 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiConfig {
   ApiConfig._();
 
+  static const String _keyServerIp = 'app_server_ip';
+  static const String _keyServerPort = 'app_server_port';
+  static const String _keyUseEmulator = 'app_use_emulator';
+
   /// IP Laptop / Server lokal saat testing di HP fisik via WiFi yang sama.
-  /// Silakan ganti dengan IP laptop Anda (bisa dilihat via command `ipconfig`).
-  static String laptopWifiIp = '192.168.1.10';
+  /// Berdasarkan command `ipconfig`, IP WiFi laptop saat ini adalah 192.168.1.11
+  static String laptopWifiIp = '192.168.1.11';
 
   /// Port standar Laravel `php artisan serve`
   static int port = 8000;
 
+  /// Mode Android Emulator (10.0.2.2). Default false karena user menggunakan HP fisik (Xiaomi).
+  static bool useAndroidEmulator = false;
+
+  /// Custom Base URL jika ingin di-override secara eksplisit
+  static String? customBaseUrl;
+
+  /// Inisialisasi konfigurasi dari penyimpanan lokal (SharedPreferences)
+  static Future<void> initConfig() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedIp = prefs.getString(_keyServerIp);
+      if (savedIp != null && savedIp.trim().isNotEmpty) {
+        laptopWifiIp = savedIp.trim();
+      }
+      final savedPort = prefs.getInt(_keyServerPort);
+      if (savedPort != null && savedPort > 0) {
+        port = savedPort;
+      }
+      final savedEmulator = prefs.getBool(_keyUseEmulator);
+      if (savedEmulator != null) {
+        useAndroidEmulator = savedEmulator;
+      }
+    } catch (_) {}
+  }
+
+  /// Simpan IP dan konfigurasi server baru ke SharedPreferences
+  static Future<void> setServerConfig({
+    required String ip,
+    int? customPort,
+    bool? isEmulator,
+  }) async {
+    laptopWifiIp = ip.trim();
+    if (customPort != null && customPort > 0) port = customPort;
+    if (isEmulator != null) useAndroidEmulator = isEmulator;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyServerIp, laptopWifiIp);
+      await prefs.setInt(_keyServerPort, port);
+      await prefs.setBool(_keyUseEmulator, useAndroidEmulator);
+    } catch (_) {}
+  }
+
   /// Penentu Base URL otomatis berdasarkan platform yang sedang berjalan:
-  /// - Android Emulator: Menggunakan 10.0.2.2 (alias localhost PC di Android Emulator)
-  /// - Windows Desktop / Web: Menggunakan 127.0.0.1 atau localhost
-  /// - iOS Simulator: Menggunakan 127.0.0.1
-  /// - HP Fisik Android/iOS: Menggunakan IP WiFi Laptop
+  /// - Web: Menggunakan 127.0.0.1
+  /// - Windows Desktop / macOS / Linux: Menggunakan 127.0.0.1
+  /// - Android Emulator: Menggunakan 10.0.2.2 (jika useAndroidEmulator == true)
+  /// - HP Fisik Android/iOS: Menggunakan IP WiFi Laptop (192.168.1.11)
   static String get baseUrl {
+    if (customBaseUrl != null && customBaseUrl!.trim().isNotEmpty) {
+      return customBaseUrl!.trim();
+    }
+
     if (kIsWeb) {
       return 'http://127.0.0.1:$port/api';
     }
 
     try {
       if (Platform.isAndroid) {
-        // Cek apakah berjalan di emulator Android standar
-        return 'http://10.0.2.2:$port/api';
+        if (useAndroidEmulator) {
+          return 'http://10.0.2.2:$port/api';
+        }
+        return 'http://$laptopWifiIp:$port/api';
       } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
         return 'http://127.0.0.1:$port/api';
       } else if (Platform.isIOS) {
-        return 'http://127.0.0.1:$port/api';
+        return 'http://$laptopWifiIp:$port/api';
       }
     } catch (_) {}
 

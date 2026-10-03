@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/produk_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
@@ -53,7 +54,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
 
   // Fungsi Memanggil API Laravel via IP WiFi
   Future<List<dynamic>> fetchProdukApi() async {
-    final response = await http.get(Uri.parse('http://192.168.1.8:8000/api/prakarya'));
+    final response = await http.get(Uri.parse(ApiConfig.listPrakarya));
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
@@ -349,7 +350,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
                         child: Padding(
                           padding: const EdgeInsets.all(20),
                           child: Text(
-                            'Gagal terhubung ke server.\nPastikan Laravel berjalan di 192.168.1.8',
+                            'Gagal terhubung ke server.\nPastikan Laravel berjalan di ${ApiConfig.baseUrl}',
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.red),
                           ),

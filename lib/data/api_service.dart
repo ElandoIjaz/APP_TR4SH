@@ -162,15 +162,15 @@ class ApiService {
         );
       }
     } on TimeoutException {
-      return const ApiResponse(
+      return ApiResponse(
         success: false,
-        message: 'Koneksi ke server timeout. Pastikan Laravel `php artisan serve` aktif.',
+        message: 'Koneksi timeout ke ${ApiConfig.login}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan HP satu WiFi.',
         statusCode: 408,
       );
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Tidak dapat terhubung ke server Laravel: $e',
+        message: 'Tidak dapat terhubung ke server Laravel (${ApiConfig.baseUrl}): $e',
         statusCode: 500,
       );
     }
@@ -237,15 +237,15 @@ class ApiService {
         );
       }
     } on TimeoutException {
-      return const ApiResponse(
+      return ApiResponse(
         success: false,
-        message: 'Koneksi timeout saat mendaftar. Periksa koneksi backend Anda.',
+        message: 'Koneksi timeout ke ${ApiConfig.register}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan HP satu WiFi.',
         statusCode: 408,
       );
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal mendaftar ke server: $e',
+        message: 'Gagal mendaftar ke server (${ApiConfig.baseUrl}): $e',
         statusCode: 500,
       );
     }

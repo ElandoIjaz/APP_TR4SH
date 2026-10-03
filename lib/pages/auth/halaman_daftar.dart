@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
+import 'package:test23/widgets/umum/modal_pengaturan_server.dart';
 
 class HalamanDaftar extends StatefulWidget {
   const HalamanDaftar({super.key});
@@ -70,17 +71,25 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
         MaterialPageRoute(builder: (_) => const HalamanLogin()),
       );
     } else {
-      _showSnackBar(response.message, Colors.redAccent);
+      final isNet = response.statusCode == 408 || response.statusCode == 500;
+      _showSnackBar(response.message, Colors.redAccent, isNetworkError: isNet);
     }
   }
 
-  void _showSnackBar(String message, Color color) {
+  void _showSnackBar(String message, Color color, {bool isNetworkError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        action: isNetworkError
+            ? SnackBarAction(
+                label: 'Ubah IP',
+                textColor: Colors.white,
+                onPressed: () => ModalPengaturanServer.show(context),
+              )
+            : null,
       ),
     );
   }
@@ -121,6 +130,13 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
             fontSize: 18,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.wifi_tethering_rounded, color: Colors.black87),
+            tooltip: 'Pengaturan IP Server',
+            onPressed: () => ModalPengaturanServer.show(context),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

@@ -4,6 +4,7 @@ import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/auth/halaman_daftar.dart';
 import 'package:test23/pages/auth/halaman_lupa_pw.dart';
+import 'package:test23/widgets/umum/modal_pengaturan_server.dart';
 
 class HalamanLogin extends StatefulWidget {
   const HalamanLogin({super.key});
@@ -68,12 +69,20 @@ class _HalamanLoginState extends State<HalamanLogin> {
         MaterialPageRoute(builder: (_) => const HalamanBeranda()),
       );
     } else {
+      final isNet = response.statusCode == 408 || response.statusCode == 500;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(response.message),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 4),
+          action: isNet
+              ? SnackBarAction(
+                  label: 'Ubah IP',
+                  textColor: Colors.white,
+                  onPressed: () => ModalPengaturanServer.show(context),
+                )
+              : null,
         ),
       );
     }
@@ -107,6 +116,13 @@ class _HalamanLoginState extends State<HalamanLogin> {
             fontSize: 18,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.wifi_tethering_rounded, color: Colors.black87),
+            tooltip: 'Pengaturan IP Server',
+            onPressed: () => ModalPengaturanServer.show(context),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
