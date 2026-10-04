@@ -15,6 +15,7 @@ import 'package:test23/widgets/beranda/card_riwayat_sampah.dart';
 import 'package:test23/widgets/beranda/card_video_tutorial.dart';
 import 'package:test23/widgets/beranda/card_workshop.dart';
 import 'package:test23/widgets/beranda/grid_jenis_sampah.dart';
+import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 import 'package:test23/widgets/umum/header_beranda.dart';
 
@@ -972,7 +973,18 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
                 // ── 2. Hero Card: "Bank Sampah Digital" ──
                 CardBankSampah(
-                  onMulaiSetorTap: _showSetorSampahModal,
+                  onMulaiSetorTap: () {
+                    if (UserAccountData.isGuest) {
+                      AuthRequiredModal.show(
+                        context,
+                        title: 'Fitur Setor Sampah Memerlukan Akun',
+                        message: 'Silakan masuk atau daftar akun terlebih dahulu untuk menyetor sampah daur ulang dan mengumpulkan poin hadiah.',
+                        icon: Icons.recycling_rounded,
+                      );
+                      return;
+                    }
+                    _showSetorSampahModal();
+                  },
                 ),
 
                 const SizedBox(height: 16),
@@ -1052,6 +1064,15 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               MaterialPageRoute(builder: (_) => const HalamanAkun()),
             );
           } else if (index == 3) {
+            if (UserAccountData.isGuest) {
+              AuthRequiredModal.show(
+                context,
+                title: 'Fitur Tracking Sampah Memerlukan Akun',
+                message: 'Pelacakan sampah daur ulang, grafik analitik, dan perolehan poin hanya dapat digunakan setelah Anda masuk atau membuat akun.',
+                icon: Icons.query_stats_rounded,
+              );
+              return;
+            }
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const HalamanTracking()),
             );

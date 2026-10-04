@@ -23,6 +23,7 @@ import 'package:test23/widgets/akun/card_profil_user.dart';
 import 'package:test23/widgets/akun/card_statistik_akun.dart';
 import 'package:test23/widgets/akun/header_akun.dart';
 import 'package:test23/widgets/akun/tombol_keluar.dart';
+import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 
 class HalamanAkun extends StatefulWidget {
@@ -43,13 +44,18 @@ class _HalamanAkunState extends State<HalamanAkun> {
   @override
   void initState() {
     super.initState();
-    if (UserAccountData.currentNama.isNotEmpty) {
-      _namaLengkap = UserAccountData.currentNama;
-    }
-    if (UserAccountData.currentUsername.isNotEmpty) {
-      _username = UserAccountData.currentUsername.startsWith('@')
-          ? UserAccountData.currentUsername
-          : '@${UserAccountData.currentUsername}';
+    if (UserAccountData.isGuest) {
+      _namaLengkap = 'Tamu';
+      _username = '@tamu_eco';
+    } else {
+      if (UserAccountData.currentNama.isNotEmpty) {
+        _namaLengkap = UserAccountData.currentNama;
+      }
+      if (UserAccountData.currentUsername.isNotEmpty) {
+        _username = UserAccountData.currentUsername.startsWith('@')
+            ? UserAccountData.currentUsername
+            : '@${UserAccountData.currentUsername}';
+      }
     }
   }
 
@@ -306,20 +312,31 @@ class _HalamanAkunState extends State<HalamanAkun> {
               CardProfilUser(
                 name: _namaLengkap,
                 username: _username,
-                onEditTap: _showEditProfileModal,
+                status: UserAccountData.isGuest ? 'Mode Eksplorasi' : 'Anggota Aktif',
+                onEditTap: () {
+                  if (UserAccountData.isGuest) {
+                    AuthRequiredModal.show(
+                      context,
+                      title: 'Masuk ke Akun',
+                      message: 'Mode Tamu tidak dapat mengubah profil. Silakan masuk atau buat akun terlebih dahulu.',
+                    );
+                  } else {
+                    _showEditProfileModal();
+                  }
+                },
               ),
 
               const SizedBox(height: 16),
 
               // ── 3. Stats / Metrics Card (CardStatistikAkun) ──
               CardStatistikAkun(
-                sampahTerkumpul: UserAccountData.isNewAccount
+                sampahTerkumpul: (UserAccountData.isNewAccount || UserAccountData.isGuest)
                     ? '0.0 kg'
                     : (UserAccountData.totalSampahKg > 0
                         ? '${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg'
                         : '12.5 kg'),
-                poinHijau: UserAccountData.isNewAccount ? '0 Poin' : '5 Poin',
-                misiSelesai: UserAccountData.isNewAccount
+                poinHijau: (UserAccountData.isNewAccount || UserAccountData.isGuest) ? '0 Poin' : '5 Poin',
+                misiSelesai: (UserAccountData.isNewAccount || UserAccountData.isGuest)
                     ? '0 Misi'
                     : '${UserAccountData.totalMisiSelesai > 0 ? UserAccountData.totalMisiSelesai : 3} Misi',
               ),
@@ -328,12 +345,12 @@ class _HalamanAkunState extends State<HalamanAkun> {
 
               // ── 4. Dampak Positifmu Banner (BannerDampakPositif) ──
               BannerDampakPositif(
-                sampahDikurangi: UserAccountData.isNewAccount
+                sampahDikurangi: (UserAccountData.isNewAccount || UserAccountData.isGuest)
                     ? 'Total 0.0 kg sampah berhasil dikurangi dari TPA'
                     : (UserAccountData.totalSampahKg > 0
                         ? 'Total ${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg sampah berhasil dikurangi dari TPA'
                         : 'Total 12.5 kg sampah berhasil dikurangi dari TPA'),
-                reduksiCO2: UserAccountData.isNewAccount
+                reduksiCO2: (UserAccountData.isNewAccount || UserAccountData.isGuest)
                     ? 'Setara 0.0 kg reduksi CO2e'
                     : (UserAccountData.totalSampahKg > 0
                         ? 'Setara ${(UserAccountData.totalSampahKg * 1.45).toStringAsFixed(1)} kg reduksi CO2e'
@@ -344,10 +361,25 @@ class _HalamanAkunState extends State<HalamanAkun> {
 
               // ── 5. Menu List Card (CardMenuAkun) ──
               CardMenuAkun(
-                poinReward: UserAccountData.isNewAccount
+                poinReward: (UserAccountData.isNewAccount || UserAccountData.isGuest)
                     ? '${UserAccountData.userPoints} Pts'
                     : '500 Pts',
                 onMenuTap: (menuTitle) {
+                  if (UserAccountData.isGuest &&
+                      (menuTitle == 'Riwayat Transaksi' ||
+                          menuTitle == 'Riwayat Setor Sampah' ||
+                          menuTitle == 'Konten Edukasi Saya' ||
+                          menuTitle == 'Poin & Hadiah' ||
+                          menuTitle == 'Alamat Pengiriman' ||
+                          menuTitle == 'Pengaturan Akun')) {
+                    AuthRequiredModal.show(
+                      context,
+                      title: '$menuTitle Memerlukan Akun',
+                      message: 'Silakan masuk atau daftar akun terlebih dahulu untuk mengakses menu $menuTitle.',
+                    );
+                    return;
+                  }
+
                   if (menuTitle == 'Riwayat Transaksi') {
                     Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const HalamanRiwayatTransaksi()),
@@ -391,10 +423,38 @@ class _HalamanAkunState extends State<HalamanAkun> {
 
               const SizedBox(height: 18),
 
-              // ── 6. Tombol Keluar (TombolKeluar) ──
-              TombolKeluar(
-                onLogoutTap: _showLogoutDialog,
-              ),
+              // ── 6. Tombol Masuk (Tamu) / Keluar (Member) ──
+              if (UserAccountData.isGuest)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const HalamanLogin()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.darkGreen,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      icon: const Icon(Icons.login_rounded, size: 20),
+                      label: const Text(
+                        'Masuk / Buat Akun Baru',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ),
+                  ),
+                )
+              else
+                TombolKeluar(
+                  onLogoutTap: _showLogoutDialog,
+                ),
 
               const SizedBox(height: 24),
             ],
@@ -419,6 +479,15 @@ class _HalamanAkunState extends State<HalamanAkun> {
               MaterialPageRoute(builder: (_) => const HalamanKonten()),
             );
           } else if (index == 3) {
+            if (UserAccountData.isGuest) {
+              AuthRequiredModal.show(
+                context,
+                title: 'Fitur Tracking Sampah Memerlukan Akun',
+                message: 'Pelacakan sampah daur ulang, grafik analitik, dan perolehan poin hanya dapat digunakan setelah Anda masuk atau membuat akun.',
+                icon: Icons.query_stats_rounded,
+              );
+              return;
+            }
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HalamanTracking()),
             );

@@ -110,7 +110,25 @@ class UserAccountData {
   static int totalSetoran = 0;
   static int totalMisiSelesai = 3;
   static bool isNewAccount = false;
+  static bool isGuest = false;
   static List<dynamic> listKontenSaya = [];
+
+  static void setGuestMode() {
+    isGuest = true;
+    currentUserId = null;
+    currentNama = 'Tamu';
+    currentUsername = '';
+    currentPhone = '';
+    currentFoto = null;
+    userPoints = 0;
+    totalSampahKg = 0.0;
+    totalSetoran = 0;
+    totalMisiSelesai = 0;
+    isNewAccount = false;
+    listRiwayatSetor = [];
+    listKontenSaya = [];
+    listTransaksi = [];
+  }
 
   static void initNewUser({
     required String nama,
@@ -118,6 +136,7 @@ class UserAccountData {
     required String phone,
     int? userId,
   }) {
+    isGuest = false;
     currentUserId = userId;
     currentNama = nama;
     currentUsername = username;
@@ -135,6 +154,7 @@ class UserAccountData {
   }
 
   static void updateFromUserData(Map<String, dynamic> user) {
+    isGuest = false;
     if (user['id_user'] != null) {
       currentUserId = int.tryParse(user['id_user'].toString());
     }
@@ -163,6 +183,7 @@ class UserAccountData {
   }
 
   static void resetSession() {
+    isGuest = true;
     currentUserId = null;
     currentNama = 'Tamu';
     currentUsername = '';
@@ -172,7 +193,9 @@ class UserAccountData {
     totalSetoran = 0;
     totalMisiSelesai = 0;
     isNewAccount = false;
+    listRiwayatSetor = [];
     listKontenSaya = [];
+    listTransaksi = [];
   }
 
   static List<AlamatModel> listAlamat = [

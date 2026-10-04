@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/produk_data.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/produk/halaman_detail_produk.dart';
@@ -16,6 +17,7 @@ import 'package:test23/widgets/produk/card_produk_grid.dart';
 import 'package:test23/widgets/produk/header_produk.dart';
 import 'package:test23/widgets/produk/hero_banner_produk.dart';
 import 'package:test23/widgets/produk/modal_filter_produk.dart';
+import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 
 class HalamanProduk extends StatefulWidget {
@@ -449,6 +451,15 @@ class _HalamanProdukState extends State<HalamanProduk> {
               // ── 7. Kirim Sampah Anda Banner ──
               BannerKirimSampah(
                 onSetorTap: () {
+                  if (UserAccountData.isGuest) {
+                    AuthRequiredModal.show(
+                      context,
+                      title: 'Fitur Setor Sampah Memerlukan Akun',
+                      message: 'Silakan masuk atau buat akun terlebih dahulu untuk menyetor sampah daur ulang dan mengumpulkan poin hadiah.',
+                      icon: Icons.recycling_rounded,
+                    );
+                    return;
+                  }
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (_) => const HalamanTracking()),
@@ -475,6 +486,15 @@ class _HalamanProdukState extends State<HalamanProduk> {
               MaterialPageRoute(builder: (_) => const HalamanKonten()),
             );
           } else if (index == 3) {
+            if (UserAccountData.isGuest) {
+              AuthRequiredModal.show(
+                context,
+                title: 'Fitur Tracking Sampah Memerlukan Akun',
+                message: 'Pelacakan sampah daur ulang, grafik analitik, dan perolehan poin hanya dapat digunakan setelah Anda masuk atau membuat akun.',
+                icon: Icons.query_stats_rounded,
+              );
+              return;
+            }
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HalamanTracking()),
             );

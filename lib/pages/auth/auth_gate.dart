@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/api_service.dart';
-import 'package:test23/pages/auth/halaman_login.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 
-/// Gate otentikasi: Memeriksa apakah user sudah login sebelum mengizinkan masuk ke aplikasi
+/// Gate otentikasi: Memeriksa apakah user sudah login atau langsung masuk dengan mode tamu
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
 
@@ -14,7 +14,6 @@ class AuthGate extends StatefulWidget {
 
 class _AuthGateState extends State<AuthGate> {
   bool _isLoading = true;
-  bool _isAuthenticated = false;
 
   @override
   void initState() {
@@ -27,9 +26,9 @@ class _AuthGateState extends State<AuthGate> {
       final token = await ApiService.getToken();
       final user = await ApiService.getUserSession();
       if (token != null && token.isNotEmpty && user != null) {
+        UserAccountData.updateFromUserData(user);
         if (mounted) {
           setState(() {
-            _isAuthenticated = true;
             _isLoading = false;
           });
           return;
@@ -37,9 +36,11 @@ class _AuthGateState extends State<AuthGate> {
       }
     } catch (_) {}
 
+    // Pengguna belum login: aktifkan mode tamu agar bisa langsung menggunakan aplikasi
+    UserAccountData.setGuestMode();
+
     if (mounted) {
       setState(() {
-        _isAuthenticated = false;
         _isLoading = false;
       });
     }
@@ -108,11 +109,7 @@ class _AuthGateState extends State<AuthGate> {
       );
     }
 
-    if (_isAuthenticated) {
-      return const HalamanBeranda();
-    }
-
-    // Jika belum login, wajib masuk atau daftar akun terlebih dahulu
-    return const HalamanLogin();
+    // Bisa langsung menggunakan aplikasi (HalamanBeranda) baik untuk user login maupun tamu
+    return const HalamanBeranda();
   }
 }

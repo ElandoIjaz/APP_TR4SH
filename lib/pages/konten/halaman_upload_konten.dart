@@ -3,6 +3,8 @@ import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
+import 'package:test23/pages/auth/halaman_login.dart';
+import 'package:test23/widgets/umum/auth_required_modal.dart';
 
 class HalamanUploadKonten extends StatefulWidget {
   const HalamanUploadKonten({super.key});
@@ -92,6 +94,16 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
   }
 
   Future<void> _kirimKonten() async {
+    if (UserAccountData.isGuest) {
+      AuthRequiredModal.show(
+        context,
+        title: 'Upload Konten Memerlukan Akun',
+        message: 'Mode Tamu tidak dapat mengunggah konten. Silakan masuk atau daftar akun terlebih dahulu.',
+        icon: Icons.video_collection_rounded,
+      );
+      return;
+    }
+
     final title = _titleController.text;
     final url = _urlController.text;
     final desc = _descController.text;
@@ -376,6 +388,48 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (UserAccountData.isGuest) ...[
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3CD),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFFEEBA)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.lock_outline_rounded, color: Color(0xFF856404), size: 22),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      'Mode Tamu: Anda harus masuk untuk dapat mengunggah konten edukasi.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF856404),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppColors.darkGreen,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const HalamanLogin()));
+                    },
+                    child: const Text('Masuk', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           // Banner Info
           Container(
             padding: const EdgeInsets.all(14),
