@@ -1,3 +1,4 @@
+import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
@@ -15,6 +16,7 @@ import 'package:test23/widgets/beranda/card_riwayat_sampah.dart';
 import 'package:test23/widgets/beranda/card_video_tutorial.dart';
 import 'package:test23/widgets/beranda/card_workshop.dart';
 import 'package:test23/widgets/beranda/grid_jenis_sampah.dart';
+import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 import 'package:test23/widgets/umum/header_beranda.dart';
 
@@ -30,16 +32,116 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   bool _isBookmarked = false;
   List<dynamic> _listEdukasi = [];
   bool _isLoadingEdukasi = true;
+  List<dynamic> _listSampah = [];
+  double _totalKg = 0.0;
+  int _totalCount = 0;
+
+  void _showAccountBlockedDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.block_rounded, color: Colors.redAccent, size: 28),
+            SizedBox(width: 10),
+            Text(
+              'Akun Dinonaktifkan',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0B4632),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message.isNotEmpty
+              ? message
+              : 'Akun Anda sedang diblokir atau dinonaktifkan oleh Administrator TR4SH.',
+          style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const HalamanLogin()),
+                (route) => false,
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Ke Halaman Login', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
     _loadBerandaEdukasi();
+    _loadRiwayatSampah();
+  }
+
+  Future<void> _loadRiwayatSampah() async {
+    if (UserAccountData.isGuest || UserAccountData.isNewAccount) {
+      if (mounted) {
+        setState(() {
+          _listSampah = [];
+          _totalKg = 0.0;
+          _totalCount = 0;
+        });
+      }
+      return;
+    }
+
+    try {
+      final res = await ApiService.fetchRiwayatSetor();
+      if (res.success && res.data is Map && mounted) {
+        final dataMap = res.data as Map;
+        final items = (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
+        final totalKg = (dataMap['total_kg'] is num) ? (dataMap['total_kg'] as num).toDouble() : 0.0;
+        final totalCount = (dataMap['total'] is int) ? (dataMap['total'] as int) : items.length;
+
+        setState(() {
+          _listSampah = items;
+          _totalKg = totalKg;
+          _totalCount = totalCount;
+        });
+        return;
+      }
+    } catch (_) {}
+
+    if (mounted) {
+      setState(() {
+        if (UserAccountData.isNewAccount || UserAccountData.isGuest) {
+          _totalKg = 0.0;
+          _totalCount = 0;
+          _listSampah = [];
+        } else if (UserAccountData.totalSampahKg > 0) {
+          _totalKg = UserAccountData.totalSampahKg;
+        }
+      });
+    }
   }
 
   Future<void> _loadBerandaEdukasi() async {
     try {
       final res = await ApiService.fetchBeranda();
+      if (res.statusCode == 403 || (res.data is Map && res.data['is_blocked'] == true)) {
+        if (mounted) {
+          _showAccountBlockedDialog(res.message);
+        }
+        return;
+      }
       if (res.success && res.data is Map && res.data['edukasi_terbaru'] is List) {
         final list = res.data['edukasi_terbaru'] as List;
         if (mounted) {
@@ -275,6 +377,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                     keterangan: 'Jadwal jemput ke ${LokasiTrackingService.currentAddress}',
                   ).then((_) {
                     _loadBerandaEdukasi();
+                    _loadRiwayatSampah();
                   });
                 },
                 child: const Text('Buat Jadwal Penjemputan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
@@ -904,7 +1007,12 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       backgroundColor: AppColors.bgScreen,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: _loadBerandaEdukasi,
+          onRefresh: () async {
+            await Future.wait([
+              _loadBerandaEdukasi(),
+              _loadRiwayatSampah(),
+            ]);
+          },
           color: AppColors.darkGreen,
           backgroundColor: AppColors.limeAccent,
           child: SingleChildScrollView(
@@ -916,6 +1024,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
                 // ── 1. Top Header Bar & Greeting (HeaderBeranda) ──
                 HeaderBeranda(
+                  userName: UserAccountData.currentNama.isNotEmpty
+                      ? UserAccountData.currentNama.split(' ').first
+                      : 'Bintang',
                   onNotificationTap: _showNotificationSheet,
                   onProfileTap: () {
                     Navigator.of(context).push(
@@ -928,13 +1039,34 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
                 // ── 2. Hero Card: "Bank Sampah Digital" ──
                 CardBankSampah(
-                  onMulaiSetorTap: _showSetorSampahModal,
+                  onMulaiSetorTap: () {
+                    if (UserAccountData.isGuest) {
+                      AuthRequiredModal.show(
+                        context,
+                        title: 'Fitur Setor Sampah Memerlukan Akun',
+                        message: 'Silakan masuk atau daftar akun terlebih dahulu untuk menyetor sampah daur ulang dan mengumpulkan poin hadiah.',
+                        icon: Icons.recycling_rounded,
+                      );
+                      return;
+                    }
+                    _showSetorSampahModal();
+                  },
                 ),
 
                 const SizedBox(height: 16),
 
-                // ── 3. Card Riwayat Setor Sampah (Chart & Summary) ──
-                const CardRiwayatSampah(),
+                // ── 3. Card Riwayat Setor Sampah (Chart & Summary Sinkron dengan Tracking) ──
+                CardRiwayatSampah(
+                  rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? const []
+                      : _listSampah,
+                  totalWeight: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? '0.0'
+                      : (_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'),
+                  trendBadge: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? '+0 setoran'
+                      : (_totalCount > 0 ? '+$_totalCount setoran' : '+28% minggu ini'),
+                ),
 
                 const SizedBox(height: 22),
 
@@ -1000,6 +1132,15 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               MaterialPageRoute(builder: (_) => const HalamanAkun()),
             );
           } else if (index == 3) {
+            if (UserAccountData.isGuest) {
+              AuthRequiredModal.show(
+                context,
+                title: 'Fitur Tracking Sampah Memerlukan Akun',
+                message: 'Pelacakan sampah daur ulang, grafik analitik, dan perolehan poin hanya dapat digunakan setelah Anda masuk atau membuat akun.',
+                icon: Icons.query_stats_rounded,
+              );
+              return;
+            }
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const HalamanTracking()),
             );

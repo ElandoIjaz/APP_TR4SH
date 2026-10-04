@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/auth/halaman_daftar.dart';
 import 'package:test23/pages/auth/halaman_lupa_pw.dart';
-import 'package:test23/widgets/umum/modal_pengaturan_server.dart';
 
 class HalamanLogin extends StatefulWidget {
   const HalamanLogin({super.key});
@@ -70,20 +70,12 @@ class _HalamanLoginState extends State<HalamanLogin> {
         MaterialPageRoute(builder: (_) => const HalamanBeranda()),
       );
     } else {
-      final isNet = response.statusCode == 408 || response.statusCode == 500;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(response.message),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 4),
-          action: isNet
-              ? SnackBarAction(
-                  label: 'Ubah IP',
-                  textColor: Colors.white,
-                  onPressed: () => ModalPengaturanServer.show(context),
-                )
-              : null,
         ),
       );
     }
@@ -103,12 +95,14 @@ class _HalamanLoginState extends State<HalamanLogin> {
       appBar: AppBar(
         backgroundColor: _abuLatar,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () {
-            if (Navigator.canPop(context)) Navigator.pop(context);
-          },
-        ),
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black87),
+                onPressed: () {
+                  if (Navigator.canPop(context)) Navigator.pop(context);
+                },
+              )
+            : null,
         title: const Text(
           'Masuk Akun',
           style: TextStyle(
@@ -117,13 +111,6 @@ class _HalamanLoginState extends State<HalamanLogin> {
             fontSize: 18,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.wifi_tethering_rounded, color: Colors.black87),
-            tooltip: 'Pengaturan IP Server',
-            onPressed: () => ModalPengaturanServer.show(context),
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -131,7 +118,25 @@ class _HalamanLoginState extends State<HalamanLogin> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+
+              // ── Logo Brand ──
+              Center(
+                child: Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD6F5E1),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: const Icon(
+                    Icons.recycling_rounded,
+                    color: AppColors.darkGreen,
+                    size: 34,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
 
               // ── Judul ──
               const Text(
@@ -143,9 +148,9 @@ class _HalamanLoginState extends State<HalamanLogin> {
                   color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               const Text(
-                'Masuk untuk melanjutkan ke akun Anda.',
+                'Masuk untuk melanjutkan ke akun TR4SH Anda.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 13, color: Colors.grey),
               ),

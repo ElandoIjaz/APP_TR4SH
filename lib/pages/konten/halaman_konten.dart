@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/konten/halaman_upload_konten.dart';
@@ -14,6 +15,7 @@ import 'package:test23/widgets/konten/header_konten.dart';
 import 'package:test23/widgets/konten/kategori_konten_tabs.dart';
 import 'package:test23/widgets/konten/search_konten_bar.dart';
 import 'package:test23/widgets/konten/section_wawasan_komunitas.dart';
+import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 
 class HalamanKonten extends StatefulWidget {
@@ -584,6 +586,15 @@ class _HalamanKontenState extends State<HalamanKonten> {
 
   // ── 5. Contributor Upload Navigation ──
   void _showContributorModal() async {
+    if (UserAccountData.isGuest) {
+      AuthRequiredModal.show(
+        context,
+        title: 'Upload Konten Memerlukan Akun',
+        message: 'Silakan masuk atau daftar akun terlebih dahulu untuk mengunggah video edukasi dan tips daur ulang ke komunitas TR4SH!',
+        icon: Icons.video_collection_rounded,
+      );
+      return;
+    }
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const HalamanUploadKonten()),
@@ -1081,6 +1092,15 @@ class _HalamanKontenState extends State<HalamanKonten> {
               MaterialPageRoute(builder: (_) => const HalamanProduk()),
             );
           } else if (index == 3) {
+            if (UserAccountData.isGuest) {
+              AuthRequiredModal.show(
+                context,
+                title: 'Fitur Tracking Sampah Memerlukan Akun',
+                message: 'Pelacakan sampah daur ulang, grafik analitik, dan perolehan poin hanya dapat digunakan setelah Anda masuk atau membuat akun.',
+                icon: Icons.query_stats_rounded,
+              );
+              return;
+            }
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (_) => const HalamanTracking()),
             );

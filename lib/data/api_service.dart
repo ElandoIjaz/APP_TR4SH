@@ -599,6 +599,39 @@ class ApiService {
     }
   }
 
+    /// Periksa status keaktifan akun user secara langsung ke server TR4SH
+  static Future<ApiResponse> checkUserStatus(dynamic userId) async {
+    try {
+      if (userId == null) {
+        return const ApiResponse(success: false, message: 'ID pengguna tidak valid', statusCode: 400);
+      }
+      final url = '${ApiConfig.baseUrl}/auth/check-status/$userId';
+      final response = await http
+          .get(Uri.parse(url), headers: await _getHeaders())
+          .timeout(const Duration(seconds: 4));
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+      final bool isBlocked = (response.statusCode == 403 || body['is_blocked'] == true || body['status_akun'] == 'diblokir');
+
+      if (isBlocked) {
+        await clearSession();
+      }
+
+      return ApiResponse(
+        success: !isBlocked && response.statusCode == 200,
+        message: body['message'] ?? (isBlocked ? 'Akun Anda sedang diblokir oleh Admin.' : 'Akun aktif.'),
+        data: body,
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal memeriksa status: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
   // ── 7. Beranda Agregat Single Fetch ──
 
   /// Ambil seluruh data beranda dari `/api/beranda?id_user={id}`

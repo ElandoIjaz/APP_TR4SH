@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/tracking/halaman_tracking.dart';
@@ -82,11 +82,28 @@ class HalamanRiwayatSetor extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        _buildMetricColumn('14.8 kg', 'Sampah Disetor'),
+                        _buildMetricColumn(
+                          (UserAccountData.isNewAccount || UserAccountData.isGuest)
+                              ? '0.0 kg'
+                              : (UserAccountData.totalSampahKg > 0
+                                  ? '${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg'
+                                  : '14.8 kg'),
+                          'Sampah Disetor',
+                        ),
                         Container(width: 1, height: 36, color: Colors.white24),
-                        _buildMetricColumn('+1.900', 'Poin Diperoleh'),
+                        _buildMetricColumn(
+                          (UserAccountData.isNewAccount || UserAccountData.isGuest) ? '+0' : '+1.900',
+                          'Poin Diperoleh',
+                        ),
                         Container(width: 1, height: 36, color: Colors.white24),
-                        _buildMetricColumn('23.0 kg', 'Reduksi CO2e'),
+                        _buildMetricColumn(
+                          (UserAccountData.isNewAccount || UserAccountData.isGuest)
+                              ? '0.0 kg'
+                              : (UserAccountData.totalSampahKg > 0
+                                  ? '${(UserAccountData.totalSampahKg * 1.55).toStringAsFixed(1)} kg'
+                                  : '23.0 kg'),
+                          'Reduksi CO2e',
+                        ),
                       ],
                     ),
                   ],
@@ -112,7 +129,30 @@ class HalamanRiwayatSetor extends StatelessWidget {
             const SizedBox(height: 10),
 
             // Deposit History Cards
-            ...list.map((item) => _buildSetorCard(context, item)),
+            if (list.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+                child: Center(
+                  child: Column(
+                    children: const [
+                      Icon(Icons.recycling_rounded, size: 48, color: AppColors.textMuted),
+                      SizedBox(height: 10),
+                      Text(
+                        'Belum ada riwayat setoran sampah',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Mulai setor sampah daur ulang pertamamu sekarang!',
+                        style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...list.map((item) => _buildSetorCard(context, item)),
 
             const SizedBox(height: 24),
           ],

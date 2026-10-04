@@ -149,25 +149,21 @@ class HeaderProduk extends StatelessWidget {
 
               const SizedBox(width: 8),
 
-              // Avatar Circle with colorful ring
+              // Avatar Circle
               Container(
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFE53935), Color(0xFFFDD835), Color(0xFF43A047)],
-                  ),
-                  border: Border.all(color: Colors.white, width: 2),
+                  color: const Color(0xFFD6F3DD),
+                  border: Border.all(color: const Color(0xFFBFE7CA), width: 1.5),
                 ),
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/images/bintang_avatar.jpg',
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.person,
+                child: const ClipOval(
+                  child: Center(
+                    child: Icon(
+                      Icons.person_rounded,
                       size: 20,
-                      color: Colors.white,
+                      color: AppColors.darkGreen,
                     ),
                   ),
                 ),

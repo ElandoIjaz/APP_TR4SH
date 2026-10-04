@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/produk_data.dart';
 import 'package:test23/pages/produk/halaman_keranjang.dart';
@@ -378,17 +378,11 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(10),
-                          child: Image.asset(
-                            'assets/images/bintang_avatar.jpg',
+                          child: Container(
                             width: 44,
                             height: 44,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              width: 44,
-                              height: 44,
-                              color: AppColors.mintSoft,
-                              child: const Icon(Icons.storefront_rounded, color: AppColors.darkGreen),
-                            ),
+                            color: AppColors.mintSoft,
+                            child: const Icon(Icons.storefront_rounded, color: AppColors.darkGreen, size: 24),
                           ),
                         ),
                         const SizedBox(width: 10),

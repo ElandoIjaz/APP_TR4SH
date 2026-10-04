@@ -108,8 +108,53 @@ class UserAccountData {
   static String currentStatusAkun = 'aktif';
   static double totalSampahKg = 0.0;
   static int totalSetoran = 0;
+  static int totalMisiSelesai = 3;
+  static bool isNewAccount = false;
+  static bool isGuest = false;
+  static List<dynamic> listKontenSaya = [];
+
+  static void setGuestMode() {
+    isGuest = true;
+    currentUserId = null;
+    currentNama = 'Tamu';
+    currentUsername = '';
+    currentPhone = '';
+    currentFoto = null;
+    userPoints = 0;
+    totalSampahKg = 0.0;
+    totalSetoran = 0;
+    totalMisiSelesai = 0;
+    isNewAccount = false;
+    listRiwayatSetor = [];
+    listKontenSaya = [];
+    listTransaksi = [];
+  }
+
+  static void initNewUser({
+    required String nama,
+    required String username,
+    required String phone,
+    int? userId,
+  }) {
+    isGuest = false;
+    currentUserId = userId;
+    currentNama = nama;
+    currentUsername = username;
+    currentPhone = phone;
+    currentFoto = null;
+    currentStatusAkun = 'aktif';
+    userPoints = 0;
+    totalSampahKg = 0.0;
+    totalSetoran = 0;
+    totalMisiSelesai = 0;
+    isNewAccount = true;
+    listRiwayatSetor = [];
+    listKontenSaya = [];
+    listTransaksi = [];
+  }
 
   static void updateFromUserData(Map<String, dynamic> user) {
+    isGuest = false;
     if (user['id_user'] != null) {
       currentUserId = int.tryParse(user['id_user'].toString());
     }
@@ -125,14 +170,32 @@ class UserAccountData {
     if (user['status_akun'] != null) {
       currentStatusAkun = user['status_akun'].toString();
     }
+    if (user['is_new'] == true) {
+      userPoints = 0;
+      totalSampahKg = 0.0;
+      totalSetoran = 0;
+      totalMisiSelesai = 0;
+      isNewAccount = true;
+      listRiwayatSetor = [];
+      listKontenSaya = [];
+      listTransaksi = [];
+    }
   }
 
   static void resetSession() {
+    isGuest = true;
     currentUserId = null;
     currentNama = 'Tamu';
     currentUsername = '';
     currentFoto = null;
     userPoints = 0;
+    totalSampahKg = 0.0;
+    totalSetoran = 0;
+    totalMisiSelesai = 0;
+    isNewAccount = false;
+    listRiwayatSetor = [];
+    listKontenSaya = [];
+    listTransaksi = [];
   }
 
   static List<AlamatModel> listAlamat = [

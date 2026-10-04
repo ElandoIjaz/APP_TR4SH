@@ -4,6 +4,7 @@ import 'package:test23/data/api_service.dart';
 import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
+import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/produk/halaman_produk.dart';
@@ -11,6 +12,7 @@ import 'package:test23/widgets/tracking/card_auto_track_lokasi.dart';
 import 'package:test23/widgets/tracking/card_estimasi_berat.dart';
 import 'package:test23/widgets/tracking/card_tracking_chart.dart';
 import 'package:test23/widgets/tracking/grid_kategori_setor.dart';
+import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 import 'package:test23/widgets/umum/header_beranda.dart';
 
@@ -42,6 +44,18 @@ class _HalamanTrackingState extends State<HalamanTracking> {
   }
 
   Future<void> _loadRiwayatSampah() async {
+    if (UserAccountData.isGuest || UserAccountData.isNewAccount) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _totalKg = 0.0;
+          _totalCount = 0;
+          _listSampah = [];
+        });
+      }
+      return;
+    }
+
     try {
       final res = await ApiService.fetchRiwayatSetor();
       if (res.success && res.data is Map && mounted) {
@@ -63,7 +77,11 @@ class _HalamanTrackingState extends State<HalamanTracking> {
     if (mounted) {
       setState(() {
         _isLoading = false;
-        if (UserAccountData.totalSampahKg > 0) {
+        if (UserAccountData.isNewAccount || UserAccountData.isGuest) {
+          _totalKg = 0.0;
+          _totalCount = 0;
+          _listSampah = [];
+        } else if (UserAccountData.totalSampahKg > 0) {
           _totalKg = UserAccountData.totalSampahKg;
         }
       });
@@ -136,6 +154,16 @@ class _HalamanTrackingState extends State<HalamanTracking> {
   }
 
   void _handleInputSampah(int count, double totalWeight, int totalPoints) async {
+    if (UserAccountData.isGuest) {
+      AuthRequiredModal.show(
+        context,
+        title: 'Input Sampah Memerlukan Akun',
+        message: 'Mode Tamu tidak dapat melakukan tracking sampah. Silakan masuk atau buat akun terlebih dahulu untuk mencatat data setoran ke database.',
+        icon: Icons.recycling_rounded,
+      );
+      return;
+    }
+
     // 1. Tentukan kategori ID untuk database Laravel (1: Plastik, 2: Kertas, 3: Logam, 4: Kaca, 5: Organik)
     int idKategori = 1;
     final catLower = _selectedCategory.toLowerCase();
@@ -340,6 +368,11 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
                 // ── 1. Top Header Bar (HeaderBeranda) ──
                 HeaderBeranda(
+                  userName: UserAccountData.isGuest
+                      ? 'Tamu'
+                      : (UserAccountData.currentNama.isNotEmpty
+                          ? UserAccountData.currentNama.split(' ').first
+                          : 'Bintang'),
                   onNotificationTap: _showNotificationSheet,
                   onProfileTap: () {
                     Navigator.of(context).push(
@@ -347,6 +380,55 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                     );
                   },
                 ),
+
+                if (UserAccountData.isGuest) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF3CD),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFFFEEBA)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.lock_outline_rounded, color: Color(0xFF856404), size: 22),
+                        const SizedBox(width: 10),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Mode Tamu: Tracking Terkunci',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF856404)),
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Masuk ke akun Anda untuk mencatat setoran dan mengumpulkan poin.',
+                                style: TextStyle(fontSize: 11, color: Color(0xFF856404)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            backgroundColor: AppColors.darkGreen,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const HalamanLogin()));
+                          },
+                          child: const Text('Masuk', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 16),
 
@@ -359,18 +441,15 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
                 // ── 3. Card 1: Riwayat Setor Sampah (Line Chart & Trend dari Database) ──
                 CardTrackingChart(
-                  totalDisetor: '${_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'} kg',
-                  trendPercent: _totalCount > 0 ? '+$_totalCount setoran tercatat' : '+28% dari minggu lalu',
-                  rawData: _listSampah,
-                  onCategoryFilterChanged: (filterName) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Filter $filterName dipilih'),
-                        duration: const Duration(milliseconds: 600),
-                        backgroundColor: AppColors.darkGreen,
-                      ),
-                    );
-                  },
+                  totalDisetor: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? '0.0 kg'
+                      : '${_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'} kg',
+                  trendPercent: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? '+0 setoran'
+                      : (_totalCount > 0 ? '+$_totalCount setoran tercatat' : '+28% dari minggu lalu'),
+                  rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? const []
+                      : _listSampah,
                 ),
 
                 const SizedBox(height: 16),
