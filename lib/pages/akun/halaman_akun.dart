@@ -313,6 +313,9 @@ class _HalamanAkunState extends State<HalamanAkun> {
                 name: _namaLengkap,
                 username: _username,
                 status: UserAccountData.isGuest ? 'Mode Eksplorasi' : 'Anggota Aktif',
+                isGuest: UserAccountData.isGuest,
+                isVerified: !UserAccountData.isGuest,
+                avatarAsset: UserAccountData.isGuest ? null : UserAccountData.currentFoto,
                 onEditTap: () {
                   if (UserAccountData.isGuest) {
                     AuthRequiredModal.show(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
+import 'package:test23/widgets/akun/card_profil_user.dart';
 import 'package:test23/widgets/tracking/card_tracking_chart.dart';
 
 void main() {
@@ -82,5 +83,32 @@ void main() {
 
     // Verify Poin & Hadiah badge is 0 Pts
     expect(find.text('0 Pts'), findsOneWidget);
+  });
+
+  testWidgets('CardProfilUser renders empty profile avatar icon and no verified badge for guest',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CardProfilUser(
+            name: 'Tamu',
+            username: '@tamu_eco',
+            status: 'Mode Eksplorasi',
+            isGuest: true,
+            isVerified: false,
+            onEditTap: () {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tamu'), findsOneWidget);
+    expect(find.text('@tamu_eco'), findsOneWidget);
+    expect(find.text('Mode Eksplorasi'), findsOneWidget);
+    // Profile avatar should be the default person_rounded icon (profil kosongan)
+    expect(find.byIcon(Icons.person_rounded), findsOneWidget);
+    // Verified check badge should not be present
+    expect(find.byIcon(Icons.check), findsNothing);
   });
 }

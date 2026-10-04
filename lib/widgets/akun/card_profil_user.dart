@@ -6,7 +6,10 @@ class CardProfilUser extends StatelessWidget {
   final String username;
   final String status;
   final VoidCallback onEditTap;
-  final String avatarAsset;
+  final String? avatarAsset;
+  final bool isGuest;
+  final bool isVerified;
+  final String buttonText;
 
   const CardProfilUser({
     super.key,
@@ -14,8 +17,23 @@ class CardProfilUser extends StatelessWidget {
     required this.username,
     this.status = 'Anggota Aktif',
     required this.onEditTap,
-    this.avatarAsset = 'assets/images/bintang_avatar.jpg',
+    this.avatarAsset,
+    this.isGuest = false,
+    this.isVerified = true,
+    this.buttonText = 'Edit Profil',
   });
+
+  Widget _buildEmptyAvatar() {
+    return Container(
+      color: const Color(0xFFD6F3DD),
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.person_rounded,
+        color: AppColors.darkGreen,
+        size: 34,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +54,7 @@ class CardProfilUser extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar with verified badge
+          // Avatar with conditional verified badge (Profil Kosongan default)
           Stack(
             clipBehavior: Clip.none,
             children: [
@@ -45,50 +63,49 @@ class CardProfilUser extends StatelessWidget {
                 height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFD3EEDD), width: 2),
+                  color: const Color(0xFFD6F3DD),
+                  border: Border.all(color: const Color(0xFFBFE7CA), width: 2),
                 ),
                 child: ClipOval(
-                  child: Image.asset(
-                    avatarAsset,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: AppColors.darkGreen,
-                        child: const Icon(Icons.person, color: Colors.white, size: 36),
-                      );
-                    },
-                  ),
+                  child: (avatarAsset != null && avatarAsset!.isNotEmpty && !isGuest)
+                      ? Image.asset(
+                          avatarAsset!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _buildEmptyAvatar(),
+                        )
+                      : _buildEmptyAvatar(),
                 ),
               ),
-              Positioned(
-                bottom: 0,
-                right: -2,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
+              if (isVerified && !isGuest)
+                Positioned(
+                  bottom: 0,
+                  right: -2,
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: const BoxDecoration(
-                      color: Color(0xFF137547),
+                      color: Colors.white,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.check,
-                      size: 11,
-                      color: Colors.white,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF137547),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        size: 11,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
 
           const SizedBox(width: 14),
 
-          // User details (Name, Username, Anggota Aktif)
+          // User details (Name, Username, Status)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +153,7 @@ class CardProfilUser extends StatelessWidget {
             ),
           ),
 
-          // Edit Profil Button
+          // Action Button (Edit Profil)
           OutlinedButton(
             onPressed: onEditTap,
             style: OutlinedButton.styleFrom(
@@ -148,9 +165,9 @@ class CardProfilUser extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               visualDensity: VisualDensity.compact,
             ),
-            child: const Text(
-              'Edit Profil',
-              style: TextStyle(
+            child: Text(
+              buttonText,
+              style: const TextStyle(
                 fontSize: 11.5,
                 fontWeight: FontWeight.w700,
               ),
@@ -161,3 +178,4 @@ class CardProfilUser extends StatelessWidget {
     );
   }
 }
+

@@ -7,7 +7,6 @@ import 'package:test23/pages/auth/halaman_daftar.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
-import 'package:test23/widgets/umum/auth_required_modal.dart';
 
 void main() {
   setUp(() {
