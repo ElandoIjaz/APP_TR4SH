@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
-import 'package:test23/pages/beranda/halaman_beranda.dart';
+import 'package:test23/pages/auth/auth_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,7 +10,9 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Widget? initialHome;
+
+  const MyApp({super.key, this.initialHome});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: AppColors.bgScreen,
       ),
-      home: const HalamanBeranda(),
+      // Gerbang autentikasi: sebelum masuk ke aplikasi harus login atau daftar akun
+      home: initialHome ?? const AuthGate(),
     );
   }
 }

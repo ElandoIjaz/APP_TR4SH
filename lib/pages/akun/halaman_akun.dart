@@ -312,17 +312,41 @@ class _HalamanAkunState extends State<HalamanAkun> {
               const SizedBox(height: 16),
 
               // ── 3. Stats / Metrics Card (CardStatistikAkun) ──
-              const CardStatistikAkun(),
+              CardStatistikAkun(
+                sampahTerkumpul: UserAccountData.isNewAccount
+                    ? '0.0 kg'
+                    : (UserAccountData.totalSampahKg > 0
+                        ? '${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg'
+                        : '12.5 kg'),
+                poinHijau: UserAccountData.isNewAccount ? '0 Poin' : '5 Poin',
+                misiSelesai: UserAccountData.isNewAccount
+                    ? '0 Misi'
+                    : '${UserAccountData.totalMisiSelesai > 0 ? UserAccountData.totalMisiSelesai : 3} Misi',
+              ),
 
               const SizedBox(height: 16),
 
               // ── 4. Dampak Positifmu Banner (BannerDampakPositif) ──
-              const BannerDampakPositif(),
+              BannerDampakPositif(
+                sampahDikurangi: UserAccountData.isNewAccount
+                    ? 'Total 0.0 kg sampah berhasil dikurangi dari TPA'
+                    : (UserAccountData.totalSampahKg > 0
+                        ? 'Total ${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg sampah berhasil dikurangi dari TPA'
+                        : 'Total 12.5 kg sampah berhasil dikurangi dari TPA'),
+                reduksiCO2: UserAccountData.isNewAccount
+                    ? 'Setara 0.0 kg reduksi CO2e'
+                    : (UserAccountData.totalSampahKg > 0
+                        ? 'Setara ${(UserAccountData.totalSampahKg * 1.45).toStringAsFixed(1)} kg reduksi CO2e'
+                        : 'Setara 18.2 kg reduksi CO2e'),
+              ),
 
               const SizedBox(height: 16),
 
               // ── 5. Menu List Card (CardMenuAkun) ──
               CardMenuAkun(
+                poinReward: UserAccountData.isNewAccount
+                    ? '${UserAccountData.userPoints} Pts'
+                    : '500 Pts',
                 onMenuTap: (menuTitle) {
                   if (menuTitle == 'Riwayat Transaksi') {
                     Navigator.of(context).push(

@@ -63,7 +63,11 @@ class _HalamanTrackingState extends State<HalamanTracking> {
     if (mounted) {
       setState(() {
         _isLoading = false;
-        if (UserAccountData.totalSampahKg > 0) {
+        if (UserAccountData.isNewAccount) {
+          _totalKg = 0.0;
+          _totalCount = 0;
+          _listSampah = [];
+        } else if (UserAccountData.totalSampahKg > 0) {
           _totalKg = UserAccountData.totalSampahKg;
         }
       });
@@ -340,6 +344,9 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
                 // ── 1. Top Header Bar (HeaderBeranda) ──
                 HeaderBeranda(
+                  userName: UserAccountData.currentNama.isNotEmpty
+                      ? UserAccountData.currentNama.split(' ').first
+                      : 'Bintang',
                   onNotificationTap: _showNotificationSheet,
                   onProfileTap: () {
                     Navigator.of(context).push(
@@ -359,8 +366,12 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
                 // ── 3. Card 1: Riwayat Setor Sampah (Line Chart & Trend dari Database) ──
                 CardTrackingChart(
-                  totalDisetor: '${_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'} kg',
-                  trendPercent: _totalCount > 0 ? '+$_totalCount setoran tercatat' : '+28% dari minggu lalu',
+                  totalDisetor: UserAccountData.isNewAccount
+                      ? '${_totalKg.toStringAsFixed(1)} kg'
+                      : '${_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'} kg',
+                  trendPercent: UserAccountData.isNewAccount
+                      ? '+$_totalCount setoran'
+                      : (_totalCount > 0 ? '+$_totalCount setoran tercatat' : '+28% dari minggu lalu'),
                   rawData: _listSampah,
                 ),
 

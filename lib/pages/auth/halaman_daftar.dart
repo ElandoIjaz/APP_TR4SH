@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
-import 'package:test23/widgets/umum/modal_pengaturan_server.dart';
 
 class HalamanDaftar extends StatefulWidget {
   const HalamanDaftar({super.key});
@@ -60,6 +60,18 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
     setState(() => _isLoading = false);
 
     if (response.success) {
+      final userId = response.data is Map && response.data['id_user'] != null
+          ? int.tryParse(response.data['id_user'].toString())
+          : null;
+
+      // Inisialisasi akun baru: semua konten dan tracking sampah diset ke 0
+      UserAccountData.initNewUser(
+        nama: nama,
+        username: username,
+        phone: telepon,
+        userId: userId,
+      );
+
       _showSnackBar(
         response.message.isNotEmpty ? response.message : 'Pendaftaran berhasil! Silakan masuk.',
         _hijauUtama,
@@ -72,25 +84,17 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
         MaterialPageRoute(builder: (_) => const HalamanLogin()),
       );
     } else {
-      final isNet = response.statusCode == 408 || response.statusCode == 500;
-      _showSnackBar(response.message, Colors.redAccent, isNetworkError: isNet);
+      _showSnackBar(response.message, Colors.redAccent);
     }
   }
 
-  void _showSnackBar(String message, Color color, {bool isNetworkError = false}) {
+  void _showSnackBar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        action: isNetworkError
-            ? SnackBarAction(
-                label: 'Ubah IP',
-                textColor: Colors.white,
-                onPressed: () => ModalPengaturanServer.show(context),
-              )
-            : null,
       ),
     );
   }
@@ -131,13 +135,6 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
             fontSize: 18,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.wifi_tethering_rounded, color: Colors.black87),
-            tooltip: 'Pengaturan IP Server',
-            onPressed: () => ModalPengaturanServer.show(context),
-          ),
-        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

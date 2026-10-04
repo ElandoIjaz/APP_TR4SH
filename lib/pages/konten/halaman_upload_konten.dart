@@ -71,6 +71,15 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
   }
 
   Future<void> _muatKontenSaya() async {
+    if (UserAccountData.isNewAccount && UserAccountData.listKontenSaya.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _isLoadingRiwayat = false;
+          _listKontenSaya = [];
+        });
+      }
+      return;
+    }
     setState(() => _isLoadingRiwayat = true);
     final res = await ApiService.fetchKontenSaya();
     if (!mounted) return;

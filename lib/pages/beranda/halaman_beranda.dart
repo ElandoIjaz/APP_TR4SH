@@ -61,7 +61,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
     if (mounted) {
       setState(() {
-        if (UserAccountData.totalSampahKg > 0) {
+        if (UserAccountData.isNewAccount) {
+          _totalKg = 0.0;
+          _totalCount = 0;
+          _listSampah = [];
+        } else if (UserAccountData.totalSampahKg > 0) {
           _totalKg = UserAccountData.totalSampahKg;
         }
       });
@@ -953,6 +957,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
                 // ── 1. Top Header Bar & Greeting (HeaderBeranda) ──
                 HeaderBeranda(
+                  userName: UserAccountData.currentNama.isNotEmpty
+                      ? UserAccountData.currentNama.split(' ').first
+                      : 'Bintang',
                   onNotificationTap: _showNotificationSheet,
                   onProfileTap: () {
                     Navigator.of(context).push(
@@ -973,8 +980,12 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 // ── 3. Card Riwayat Setor Sampah (Chart & Summary Sinkron dengan Tracking) ──
                 CardRiwayatSampah(
                   rawData: _listSampah,
-                  totalWeight: _totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8',
-                  trendBadge: _totalCount > 0 ? '+$_totalCount setoran' : '+28% minggu ini',
+                  totalWeight: UserAccountData.isNewAccount
+                      ? _totalKg.toStringAsFixed(1)
+                      : (_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'),
+                  trendBadge: UserAccountData.isNewAccount
+                      ? '+$_totalCount setoran'
+                      : (_totalCount > 0 ? '+$_totalCount setoran' : '+28% minggu ini'),
                 ),
 
                 const SizedBox(height: 22),

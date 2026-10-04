@@ -1,10 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test23/main.dart';
+import 'package:test23/pages/beranda/halaman_beranda.dart';
 
 void main() {
   testWidgets('HalamanBeranda renders correctly with all widgets', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const MyApp(initialHome: HalamanBeranda()));
     await tester.pump();
 
     // Verify Header and Branding

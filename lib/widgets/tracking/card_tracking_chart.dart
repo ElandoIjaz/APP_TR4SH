@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/data/user_account_data.dart';
 
 enum TrackingPeriodMode {
   mingguan,
@@ -126,7 +127,19 @@ class _CardTrackingChartState extends State<CardTrackingChart>
   /// Menghitung bobot untuk setiap kategori limbah
   Map<String, double> _computeCategoryWeights() {
     final records = widget.rawData;
+    final bool isZeroState = UserAccountData.isNewAccount ||
+        widget.totalDisetor.startsWith('0.0') ||
+        widget.totalDisetor.startsWith('0 kg');
+
     if (records == null || records.isEmpty) {
+      if (isZeroState) {
+        return {
+          'Botol Plastik': 0.0,
+          'Kertas Bekas': 0.0,
+          'Baterai (B3)': 0.0,
+          'Bungkus Kaleng': 0.0,
+        };
+      }
       return {
         'Botol Plastik': 4.2,
         'Kertas Bekas': 5.1,
@@ -163,6 +176,14 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
     final total = catMap.values.fold(0.0, (a, b) => a + b);
     if (total == 0.0) {
+      if (isZeroState) {
+        return {
+          'Botol Plastik': 0.0,
+          'Kertas Bekas': 0.0,
+          'Baterai (B3)': 0.0,
+          'Bungkus Kaleng': 0.0,
+        };
+      }
       return {
         'Botol Plastik': 4.2,
         'Kertas Bekas': 5.1,
@@ -177,7 +198,20 @@ class _CardTrackingChartState extends State<CardTrackingChart>
   /// Menghitung TOTAL SELURUH SAMPAH untuk Minggu Ini dan Bulan Ini
   Map<String, dynamic> _computeSummaryMetrics() {
     final records = widget.rawData;
+    final bool isZeroState = UserAccountData.isNewAccount ||
+        widget.totalDisetor.startsWith('0.0') ||
+        widget.totalDisetor.startsWith('0 kg');
+
     if (records == null || records.isEmpty) {
+      if (isZeroState) {
+        return {
+          'weeklyKg': 0.0,
+          'weeklyCount': 0,
+          'monthlyKg': 0.0,
+          'monthlyCount': 0,
+          'hasData': true,
+        };
+      }
       return {
         'weeklyKg': 14.8,
         'weeklyCount': 5,
@@ -228,11 +262,11 @@ class _CardTrackingChartState extends State<CardTrackingChart>
       }
     }
 
-    if (weeklyKg == 0.0) {
+    if (weeklyKg == 0.0 && !isZeroState) {
       weeklyKg = 14.8;
       weeklyCount = 5;
     }
-    if (monthlyKg == 0.0) {
+    if (monthlyKg == 0.0 && !isZeroState) {
       monthlyKg = 48.2;
       monthlyCount = 16;
     }
@@ -249,7 +283,18 @@ class _CardTrackingChartState extends State<CardTrackingChart>
   /// Menghitung bobot TOTAL SELURUH SAMPAH untuk setiap titik grafik
   List<double> _calculateChartWeights() {
     final records = widget.rawData;
+    final bool isZeroState = UserAccountData.isNewAccount ||
+        widget.totalDisetor.startsWith('0.0') ||
+        widget.totalDisetor.startsWith('0 kg');
+
     if (records == null || records.isEmpty) {
+      if (isZeroState) {
+        if (_periodMode == TrackingPeriodMode.mingguan) {
+          return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+        } else {
+          return [0.0, 0.0, 0.0, 0.0];
+        }
+      }
       if (_periodMode == TrackingPeriodMode.mingguan) {
         return [1.2, 1.8, 2.5, 2.0, 4.2, 2.1, 1.0];
       } else {
@@ -278,6 +323,9 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
       final sum = dayWeights.fold(0.0, (a, b) => a + b);
       if (sum == 0.0) {
+        if (isZeroState) {
+          return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+        }
         return [1.2, 1.8, 2.5, 2.0, 4.2, 2.1, 1.0];
       }
       return dayWeights.map((w) => double.parse(w.toStringAsFixed(1))).toList();
@@ -311,6 +359,9 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
       final sum = weekWeights.fold(0.0, (a, b) => a + b);
       if (sum == 0.0) {
+        if (isZeroState) {
+          return [0.0, 0.0, 0.0, 0.0];
+        }
         return [11.5, 12.8, 14.8, 9.1];
       }
       return weekWeights.map((w) => double.parse(w.toStringAsFixed(1))).toList();
