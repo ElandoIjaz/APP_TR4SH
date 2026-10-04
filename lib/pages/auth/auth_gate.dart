@@ -27,6 +27,22 @@ class _AuthGateState extends State<AuthGate> {
       final user = await ApiService.getUserSession();
       if (token != null && token.isNotEmpty && user != null) {
         UserAccountData.updateFromUserData(user);
+
+        // Verifikasi ke backend apakah status akun masih aktif atau sudah diblokir
+        if (UserAccountData.currentUserId != null) {
+          final statusRes = await ApiService.checkUserStatus(UserAccountData.currentUserId);
+          if (statusRes.statusCode == 403 || (statusRes.data is Map && statusRes.data['status_akun'] == 'diblokir')) {
+            await ApiService.clearSession();
+            UserAccountData.setGuestMode();
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+              });
+              return;
+            }
+          }
+        }
+
         if (mounted) {
           setState(() {
             _isLoading = false;

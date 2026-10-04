@@ -44,6 +44,18 @@ class _HalamanTrackingState extends State<HalamanTracking> {
   }
 
   Future<void> _loadRiwayatSampah() async {
+    if (UserAccountData.isGuest || UserAccountData.isNewAccount) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _totalKg = 0.0;
+          _totalCount = 0;
+          _listSampah = [];
+        });
+      }
+      return;
+    }
+
     try {
       final res = await ApiService.fetchRiwayatSetor();
       if (res.success && res.data is Map && mounted) {
@@ -65,7 +77,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
     if (mounted) {
       setState(() {
         _isLoading = false;
-        if (UserAccountData.isNewAccount) {
+        if (UserAccountData.isNewAccount || UserAccountData.isGuest) {
           _totalKg = 0.0;
           _totalCount = 0;
           _listSampah = [];
@@ -429,13 +441,15 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
                 // ── 3. Card 1: Riwayat Setor Sampah (Line Chart & Trend dari Database) ──
                 CardTrackingChart(
-                  totalDisetor: UserAccountData.isNewAccount
-                      ? '${_totalKg.toStringAsFixed(1)} kg'
+                  totalDisetor: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? '0.0 kg'
                       : '${_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'} kg',
-                  trendPercent: UserAccountData.isNewAccount
-                      ? '+$_totalCount setoran'
+                  trendPercent: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? '+0 setoran'
                       : (_totalCount > 0 ? '+$_totalCount setoran tercatat' : '+28% dari minggu lalu'),
-                  rawData: _listSampah,
+                  rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? const []
+                      : _listSampah,
                 ),
 
                 const SizedBox(height: 16),

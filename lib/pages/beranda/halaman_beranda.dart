@@ -1,3 +1,4 @@
+import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
@@ -35,6 +36,54 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   double _totalKg = 0.0;
   int _totalCount = 0;
 
+  void _showAccountBlockedDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.block_rounded, color: Colors.redAccent, size: 28),
+            SizedBox(width: 10),
+            Text(
+              'Akun Dinonaktifkan',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0B4632),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message.isNotEmpty
+              ? message
+              : 'Akun Anda sedang diblokir atau dinonaktifkan oleh Administrator TR4SH.',
+          style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const HalamanLogin()),
+                (route) => false,
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            child: const Text('Ke Halaman Login', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +92,17 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   }
 
   Future<void> _loadRiwayatSampah() async {
+    if (UserAccountData.isGuest || UserAccountData.isNewAccount) {
+      if (mounted) {
+        setState(() {
+          _listSampah = [];
+          _totalKg = 0.0;
+          _totalCount = 0;
+        });
+      }
+      return;
+    }
+
     try {
       final res = await ApiService.fetchRiwayatSetor();
       if (res.success && res.data is Map && mounted) {
@@ -62,7 +122,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
     if (mounted) {
       setState(() {
-        if (UserAccountData.isNewAccount) {
+        if (UserAccountData.isNewAccount || UserAccountData.isGuest) {
           _totalKg = 0.0;
           _totalCount = 0;
           _listSampah = [];
@@ -76,6 +136,12 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   Future<void> _loadBerandaEdukasi() async {
     try {
       final res = await ApiService.fetchBeranda();
+      if (res.statusCode == 403 || (res.data is Map && res.data['is_blocked'] == true)) {
+        if (mounted) {
+          _showAccountBlockedDialog(res.message);
+        }
+        return;
+      }
       if (res.success && res.data is Map && res.data['edukasi_terbaru'] is List) {
         final list = res.data['edukasi_terbaru'] as List;
         if (mounted) {
@@ -991,12 +1057,14 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
                 // ── 3. Card Riwayat Setor Sampah (Chart & Summary Sinkron dengan Tracking) ──
                 CardRiwayatSampah(
-                  rawData: _listSampah,
-                  totalWeight: UserAccountData.isNewAccount
-                      ? _totalKg.toStringAsFixed(1)
+                  rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? const []
+                      : _listSampah,
+                  totalWeight: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? '0.0'
                       : (_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'),
-                  trendBadge: UserAccountData.isNewAccount
-                      ? '+$_totalCount setoran'
+                  trendBadge: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? '+0 setoran'
                       : (_totalCount > 0 ? '+$_totalCount setoran' : '+28% minggu ini'),
                 ),
 

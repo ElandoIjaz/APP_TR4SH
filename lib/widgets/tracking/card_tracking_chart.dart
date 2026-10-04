@@ -128,10 +128,11 @@ class _CardTrackingChartState extends State<CardTrackingChart>
   Map<String, double> _computeCategoryWeights() {
     final records = widget.rawData;
     final bool isZeroState = UserAccountData.isNewAccount ||
+        UserAccountData.isGuest ||
         widget.totalDisetor.startsWith('0.0') ||
         widget.totalDisetor.startsWith('0 kg');
 
-    if (records == null || records.isEmpty) {
+    if (isZeroState || records == null || records.isEmpty) {
       if (isZeroState) {
         return {
           'Botol Plastik': 0.0,
@@ -199,10 +200,11 @@ class _CardTrackingChartState extends State<CardTrackingChart>
   Map<String, dynamic> _computeSummaryMetrics() {
     final records = widget.rawData;
     final bool isZeroState = UserAccountData.isNewAccount ||
+        UserAccountData.isGuest ||
         widget.totalDisetor.startsWith('0.0') ||
         widget.totalDisetor.startsWith('0 kg');
 
-    if (records == null || records.isEmpty) {
+    if (isZeroState || records == null || records.isEmpty) {
       if (isZeroState) {
         return {
           'weeklyKg': 0.0,
@@ -284,10 +286,11 @@ class _CardTrackingChartState extends State<CardTrackingChart>
   List<double> _calculateChartWeights() {
     final records = widget.rawData;
     final bool isZeroState = UserAccountData.isNewAccount ||
+        UserAccountData.isGuest ||
         widget.totalDisetor.startsWith('0.0') ||
         widget.totalDisetor.startsWith('0 kg');
 
-    if (records == null || records.isEmpty) {
+    if (isZeroState || records == null || records.isEmpty) {
       if (isZeroState) {
         if (_periodMode == TrackingPeriodMode.mingguan) {
           return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
@@ -370,6 +373,13 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
   int _findPeakIndex(List<double> weights) {
     if (weights.isEmpty) return 0;
+    final allZero = weights.every((w) => w <= 0.0);
+    if (allZero) {
+      if (weights.length == 7) {
+        return (DateTime.now().weekday - 1).clamp(0, 6);
+      }
+      return 0;
+    }
     int maxIdx = 0;
     double maxW = -1;
     for (int i = 0; i < weights.length; i++) {

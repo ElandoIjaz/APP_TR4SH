@@ -83,7 +83,7 @@ class HalamanRiwayatSetor extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildMetricColumn(
-                          UserAccountData.isNewAccount
+                          (UserAccountData.isNewAccount || UserAccountData.isGuest)
                               ? '0.0 kg'
                               : (UserAccountData.totalSampahKg > 0
                                   ? '${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg'
@@ -92,12 +92,12 @@ class HalamanRiwayatSetor extends StatelessWidget {
                         ),
                         Container(width: 1, height: 36, color: Colors.white24),
                         _buildMetricColumn(
-                          UserAccountData.isNewAccount ? '+0' : '+1.900',
+                          (UserAccountData.isNewAccount || UserAccountData.isGuest) ? '+0' : '+1.900',
                           'Poin Diperoleh',
                         ),
                         Container(width: 1, height: 36, color: Colors.white24),
                         _buildMetricColumn(
-                          UserAccountData.isNewAccount
+                          (UserAccountData.isNewAccount || UserAccountData.isGuest)
                               ? '0.0 kg'
                               : (UserAccountData.totalSampahKg > 0
                                   ? '${(UserAccountData.totalSampahKg * 1.55).toStringAsFixed(1)} kg'

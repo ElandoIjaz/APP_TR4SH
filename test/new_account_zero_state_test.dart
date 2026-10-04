@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
+import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/widgets/akun/card_profil_user.dart';
 import 'package:test23/widgets/tracking/card_tracking_chart.dart';
 
@@ -110,5 +111,52 @@ void main() {
     expect(find.byIcon(Icons.person_rounded), findsOneWidget);
     // Verified check badge should not be present
     expect(find.byIcon(Icons.check), findsNothing);
+  });
+
+  testWidgets('CardTrackingChart renders 0.0 kg and zero categories for guest mode account',
+      (WidgetTester tester) async {
+    UserAccountData.setGuestMode();
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: CardTrackingChart(
+              totalDisetor: '0.0 kg',
+              trendPercent: '+0 setoran',
+              rawData: [],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify 0.0 kg total and badge is rendered
+    expect(find.text('0.0 kg'), findsWidgets);
+    expect(find.text('+0 setoran'), findsOneWidget);
+
+    // Verify summary cards show +0 setor
+    expect(find.text('+0 setor'), findsWidgets);
+  });
+
+  testWidgets('HalamanBeranda renders 0.0 kg and 0 setoran for Riwayat Setor Sampah in guest mode',
+      (WidgetTester tester) async {
+    UserAccountData.setGuestMode();
+
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: HalamanBeranda(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Verify Header shows Tamu
+    expect(find.text('Halo, Tamu 👋'), findsOneWidget);
+
+    // Verify Riwayat Setor Sampah shows 0.0 kg and +0 setoran
+    expect(find.text('RIWAYAT SETOR SAMPAH'), findsOneWidget);
+    expect(find.text('0.0'), findsOneWidget);
+    expect(find.text('+0 setoran'), findsOneWidget);
   });
 }
