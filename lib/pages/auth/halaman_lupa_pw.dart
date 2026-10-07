@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 
 class HalamanLupaPw extends StatefulWidget {
@@ -21,9 +22,10 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
   void _kirimKodeVerifikasi() async {
     final input = _usernameController.text.trim();
 
-    if (input.isEmpty) {
+    final error = AuthValidator.validateLupaPassword(input);
+    if (error != null) {
       _showSnackBar(
-        'Masukkan username atau nomor telepon terlebih dahulu!',
+        error,
         Colors.redAccent,
       );
       return;
@@ -113,7 +115,7 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
 
               // ── Deskripsi ──
               const Text(
-                'Masukkan username atau nomor telepon yang terdaftar '
+                'Masukkan username atau nama akun yang terdaftar '
                 'pada akun Anda untuk menerima kode verifikasi pemulihan '
                 'sandi.',
                 style: TextStyle(
@@ -143,7 +145,7 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
                   children: [
                     // Label
                     const Text(
-                      'Username atau No. Telepon',
+                      'Username / Nama Akun',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -158,12 +160,12 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
                       keyboardType: TextInputType.text,
                       maxLength: 50,
                       inputFormatters: [
-                        FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
                         LengthLimitingTextInputFormatter(50),
                       ],
                       style: const TextStyle(fontSize: 14),
                       decoration: InputDecoration(
-                        hintText: 'Username atau 08xxxxxxxxxx',
+                        hintText: 'Masukkan username / nama akun (huruf saja)',
                         hintStyle: const TextStyle(
                           color: Colors.grey,
                           fontSize: 13,

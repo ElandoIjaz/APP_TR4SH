@@ -104,8 +104,12 @@ class _HalamanAkunState extends State<HalamanAkun> {
               const SizedBox(height: 16),
               TextField(
                 controller: nameCtrl,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                  LengthLimitingTextInputFormatter(60),
+                ],
                 decoration: InputDecoration(
-                  labelText: 'Nama Lengkap',
+                  labelText: 'Nama Lengkap (huruf saja)',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
@@ -113,8 +117,12 @@ class _HalamanAkunState extends State<HalamanAkun> {
               const SizedBox(height: 12),
               TextField(
                 controller: userCtrl,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
+                  LengthLimitingTextInputFormatter(30),
+                ],
                 decoration: InputDecoration(
-                  labelText: 'Username',
+                  labelText: 'Username (huruf saja)',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
@@ -123,13 +131,13 @@ class _HalamanAkunState extends State<HalamanAkun> {
               TextField(
                 controller: phoneCtrl,
                 keyboardType: TextInputType.phone,
-                maxLength: 15,
+                maxLength: 13,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(15),
+                  LengthLimitingTextInputFormatter(13),
                 ],
                 decoration: InputDecoration(
-                  labelText: 'Nomor Telepon (10-15 digit)',
+                  labelText: 'Nomor Telepon (11-13 digit)',
                   counterText: '',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),

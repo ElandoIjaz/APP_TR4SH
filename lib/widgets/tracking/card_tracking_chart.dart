@@ -17,8 +17,8 @@ class CardTrackingChart extends StatefulWidget {
 
   const CardTrackingChart({
     super.key,
-    this.totalDisetor = '14.8 kg',
-    this.trendPercent = '+28% dari minggu lalu',
+    this.totalDisetor = '0.0 kg',
+    this.trendPercent = '+0 setoran',
     this.targetWeight,
     this.isBeranda = false,
     this.onCategoryFilterChanged,
@@ -40,7 +40,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
   // Data bobot untuk transisi animasi (Total Seluruh Sampah)
   List<double> _prevWeights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-  List<double> _currentWeights = [1.2, 1.8, 2.5, 2.0, 4.2, 2.1, 1.0];
+  List<double> _currentWeights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 
   static const List<String> _weekLabels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
   static const List<String> _weekFullNames = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
@@ -177,19 +177,11 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
     final total = catMap.values.fold(0.0, (a, b) => a + b);
     if (total == 0.0) {
-      if (isZeroState) {
-        return {
-          'Botol Plastik': 0.0,
-          'Kertas Bekas': 0.0,
-          'Baterai (B3)': 0.0,
-          'Bungkus Kaleng': 0.0,
-        };
-      }
       return {
-        'Botol Plastik': 4.2,
-        'Kertas Bekas': 5.1,
-        'Baterai (B3)': 1.0,
-        'Bungkus Kaleng': 4.15,
+        'Botol Plastik': 0.0,
+        'Kertas Bekas': 0.0,
+        'Baterai (B3)': 0.0,
+        'Bungkus Kaleng': 0.0,
       };
     }
 
@@ -262,15 +254,6 @@ class _CardTrackingChartState extends State<CardTrackingChart>
         monthlyKg += weight;
         monthlyCount++;
       }
-    }
-
-    if (weeklyKg == 0.0 && !isZeroState) {
-      weeklyKg = 14.8;
-      weeklyCount = 5;
-    }
-    if (monthlyKg == 0.0 && !isZeroState) {
-      monthlyKg = 48.2;
-      monthlyCount = 16;
     }
 
     return {

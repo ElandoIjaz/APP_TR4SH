@@ -1,8 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/main.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 
 void main() {
+  setUp(() {
+    UserAccountData.isGuest = false;
+    UserAccountData.isNewAccount = false;
+    UserAccountData.currentNama = 'Bintang Pratama';
+    UserAccountData.currentUsername = 'bintang_eco';
+    UserAccountData.userPoints = 500;
+  });
+
   testWidgets('HalamanBeranda renders correctly with all widgets', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp(initialHome: HalamanBeranda()));

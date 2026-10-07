@@ -16,6 +16,14 @@ void main() {
     );
   });
 
+  tearDown(() {
+    UserAccountData.isGuest = false;
+    UserAccountData.isNewAccount = false;
+    UserAccountData.currentNama = 'Bintang Pratama';
+    UserAccountData.currentUsername = 'bintang_eco';
+    UserAccountData.userPoints = 500;
+  });
+
   test('UserAccountData.initNewUser initializes all stats to zero', () {
     expect(UserAccountData.isNewAccount, isTrue);
     expect(UserAccountData.userPoints, equals(0));

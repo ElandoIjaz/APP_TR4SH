@@ -94,6 +94,7 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
         content: Text(message),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
@@ -171,7 +172,10 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                 prefixIcon: Icons.badge_outlined,
                 keyboardType: TextInputType.name,
                 maxLength: 60,
-                inputFormatters: [LengthLimitingTextInputFormatter(60)],
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                  LengthLimitingTextInputFormatter(60),
+                ],
               ),
               const SizedBox(height: 18),
 
@@ -180,12 +184,12 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
               const SizedBox(height: 8),
               _buildTextField(
                 controller: _usernameController,
-                hint: 'username_anda (3-30 karakter, tanpa spasi/@)',
+                hint: 'username_anda (3-30 karakter, huruf saja)',
                 prefixIcon: Icons.account_circle_outlined,
                 keyboardType: TextInputType.text,
                 maxLength: 30,
                 inputFormatters: [
-                  FilteringTextInputFormatter.deny(RegExp(r'[@\s]')),
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
                   LengthLimitingTextInputFormatter(30),
                 ],
               ),
@@ -197,7 +201,7 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                 children: [
                   _buildLabel('No. Telepon / WhatsApp'),
                   const Text(
-                    '10 - 15 digit angka',
+                    '11 - 13 digit angka',
                     style: TextStyle(fontSize: 11, color: Colors.black45, fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -208,11 +212,11 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                 hint: '081234567890 (hanya angka)',
                 prefixIcon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
-                maxLength: 15,
+                maxLength: 13,
                 showCounter: true,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(15),
+                  LengthLimitingTextInputFormatter(13),
                 ],
               ),
               const SizedBox(height: 18),

@@ -85,17 +85,28 @@ class ApiService {
     try {
       final response = await http
           .get(Uri.parse(ApiConfig.ping))
-          .timeout(const Duration(seconds: 4));
-      return response.statusCode == 200;
-    } catch (_) {
+          .timeout(const Duration(seconds: 3));
+      if (response.statusCode == 200) return true;
+    } catch (_) {}
+
+    // Coba auto-deteksi host alternatif (misal emulator 10.0.2.2 atau IP WiFi baru)
+    final recovered = await ApiConfig.autoDetectWorkingHost();
+    if (recovered) {
       try {
-        final fallback = await http
-            .get(Uri.parse(ApiConfig.baseUrl))
+        final retry = await http
+            .get(Uri.parse(ApiConfig.ping))
             .timeout(const Duration(seconds: 3));
-        return fallback.statusCode < 500;
-      } catch (_) {
-        return false;
-      }
+        return retry.statusCode == 200;
+      } catch (_) {}
+    }
+
+    try {
+      final fallback = await http
+          .get(Uri.parse(ApiConfig.baseUrl))
+          .timeout(const Duration(seconds: 2));
+      return fallback.statusCode < 500;
+    } catch (_) {
+      return false;
     }
   }
 
@@ -107,71 +118,88 @@ class ApiService {
     String? email,
     required String password,
   }) async {
+    final userIdentifier = (username != null && username.isNotEmpty)
+        ? username
+        : (email ?? '');
+
     try {
-      final userIdentifier = (username != null && username.isNotEmpty)
-          ? username
-          : (email ?? '');
-
-      final response = await http
-          .post(
-            Uri.parse(ApiConfig.login),
-            headers: await _getHeaders(),
-            body: jsonEncode({
-              'username': userIdentifier,
-              'password': password,
-            }),
-          )
-          .timeout(_timeoutDuration);
-
-      final Map<String, dynamic> body = _parseJson(response.body);
-
-      if (response.statusCode == 200 && (body['success'] == true || body['token'] != null)) {
-        final token = body['token']?.toString() ?? '';
-        final userData = body['data'] is Map<String, dynamic>
-            ? Map<String, dynamic>.from(body['data'])
-            : <String, dynamic>{'username': userIdentifier};
-
-        if (token.isNotEmpty) {
-          await saveSession(token: token, user: userData);
-        }
-
-        return ApiResponse(
-          success: true,
-          message: body['message'] ?? 'Login berhasil.',
-          data: userData,
-          statusCode: response.statusCode,
-        );
-      } else {
-        String errorMsg = (body['message'] != null && body['message'].toString().trim().isNotEmpty)
-            ? body['message'].toString()
-            : 'Username atau kata sandi tidak valid.';
-        if (body['errors'] is Map) {
-          final errors = body['errors'] as Map;
-          if (errors.isNotEmpty) {
-            errorMsg = errors.values.first is List
-                ? errors.values.first[0].toString()
-                : errors.values.first.toString();
-          }
-        }
-
-        return ApiResponse(
-          success: false,
-          message: errorMsg,
-          data: body,
-          statusCode: response.statusCode,
-        );
-      }
+      return await _sendLoginRequest(userIdentifier, password);
     } on TimeoutException {
+      if (await ApiConfig.autoDetectWorkingHost()) {
+        try {
+          return await _sendLoginRequest(userIdentifier, password);
+        } catch (_) {}
+      }
       return ApiResponse(
         success: false,
-        message: 'Koneksi timeout ke ${ApiConfig.login}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan HP satu WiFi.',
+        message: 'Koneksi timeout ke ${ApiConfig.login}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan IP server sesuai.',
         statusCode: 408,
       );
     } catch (e) {
+      if (await ApiConfig.autoDetectWorkingHost()) {
+        try {
+          return await _sendLoginRequest(userIdentifier, password);
+        } catch (_) {}
+      }
       return ApiResponse(
         success: false,
         message: 'Tidak dapat terhubung ke server Laravel (${ApiConfig.baseUrl}): $e',
         statusCode: 500,
+      );
+    }
+  }
+
+  static Future<ApiResponse> _sendLoginRequest(
+    String userIdentifier,
+    String password,
+  ) async {
+    final response = await http
+        .post(
+          Uri.parse(ApiConfig.login),
+          headers: await _getHeaders(),
+          body: jsonEncode({
+            'username': userIdentifier,
+            'password': password,
+          }),
+        )
+        .timeout(_timeoutDuration);
+
+    final Map<String, dynamic> body = _parseJson(response.body);
+
+    if (response.statusCode == 200 && (body['success'] == true || body['token'] != null)) {
+      final token = body['token']?.toString() ?? '';
+      final userData = body['data'] is Map<String, dynamic>
+          ? Map<String, dynamic>.from(body['data'])
+          : <String, dynamic>{'username': userIdentifier};
+
+      if (token.isNotEmpty) {
+        await saveSession(token: token, user: userData);
+      }
+
+      return ApiResponse(
+        success: true,
+        message: body['message'] ?? 'Login berhasil.',
+        data: userData,
+        statusCode: response.statusCode,
+      );
+    } else {
+      String errorMsg = (body['message'] != null && body['message'].toString().trim().isNotEmpty)
+          ? body['message'].toString()
+          : 'Username atau kata sandi tidak valid.';
+      if (body['errors'] is Map) {
+        final errors = body['errors'] as Map;
+        if (errors.isNotEmpty) {
+          errorMsg = errors.values.first is List
+              ? errors.values.first[0].toString()
+              : errors.values.first.toString();
+        }
+      }
+
+      return ApiResponse(
+        success: false,
+        message: errorMsg,
+        data: body,
+        statusCode: response.statusCode,
       );
     }
   }
@@ -183,70 +211,89 @@ class ApiService {
     required String namaLengkap,
     String? phone,
   }) async {
+    final payload = <String, dynamic>{
+      'username': username,
+      'password': password,
+      'nama_lengkap': namaLengkap,
+      if (phone != null && phone.trim().isNotEmpty) 'telepon': phone.trim(),
+    };
+
     try {
-      final payload = <String, dynamic>{
-        'username': username,
-        'password': password,
-        'nama_lengkap': namaLengkap,
-      };
-
-      final response = await http
-          .post(
-            Uri.parse(ApiConfig.register),
-            headers: await _getHeaders(),
-            body: jsonEncode(payload),
-          )
-          .timeout(_timeoutDuration);
-
-      final Map<String, dynamic> body = _parseJson(response.body);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final token = body['token']?.toString() ?? '';
-        final userData = body['data'] is Map<String, dynamic>
-            ? Map<String, dynamic>.from(body['data'])
-            : <String, dynamic>{'username': username, 'nama_lengkap': namaLengkap};
-
-        if (token.isNotEmpty) {
-          await saveSession(token: token, user: userData);
-        }
-
-        return ApiResponse(
-          success: true,
-          message: body['message'] ?? 'Pendaftaran akun berhasil.',
-          data: userData,
-          statusCode: response.statusCode,
-        );
-      } else {
-        String errorMsg = (body['message'] != null && body['message'].toString().trim().isNotEmpty)
-            ? body['message'].toString()
-            : 'Pendaftaran akun gagal.';
-        if (body['errors'] is Map) {
-          final errors = body['errors'] as Map;
-          if (errors.isNotEmpty) {
-            errorMsg = errors.values.first is List
-                ? errors.values.first[0].toString()
-                : errors.values.first.toString();
-          }
-        }
-
-        return ApiResponse(
-          success: false,
-          message: errorMsg,
-          data: body,
-          statusCode: response.statusCode,
-        );
-      }
+      return await _sendRegisterRequest(payload, username, namaLengkap);
     } on TimeoutException {
+      if (await ApiConfig.autoDetectWorkingHost()) {
+        try {
+          return await _sendRegisterRequest(payload, username, namaLengkap);
+        } catch (_) {}
+      }
       return ApiResponse(
         success: false,
-        message: 'Koneksi timeout ke ${ApiConfig.register}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan HP satu WiFi.',
+        message: 'Koneksi timeout ke ${ApiConfig.register}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan IP server sesuai.',
         statusCode: 408,
       );
     } catch (e) {
+      if (await ApiConfig.autoDetectWorkingHost()) {
+        try {
+          return await _sendRegisterRequest(payload, username, namaLengkap);
+        } catch (_) {}
+      }
       return ApiResponse(
         success: false,
         message: 'Gagal mendaftar ke server (${ApiConfig.baseUrl}): $e',
         statusCode: 500,
+      );
+    }
+  }
+
+  static Future<ApiResponse> _sendRegisterRequest(
+    Map<String, dynamic> payload,
+    String username,
+    String namaLengkap,
+  ) async {
+    final response = await http
+        .post(
+          Uri.parse(ApiConfig.register),
+          headers: await _getHeaders(),
+          body: jsonEncode(payload),
+        )
+        .timeout(_timeoutDuration);
+
+    final Map<String, dynamic> body = _parseJson(response.body);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final token = body['token']?.toString() ?? '';
+      final userData = body['data'] is Map<String, dynamic>
+          ? Map<String, dynamic>.from(body['data'])
+          : <String, dynamic>{'username': username, 'nama_lengkap': namaLengkap};
+
+      if (token.isNotEmpty) {
+        await saveSession(token: token, user: userData);
+      }
+
+      return ApiResponse(
+        success: true,
+        message: body['message'] ?? 'Pendaftaran akun berhasil.',
+        data: userData,
+        statusCode: response.statusCode,
+      );
+    } else {
+      String errorMsg = (body['message'] != null && body['message'].toString().trim().isNotEmpty)
+          ? body['message'].toString()
+          : 'Pendaftaran akun gagal.';
+      if (body['errors'] is Map) {
+        final errors = body['errors'] as Map;
+        if (errors.isNotEmpty) {
+          errorMsg = errors.values.first is List
+              ? errors.values.first[0].toString()
+              : errors.values.first.toString();
+        }
+      }
+
+      return ApiResponse(
+        success: false,
+        message: errorMsg,
+        data: body,
+        statusCode: response.statusCode,
       );
     }
   }
@@ -366,7 +413,9 @@ class ApiService {
       UserAccountData.totalSampahKg = totalKg;
       UserAccountData.totalSetoran = totalCount;
 
-      if (listRaw.isNotEmpty) {
+      if (listRaw.isEmpty) {
+        UserAccountData.listRiwayatSetor = [];
+      } else {
         UserAccountData.listRiwayatSetor = listRaw.map((item) {
           final idSampah = item['id_sampah']?.toString() ?? '0';
           final kategori = item['nama_kategori']?.toString() ?? (item['jenis_sampah']?.toString() ?? 'Sampah');

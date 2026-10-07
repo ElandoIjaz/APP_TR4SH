@@ -158,7 +158,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
 
               // ── Label Username ──
               const Text(
-                'Username atau No. Telepon',
+                'Nama Pengguna / Username',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -173,12 +173,12 @@ class _HalamanLoginState extends State<HalamanLogin> {
                 keyboardType: TextInputType.text,
                 maxLength: 50,
                 inputFormatters: [
-                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
                   LengthLimitingTextInputFormatter(50),
                 ],
                 style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'Masukkan username atau no. telepon',
+                  hintText: 'Masukkan nama pengguna / username (huruf saja)',
                   hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),

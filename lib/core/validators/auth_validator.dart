@@ -4,8 +4,8 @@ class AuthValidator {
   AuthValidator._();
 
   /// Batasan panjang input
-  static const int minHpDigits = 10;
-  static const int maxHpDigits = 15;
+  static const int minHpDigits = 11;
+  static const int maxHpDigits = 13;
   static const int minPasswordLength = 6;
   static const int maxPasswordLength = 32;
 
@@ -73,8 +73,26 @@ class AuthValidator {
       return 'Username dan kata sandi tidak boleh kosong!';
     }
 
+    if (!RegExp(r'^[a-zA-Z]+$').hasMatch(cleanUsername)) {
+      return 'Nama pengguna / username hanya boleh berisi huruf (tanpa angka dan simbol)!';
+    }
+
     if (cleanPassword.length > maxPasswordLength) {
       return 'Kata sandi maksimal $maxPasswordLength karakter!';
+    }
+
+    return null;
+  }
+
+  /// Validasi form Lupa Password.
+  static String? validateLupaPassword(String username) {
+    final clean = username.trim();
+    if (clean.isEmpty) {
+      return 'Username atau nama akun tidak boleh kosong!';
+    }
+
+    if (!RegExp(r'^[a-zA-Z]+$').hasMatch(clean)) {
+      return 'Username / nama akun hanya boleh berisi huruf (tanpa angka dan simbol)!';
     }
 
     return null;
@@ -106,6 +124,11 @@ class AuthValidator {
       return 'Nama lengkap maksimal 60 karakter!';
     }
 
+    // Validasi nama lengkap hanya huruf dan spasi (tanpa simbol dan angka)
+    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(cleanNama)) {
+      return 'Nama lengkap hanya boleh berisi huruf (tanpa angka dan simbol)!';
+    }
+
     if (cleanUsername.length < 3) {
       return 'Username minimal 3 karakter!';
     }
@@ -116,6 +139,11 @@ class AuthValidator {
 
     if (cleanUsername.contains(' ')) {
       return 'Username tidak boleh mengandung spasi!';
+    }
+
+    // Validasi username hanya huruf (tanpa simbol dan angka)
+    if (!RegExp(r'^[a-zA-Z]+$').hasMatch(cleanUsername)) {
+      return 'Username hanya boleh berisi huruf (tanpa angka dan simbol)!';
     }
 
     if (cleanUsername.contains('@')) {

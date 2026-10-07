@@ -126,8 +126,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           _totalKg = 0.0;
           _totalCount = 0;
           _listSampah = [];
-        } else if (UserAccountData.totalSampahKg > 0) {
+        } else {
           _totalKg = UserAccountData.totalSampahKg;
+          _totalCount = UserAccountData.totalSetoran;
         }
       });
     }

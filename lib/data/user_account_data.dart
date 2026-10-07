@@ -170,8 +170,22 @@ class UserAccountData {
     if (user['status_akun'] != null) {
       currentStatusAkun = user['status_akun'].toString();
     }
-    if (user['is_new'] == true) {
-      userPoints = 0;
+    if (user['poin'] != null) {
+      userPoints = int.tryParse(user['poin'].toString()) ?? 0;
+    } else if (user['points'] != null) {
+      userPoints = int.tryParse(user['points'].toString()) ?? 0;
+    }
+    if (user['total_sampah_kg'] != null) {
+      totalSampahKg = double.tryParse(user['total_sampah_kg'].toString()) ?? 0.0;
+    }
+    if (user['total_setoran'] != null) {
+      totalSetoran = int.tryParse(user['total_setoran'].toString()) ?? 0;
+    }
+    final bool isUserBaru = user['is_new'] == true ||
+        isNewAccount ||
+        (user['id_user'] != null && totalSampahKg == 0.0 && totalSetoran == 0);
+    if (isUserBaru) {
+      userPoints = user['poin'] != null ? (int.tryParse(user['poin'].toString()) ?? 0) : 0;
       totalSampahKg = 0.0;
       totalSetoran = 0;
       totalMisiSelesai = 0;
