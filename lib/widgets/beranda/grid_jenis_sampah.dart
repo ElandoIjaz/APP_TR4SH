@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 
 class GridJenisSampah extends StatelessWidget {
-  final void Function(String title, String badge, String subtitle, String description, IconData icon) onCategoryTap;
+  final void Function(
+    String title,
+    String badge,
+    String subtitle,
+    String description,
+    IconData icon,
+  ) onCategoryTap;
 
   const GridJenisSampah({
     super.key,
@@ -26,11 +32,11 @@ class GridJenisSampah extends StatelessWidget {
           ),
           const SizedBox(height: 12),
 
-          // 2x2 Grid
+          // Baris 1
           Row(
             children: [
               Expanded(
-                child: _buildCategoryCard(
+                child: CategoryCard(
                   icon: Icons.water_drop_outlined,
                   title: 'Plastik',
                   subtitle: 'Botol & Kresek',
@@ -48,7 +54,7 @@ class GridJenisSampah extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildCategoryCard(
+                child: CategoryCard(
                   icon: Icons.wine_bar_rounded,
                   title: 'Kaca',
                   subtitle: 'Beling & Botol',
@@ -69,10 +75,11 @@ class GridJenisSampah extends StatelessWidget {
 
           const SizedBox(height: 12),
 
+          // Baris 2
           Row(
             children: [
               Expanded(
-                child: _buildCategoryCard(
+                child: CategoryCard(
                   icon: Icons.inventory_2_outlined,
                   title: 'Kertas & Karton',
                   subtitle: 'Kardus & Majalah',
@@ -90,7 +97,7 @@ class GridJenisSampah extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildCategoryCard(
+                child: CategoryCard(
                   icon: Icons.delete_outline_rounded,
                   title: 'Logam / Kaleng',
                   subtitle: 'Aluminium & Seng',
@@ -112,85 +119,129 @@ class GridJenisSampah extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildCategoryCard({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required String badge,
-    required Color badgeBg,
-    required Color badgeTextColor,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(14),
+// Widget Kartu Komponen Stateful khusus Animasi Pergerakan
+class CategoryCard extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String badge;
+  final Color badgeBg;
+  final Color badgeTextColor;
+  final VoidCallback onTap;
+
+  const CategoryCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.badge,
+    required this.badgeBg,
+    required this.badgeTextColor,
+    required this.onTap,
+  });
+
+  @override
+  State<CategoryCard> createState() => _CategoryCardState();
+}
+
+class _CategoryCardState extends State<CategoryCard> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      cursor: SystemMouseCursors.click,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        // Menggeser posisi kartu terangkat 6 pixel ke atas saat di-hover
+        transform: Matrix4.identity()
+          ..translate(0.0, _isHovered ? -6.0 : 0.0),
         decoration: BoxDecoration(
-          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.cardBorder),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.02),
+              blurRadius: _isHovered ? 16 : 8,
+              offset: Offset(0, _isHovered ? 8 : 4),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Row: Icon circle + Pill Badge
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppColors.mintSoft,
-                  child: Icon(icon, color: AppColors.darkGreen, size: 18),
+        child: Material(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: widget.onTap,
+            hoverColor: AppColors.mintSoft.withValues(alpha: 0.2),
+            splashColor: AppColors.mintSoft,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: _isHovered
+                      ? AppColors.darkGreen.withValues(alpha: 0.4)
+                      : AppColors.cardBorder,
+                  width: _isHovered ? 1.5 : 1.0,
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: badgeBg,
-                    borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      CircleAvatar(
+                        radius: 18,
+                        backgroundColor: AppColors.mintSoft,
+                        child: Icon(widget.icon,
+                            color: AppColors.darkGreen, size: 18),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: widget.badgeBg,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          widget.badge,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: widget.badgeTextColor,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    badge,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: badgeTextColor,
+                  const SizedBox(height: 12),
+                  Text(
+                    widget.title,
+                    style: const TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreen,
                     ),
                   ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            // Title
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.bold,
-                color: AppColors.darkGreen,
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.subtitle,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                ],
               ),
             ),
-
-            const SizedBox(height: 2),
-
-            // Subtitle
-            Text(
-              subtitle,
-              style: const TextStyle(
-                fontSize: 11.5,
-                color: AppColors.textMuted,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
