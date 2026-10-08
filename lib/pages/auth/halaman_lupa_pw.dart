@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 
@@ -15,19 +16,16 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
   bool _isLoading = false;
 
   // Warna tema – hijau TR4SH
-  static const Color _hijauUtama = Color(0xFF8DD832);
-  static const Color _hijauMuda = Color(0xFFE8F5C8);
-  static const Color _abuLatar = Color(0xFFF2F2F2);
+  static const Color _hijauUtama = AppColors.authPrimary;
+  static const Color _hijauMuda = AppColors.authLightGreen;
+  static const Color _abuLatar = AppColors.authBgGrey;
 
   void _kirimKodeVerifikasi() async {
     final input = _usernameController.text.trim();
 
     final error = AuthValidator.validateLupaPassword(input);
     if (error != null) {
-      _showSnackBar(
-        error,
-        Colors.redAccent,
-      );
+      _showSnackBar(error, Colors.redAccent);
       return;
     }
 
@@ -39,10 +37,7 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    _showSnackBar(
-      'Kode verifikasi telah dikirim ke akun Anda.',
-      _hijauUtama,
-    );
+    _showSnackBar('Kode verifikasi telah dikirim ke akun Anda.', _hijauUtama);
   }
 
   void _showSnackBar(String message, Color color) {
@@ -51,9 +46,7 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
         content: Text(message),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -96,6 +89,7 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -250,9 +244,9 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
               // ── Kembali ke Masuk ──
               GestureDetector(
                 onTap: _kembaliKeLogin,
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Icon(Icons.arrow_back, size: 15, color: Colors.grey),
                     SizedBox(width: 6),
                     Text(

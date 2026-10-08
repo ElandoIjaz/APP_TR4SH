@@ -1,21 +1,19 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test23/pages/produk/halaman_detail_produk.dart';
 import 'package:test23/pages/produk/halaman_keranjang.dart';
 import 'package:test23/pages/produk/halaman_produk.dart';
 
 void main() {
-  testWidgets('HalamanProduk, Detail, Filter, and Keranjang work seamlessly', (WidgetTester tester) async {
+  testWidgets('HalamanProduk, Detail, Filter, and Keranjang work seamlessly', (
+    WidgetTester tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.resetPhysicalSize);
 
     // ── 1. Test HalamanProduk Catalog Page ──
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HalamanProduk(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: HalamanProduk()));
     await tester.pump();
 
     // Verify Branding & Header
@@ -36,7 +34,10 @@ void main() {
 
     // Verify Catalog Products
     expect(find.text('Produk Pilihan'), findsOneWidget);
-    expect(find.text('Pot Bunga dari Botol Plastik Daur Ulang'), findsOneWidget);
+    expect(
+      find.text('Pot Bunga dari Botol Plastik Daur Ulang'),
+      findsOneWidget,
+    );
     expect(find.text('Lampu Hias dari Limbah Botol'), findsOneWidget);
     expect(find.text('Tas Tote dari Karung Bekas'), findsOneWidget);
     expect(find.text('Tempat Pensil dari Kardus Bekas'), findsOneWidget);

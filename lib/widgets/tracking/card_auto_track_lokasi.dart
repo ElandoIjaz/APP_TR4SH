@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/pages/akun/halaman_pilih_lokasi_akurat.dart';
@@ -6,10 +6,7 @@ import 'package:test23/pages/akun/halaman_pilih_lokasi_akurat.dart';
 class CardAutoTrackLokasi extends StatefulWidget {
   final VoidCallback? onLocationUpdated;
 
-  const CardAutoTrackLokasi({
-    super.key,
-    this.onLocationUpdated,
-  });
+  const CardAutoTrackLokasi({super.key, this.onLocationUpdated});
 
   @override
   State<CardAutoTrackLokasi> createState() => _CardAutoTrackLokasiState();
@@ -27,11 +24,14 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
       if (!mounted) return;
       setState(() {
         _isRefreshing = false;
-        LokasiTrackingService.currentAccuracy = '±1.1 meter (GPS Terkunci Presisi)';
+        LokasiTrackingService.currentAccuracy =
+            '±1.1 meter (GPS Terkunci Presisi)';
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('🛰️ Lokasi penjemputan sampah berhasil diperbarui via GPS!'),
+          content: Text(
+            '🛰️ Lokasi penjemputan sampah berhasil diperbarui via GPS!',
+          ),
           backgroundColor: AppColors.darkGreen,
           duration: Duration(seconds: 1),
         ),
@@ -69,12 +69,20 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
                         color: const Color(0xFFE8F6EE),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.map_rounded, color: AppColors.darkGreen, size: 22),
+                      child: const Icon(
+                        Icons.map_rounded,
+                        color: AppColors.darkGreen,
+                        size: 22,
+                      ),
                     ),
                     const SizedBox(width: 10),
                     const Text(
                       'Terkoneksi Google Maps',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                   ],
                 ),
@@ -95,17 +103,31 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('URL Koordinat Google Maps:',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textMuted)),
+                  const Text(
+                    'URL Koordinat Google Maps:',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     url,
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF1E8850), fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF1E8850),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Koordinat: ${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}',
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                 ],
               ),
@@ -113,7 +135,11 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
             const SizedBox(height: 14),
             const Text(
               'Kurir penjemputan sampah TR4SH! akan otomatis menavigasi ke titik koordinat Google Maps ini secara presisi.',
-              style: TextStyle(fontSize: 11.5, color: Color(0xFF4C6656), height: 1.3),
+              style: TextStyle(
+                fontSize: 11.5,
+                color: Color(0xFF4C6656),
+                height: 1.3,
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -123,7 +149,9 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: () {
                   Navigator.pop(context);
@@ -134,8 +162,15 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
                     ),
                   );
                 },
-                icon: const Icon(Icons.open_in_new_rounded, size: 16, color: AppColors.limeAccent),
-                label: const Text('Buka di Google Maps', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                icon: const Icon(
+                  Icons.open_in_new_rounded,
+                  size: 16,
+                  color: AppColors.limeAccent,
+                ),
+                label: const Text(
+                  'Buka di Google Maps',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
               ),
             ),
           ],
@@ -147,9 +182,7 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
   void _openPickLocation() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const HalamanPilihLokasiAkurat(),
-      ),
+      MaterialPageRoute(builder: (_) => const HalamanPilihLokasiAkurat()),
     );
 
     if (result != null) {
@@ -205,7 +238,10 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
                 onTap: _isRefreshing ? null : _refreshGpsLocation,
                 borderRadius: BorderRadius.circular(8),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.bgScreen,
                     borderRadius: BorderRadius.circular(8),
@@ -218,13 +254,24 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
                           ? const SizedBox(
                               width: 10,
                               height: 10,
-                              child: CircularProgressIndicator(strokeWidth: 1.8, color: AppColors.darkGreen),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.8,
+                                color: AppColors.darkGreen,
+                              ),
                             )
-                          : const Icon(Icons.refresh_rounded, size: 12, color: AppColors.darkGreen),
+                          : const Icon(
+                              Icons.refresh_rounded,
+                              size: 12,
+                              color: AppColors.darkGreen,
+                            ),
                       const SizedBox(width: 4),
                       const Text(
                         'Refresh GPS',
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkGreen),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.darkGreen,
+                        ),
                       ),
                     ],
                   ),
@@ -245,7 +292,11 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
                   color: const Color(0xFFD6F3DD),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.location_on_rounded, color: AppColors.darkGreen, size: 22),
+                child: const Icon(
+                  Icons.location_on_rounded,
+                  color: AppColors.darkGreen,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -288,7 +339,11 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
             ),
             child: Row(
               children: [
-                const Icon(Icons.gps_fixed_rounded, size: 14, color: Color(0xFF00C853)),
+                const Icon(
+                  Icons.gps_fixed_rounded,
+                  size: 14,
+                  color: Color(0xFF00C853),
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -315,13 +370,23 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFFA1CCA8)),
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   onPressed: _openPickLocation,
-                  icon: const Icon(Icons.edit_location_alt_outlined, size: 14, color: AppColors.darkGreen),
+                  icon: const Icon(
+                    Icons.edit_location_alt_outlined,
+                    size: 14,
+                    color: AppColors.darkGreen,
+                  ),
                   label: const Text(
                     'Ubah Titik Lokasi',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                 ),
               ),
@@ -333,10 +398,16 @@ class _CardAutoTrackLokasiState extends State<CardAutoTrackLokasi> {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   onPressed: _showGmapsInfo,
-                  icon: const Icon(Icons.map_outlined, size: 14, color: AppColors.limeAccent),
+                  icon: const Icon(
+                    Icons.map_outlined,
+                    size: 14,
+                    color: AppColors.limeAccent,
+                  ),
                   label: const Text(
                     'Buka di GMaps',
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),

@@ -30,7 +30,9 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Row(
             children: [
               Container(
@@ -39,7 +41,11 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                   color: AppColors.mintSoft,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.lock_rounded, color: AppColors.darkGreen, size: 20),
+                child: const Icon(
+                  Icons.lock_rounded,
+                  color: AppColors.darkGreen,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 10),
               const Expanded(
@@ -68,20 +74,34 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.shield_outlined, size: 16, color: AppColors.darkGreen),
+                      Icon(
+                        Icons.shield_outlined,
+                        size: 16,
+                        color: AppColors.darkGreen,
+                      ),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           'Keamanan akun menggunakan kata sandi teks murni (tanpa sidik jari/biometrik).',
-                          style: TextStyle(fontSize: 10.5, color: Color(0xFF386B52), height: 1.3),
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: Color(0xFF386B52),
+                            height: 1.3,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text('Kata Sandi Saat Ini',
-                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                const Text(
+                  'Kata Sandi Saat Ini',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkGreen,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 TextField(
                   controller: currentPwController,
@@ -93,18 +113,26 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                   ],
                   decoration: InputDecoration(
                     hintText: 'Masukkan kata sandi lama',
-                    hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    hintStyle: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
                     counterText: '',
                     filled: true,
                     fillColor: const Color(0xFFF9FCFA),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(color: AppColors.cardBorder),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        obscureCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        obscureCurrent
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         size: 18,
                         color: AppColors.textMuted,
                       ),
@@ -117,13 +145,24 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Row(
+                const Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text('Kata Sandi Baru',
-                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-                    Text('6 - 32 karakter',
-                        style: TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
+                  children: [
+                    Text(
+                      'Kata Sandi Baru',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGreen,
+                      ),
+                    ),
+                    Text(
+                      '6 - 32 karakter',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -137,18 +176,26 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                   ],
                   decoration: InputDecoration(
                     hintText: 'Minimal 6 karakter kombinasi (tanpa spasi)',
-                    hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    hintStyle: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
                     counterText: '',
                     filled: true,
                     fillColor: const Color(0xFFF9FCFA),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(color: AppColors.cardBorder),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        obscureNew ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        obscureNew
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         size: 18,
                         color: AppColors.textMuted,
                       ),
@@ -161,8 +208,14 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text('Konfirmasi Kata Sandi Baru',
-                    style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                const Text(
+                  'Konfirmasi Kata Sandi Baru',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkGreen,
+                  ),
+                ),
                 const SizedBox(height: 6),
                 TextField(
                   controller: confirmPwController,
@@ -174,18 +227,26 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                   ],
                   decoration: InputDecoration(
                     hintText: 'Ulangi kata sandi baru',
-                    hintStyle: const TextStyle(fontSize: 12, color: AppColors.textMuted),
+                    hintStyle: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textMuted,
+                    ),
                     counterText: '',
                     filled: true,
                     fillColor: const Color(0xFFF9FCFA),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(color: AppColors.cardBorder),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                        obscureConfirm
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
                         size: 18,
                         color: AppColors.textMuted,
                       ),
@@ -203,13 +264,24 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Batal', style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+              child: const Text(
+                'Batal',
+                style: TextStyle(
+                  color: AppColors.textMuted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.darkGreen,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
               ),
               onPressed: () {
                 final curr = currentPwController.text.trim();
@@ -250,14 +322,20 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Kata sandi berhasil diperbarui dengan aman!'),
+                    content: Text(
+                      'Kata sandi berhasil diperbarui dengan aman!',
+                    ),
                     backgroundColor: AppColors.darkGreen,
                   ),
                 );
               },
               child: const Text(
                 'Simpan Perubahan',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
               ),
             ),
           ],
@@ -281,7 +359,11 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                 color: AppColors.mintSoft,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.pin_outlined, color: AppColors.darkGreen, size: 20),
+              child: const Icon(
+                Icons.pin_outlined,
+                color: AppColors.darkGreen,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 10),
             const Expanded(
@@ -302,7 +384,11 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
           children: [
             const Text(
               'PIN angka ini digunakan sebagai verifikasi keamanan saat menukar poin atau melakukan pesanan tanpa sidik jari.',
-              style: TextStyle(fontSize: 11.5, color: Color(0xFF4C6656), height: 1.4),
+              style: TextStyle(
+                fontSize: 11.5,
+                color: Color(0xFF4C6656),
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 14),
             TextField(
@@ -311,13 +397,20 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
               maxLength: 6,
               obscureText: true,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 20, letterSpacing: 8, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 20,
+                letterSpacing: 8,
+                fontWeight: FontWeight.bold,
+              ),
               decoration: InputDecoration(
                 hintText: '••••••',
                 hintStyle: const TextStyle(letterSpacing: 8),
                 filled: true,
                 fillColor: const Color(0xFFF9FCFA),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: AppColors.cardBorder),
@@ -329,12 +422,20 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+            child: const Text(
+              'Batal',
+              style: TextStyle(
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.darkGreen,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
             ),
             onPressed: () {
@@ -346,7 +447,13 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                 ),
               );
             },
-            child: const Text('Simpan PIN', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Simpan PIN',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -373,19 +480,27 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                   color: const Color(0xFFD6F3DD),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: AppColors.darkGreen, size: 20),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.darkGreen,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           'Pengaturan Akun',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: AppColors.darkGreen,
+          ),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -404,14 +519,16 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                 _buildActionTile(
                   icon: Icons.pin_outlined,
                   title: 'PIN Transaksi & Dompet',
-                  subtitle: 'PIN 6-digit untuk verifikasi penukaran poin & saldo',
+                  subtitle:
+                      'PIN 6-digit untuk verifikasi penukaran poin & saldo',
                   onTap: _showPinDialog,
                 ),
                 const Divider(height: 1, indent: 50, color: Color(0xFFEDF5F0)),
                 _buildSwitchTile(
                   icon: Icons.security_rounded,
                   title: 'Verifikasi 2 Langkah (2FA)',
-                  subtitle: 'Konfirmasi kode OTP via SMS/WhatsApp saat login baru',
+                  subtitle:
+                      'Konfirmasi kode OTP via SMS/WhatsApp saat login baru',
                   value: _twoFactorEnabled,
                   onChanged: (val) => setState(() => _twoFactorEnabled = val),
                 ),
@@ -425,7 +542,8 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
                 _buildSwitchTile(
                   icon: Icons.recycling_rounded,
                   title: 'Notifikasi Sampah & Poin',
-                  subtitle: 'Pemberitahuan verifikasi timbangan & penambahan poin',
+                  subtitle:
+                      'Pemberitahuan verifikasi timbangan & penambahan poin',
                   value: _notifSetor,
                   onChanged: (val) => setState(() => _notifSetor = val),
                 ),
@@ -535,9 +653,23 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
         backgroundColor: AppColors.mintSoft,
         child: Icon(icon, size: 18, color: AppColors.darkGreen),
       ),
-      title: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
-      trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFFB5C7BD), size: 20),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          color: AppColors.darkGreen,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+      ),
+      trailing: const Icon(
+        Icons.chevron_right_rounded,
+        color: Color(0xFFB5C7BD),
+        size: 20,
+      ),
       onTap: onTap,
     );
   }
@@ -555,8 +687,18 @@ class _HalamanPengaturanAkunState extends State<HalamanPengaturanAkun> {
         backgroundColor: AppColors.mintSoft,
         child: Icon(icon, size: 18, color: AppColors.darkGreen),
       ),
-      title: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          color: AppColors.darkGreen,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+      ),
       trailing: Switch(
         value: value,
         activeThumbColor: AppColors.darkGreen,

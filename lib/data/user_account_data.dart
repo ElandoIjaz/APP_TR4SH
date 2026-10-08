@@ -1,100 +1,12 @@
-class AlamatModel {
-  final String id;
-  final String label; // 'Rumah', 'Kantor', dll.
-  final String penerima;
-  final String telepon;
-  final String alamatLengkap;
-  final String kota;
-  final String kodePos;
-  final String patokan;
-  final double latitude;
-  final double longitude;
-  final String akurasiGps;
-  bool isUtama;
+export 'models/alamat_model.dart';
+export 'models/transaksi_model.dart';
+export 'models/riwayat_setor_model.dart';
+export 'models/hadiah_reward_model.dart';
 
-  AlamatModel({
-    required this.id,
-    required this.label,
-    required this.penerima,
-    required this.telepon,
-    required this.alamatLengkap,
-    required this.kota,
-    required this.kodePos,
-    required this.patokan,
-    required this.latitude,
-    required this.longitude,
-    this.akurasiGps = '±2 meter (Sangat Akurat)',
-    this.isUtama = false,
-  });
-}
-
-class TransaksiModel {
-  final String id;
-  final String noInvoice;
-  final String tanggal;
-  final String namaToko;
-  final String judulProduk;
-  final String gambarProduk;
-  final int totalHarga;
-  final int jumlahBarang;
-  final String status;
-  final String limbahTerselamatkan;
-
-  TransaksiModel({
-    required this.id,
-    required this.noInvoice,
-    required this.tanggal,
-    required this.namaToko,
-    required this.judulProduk,
-    required this.gambarProduk,
-    required this.totalHarga,
-    required this.jumlahBarang,
-    required this.status,
-    required this.limbahTerselamatkan,
-  });
-}
-
-class RiwayatSetorModel {
-  final String id;
-  final String tanggal;
-  final String kategori;
-  final double beratKg;
-  final int poin;
-  final String lokasiBankSampah;
-  final String status;
-  final String estimasiCo2;
-
-  RiwayatSetorModel({
-    required this.id,
-    required this.tanggal,
-    required this.kategori,
-    required this.beratKg,
-    required this.poin,
-    required this.lokasiBankSampah,
-    required this.status,
-    required this.estimasiCo2,
-  });
-}
-
-class HadiahRewardModel {
-  final String id;
-  final String judul;
-  final String kategori;
-  final int poinDibutuhkan;
-  final String deskripsi;
-  final String badge;
-  final bool isTersedia;
-
-  HadiahRewardModel({
-    required this.id,
-    required this.judul,
-    required this.kategori,
-    required this.poinDibutuhkan,
-    required this.deskripsi,
-    required this.badge,
-    this.isTersedia = true,
-  });
-}
+import 'models/alamat_model.dart';
+import 'models/transaksi_model.dart';
+import 'models/riwayat_setor_model.dart';
+import 'models/hadiah_reward_model.dart';
 
 class UserAccountData {
   UserAccountData._();
@@ -158,7 +70,8 @@ class UserAccountData {
     if (user['id_user'] != null) {
       currentUserId = int.tryParse(user['id_user'].toString());
     }
-    if (user['nama_lengkap'] != null && user['nama_lengkap'].toString().isNotEmpty) {
+    if (user['nama_lengkap'] != null &&
+        user['nama_lengkap'].toString().isNotEmpty) {
       currentNama = user['nama_lengkap'].toString();
     }
     if (user['username'] != null && user['username'].toString().isNotEmpty) {
@@ -176,16 +89,20 @@ class UserAccountData {
       userPoints = int.tryParse(user['points'].toString()) ?? 0;
     }
     if (user['total_sampah_kg'] != null) {
-      totalSampahKg = double.tryParse(user['total_sampah_kg'].toString()) ?? 0.0;
+      totalSampahKg =
+          double.tryParse(user['total_sampah_kg'].toString()) ?? 0.0;
     }
     if (user['total_setoran'] != null) {
       totalSetoran = int.tryParse(user['total_setoran'].toString()) ?? 0;
     }
-    final bool isUserBaru = user['is_new'] == true ||
+    final bool isUserBaru =
+        user['is_new'] == true ||
         isNewAccount ||
         (user['id_user'] != null && totalSampahKg == 0.0 && totalSetoran == 0);
     if (isUserBaru) {
-      userPoints = user['poin'] != null ? (int.tryParse(user['poin'].toString()) ?? 0) : 0;
+      userPoints = user['poin'] != null
+          ? (int.tryParse(user['poin'].toString()) ?? 0)
+          : 0;
       totalSampahKg = 0.0;
       totalSetoran = 0;
       totalMisiSelesai = 0;
@@ -218,7 +135,8 @@ class UserAccountData {
       label: 'Rumah',
       penerima: 'Bintang Pratama',
       telepon: '0812-3456-7890',
-      alamatLengkap: 'Jl. Riau No. 45, RT 03 / RW 07, Kel. Citarum, Kec. Bandung Wetan',
+      alamatLengkap:
+          'Jl. Riau No. 45, RT 03 / RW 07, Kel. Citarum, Kec. Bandung Wetan',
       kota: 'Kota Bandung, Jawa Barat',
       kodePos: '40115',
       patokan: 'Pagar besi hitam, depan bank sampah RT 03',
@@ -321,7 +239,8 @@ class UserAccountData {
       judul: 'Voucher Belanja Eco Rp 20.000',
       kategori: 'Voucher Belanja',
       poinDibutuhkan: 200,
-      deskripsi: 'Potongan langsung Rp 20.000 untuk belanja di TR4SH! Marketplace.',
+      deskripsi:
+          'Potongan langsung Rp 20.000 untuk belanja di TR4SH! Marketplace.',
       badge: 'Terpopuler',
     ),
     HadiahRewardModel(

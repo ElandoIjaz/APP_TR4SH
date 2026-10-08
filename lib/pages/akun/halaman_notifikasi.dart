@@ -10,7 +10,12 @@ class HalamanNotifikasi extends StatefulWidget {
 
 class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
   int _selectedFilterIndex = 0;
-  final List<String> _filters = ['Semua', 'Transaksi', 'Setor Sampah', 'Info & Promo'];
+  final List<String> _filters = [
+    'Semua',
+    'Transaksi',
+    'Setor Sampah',
+    'Info & Promo',
+  ];
 
   final List<Map<String, dynamic>> _notifications = [
     {
@@ -69,7 +74,9 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
   Widget build(BuildContext context) {
     final filtered = _selectedFilterIndex == 0
         ? _notifications
-        : _notifications.where((n) => n['category'] == _filters[_selectedFilterIndex]).toList();
+        : _notifications
+              .where((n) => n['category'] == _filters[_selectedFilterIndex])
+              .toList();
 
     return Scaffold(
       backgroundColor: AppColors.bgScreen,
@@ -89,19 +96,30 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
                   color: const Color(0xFFD6F3DD),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: AppColors.darkGreen, size: 20),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.darkGreen,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           'Notifikasi',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: AppColors.darkGreen,
+          ),
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.done_all_rounded, color: AppColors.darkGreen),
+            icon: const Icon(
+              Icons.done_all_rounded,
+              color: AppColors.darkGreen,
+            ),
             tooltip: 'Tandai Semua Dibaca',
             onPressed: _markAllAsRead,
           ),
@@ -119,7 +137,7 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 itemCount: _filters.length,
                 separatorBuilder: (context, index) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
@@ -127,20 +145,31 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
                   return GestureDetector(
                     onTap: () => setState(() => _selectedFilterIndex = index),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.darkGreen : AppColors.bgScreen,
+                        color: isSelected
+                            ? AppColors.darkGreen
+                            : AppColors.bgScreen,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isSelected ? AppColors.darkGreen : AppColors.cardBorder,
+                          color: isSelected
+                              ? AppColors.darkGreen
+                              : AppColors.cardBorder,
                         ),
                       ),
                       child: Text(
                         _filters[index],
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          color: isSelected ? AppColors.limeAccent : AppColors.darkGreen,
+                          fontWeight: isSelected
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: isSelected
+                              ? AppColors.limeAccent
+                              : AppColors.darkGreen,
                         ),
                       ),
                     ),
@@ -153,21 +182,32 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
           // Notification List
           Expanded(
             child: filtered.isEmpty
-                ? Center(
+                ? const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.notifications_off_outlined, size: 54, color: AppColors.textMuted),
+                      children: [
+                        Icon(
+                          Icons.notifications_off_outlined,
+                          size: 54,
+                          color: AppColors.textMuted,
+                        ),
                         SizedBox(height: 10),
-                        Text('Tidak ada notifikasi pada kategori ini', style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
+                        Text(
+                          'Tidak ada notifikasi pada kategori ini',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
                       ],
                     ),
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.all(20),
-                    physics: const BouncingScrollPhysics(),
+                    physics: const ClampingScrollPhysics(),
                     itemCount: filtered.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 10),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final notif = filtered[index];
                       final bool isRead = notif['isRead'];
@@ -182,10 +222,14 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: isRead ? Colors.white : const Color(0xFFF0FAF4),
+                            color: isRead
+                                ? Colors.white
+                                : const Color(0xFFF0FAF4),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: isRead ? AppColors.cardBorder : const Color(0xFFBBE5CB),
+                              color: isRead
+                                  ? AppColors.cardBorder
+                                  : const Color(0xFFBBE5CB),
                               width: 1.2,
                             ),
                           ),
@@ -194,11 +238,15 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
                             children: [
                               CircleAvatar(
                                 radius: 18,
-                                backgroundColor: isRead ? AppColors.mintSoft : AppColors.darkGreen,
+                                backgroundColor: isRead
+                                    ? AppColors.mintSoft
+                                    : AppColors.darkGreen,
                                 child: Icon(
                                   notif['icon'] as IconData,
                                   size: 18,
-                                  color: isRead ? AppColors.darkGreen : AppColors.limeAccent,
+                                  color: isRead
+                                      ? AppColors.darkGreen
+                                      : AppColors.limeAccent,
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -207,14 +255,17 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Expanded(
                                           child: Text(
                                             notif['title'],
                                             style: TextStyle(
                                               fontSize: 12.5,
-                                              fontWeight: isRead ? FontWeight.w700 : FontWeight.w900,
+                                              fontWeight: isRead
+                                                  ? FontWeight.w700
+                                                  : FontWeight.w900,
                                               color: AppColors.darkGreen,
                                             ),
                                           ),
@@ -233,12 +284,19 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
                                     const SizedBox(height: 4),
                                     Text(
                                       notif['desc'],
-                                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF4C6656), height: 1.3),
+                                      style: const TextStyle(
+                                        fontSize: 11.5,
+                                        color: Color(0xFF4C6656),
+                                        height: 1.3,
+                                      ),
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
                                       notif['time'],
-                                      style: const TextStyle(fontSize: 10, color: AppColors.textMuted),
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.textMuted,
+                                      ),
                                     ),
                                   ],
                                 ),

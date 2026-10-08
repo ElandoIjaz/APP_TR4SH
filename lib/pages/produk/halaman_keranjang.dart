@@ -12,8 +12,9 @@ class HalamanKeranjang extends StatefulWidget {
 class _HalamanKeranjangState extends State<HalamanKeranjang> {
   late List<ItemKeranjang> _cartItems;
   bool _isVoucherApplied = true;
-  final TextEditingController _voucherController =
-      TextEditingController(text: 'ECOHERO-20K');
+  final TextEditingController _voucherController = TextEditingController(
+    text: 'ECOHERO-20K',
+  );
 
   @override
   void initState() {
@@ -30,8 +31,9 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
   bool get _isAllSelected =>
       _cartItems.isNotEmpty && _cartItems.every((item) => item.isSelected);
 
-  int get _selectedItemCount =>
-      _cartItems.where((item) => item.isSelected).fold(0, (sum, item) => sum + item.quantity);
+  int get _selectedItemCount => _cartItems
+      .where((item) => item.isSelected)
+      .fold(0, (sum, item) => sum + item.quantity);
 
   int get _totalPrice => _cartItems
       .where((item) => item.isSelected)
@@ -39,7 +41,8 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
 
   int get _discount => _isVoucherApplied ? 20000 : 0;
 
-  int get _finalTotal => (_totalPrice - _discount).clamp(0, double.infinity).toInt();
+  int get _finalTotal =>
+      (_totalPrice - _discount).clamp(0, double.infinity).toInt();
 
   void _toggleSelectAll(bool? value) {
     final bool select = value ?? false;
@@ -85,7 +88,11 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   color: const Color(0xFFD6F3DD),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: AppColors.darkGreen, size: 20),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.darkGreen,
+                  size: 20,
+                ),
               ),
             ),
           ),
@@ -95,7 +102,11 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.eco_rounded, size: 16, color: Color(0xFF1E8850)),
+                const Icon(
+                  Icons.eco_rounded,
+                  size: 16,
+                  color: Color(0xFF1E8850),
+                ),
                 const SizedBox(width: 4),
                 Text(
                   'Keranjang Belanja ($_selectedItemCount)',
@@ -121,7 +132,10 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: AppColors.darkGreen),
+            icon: const Icon(
+              Icons.delete_outline_rounded,
+              color: AppColors.darkGreen,
+            ),
             onPressed: _cartItems.isEmpty ? null : _clearCart,
           ),
           const SizedBox(width: 8),
@@ -132,9 +146,20 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.shopping_cart_outlined, size: 64, color: AppColors.textMuted),
+                  const Icon(
+                    Icons.shopping_cart_outlined,
+                    size: 64,
+                    color: AppColors.textMuted,
+                  ),
                   const SizedBox(height: 12),
-                  const Text('Keranjang belanja Anda kosong', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                  const Text(
+                    'Keranjang belanja Anda kosong',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
@@ -148,7 +173,7 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
               ),
             )
           : SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
+              physics: const ClampingScrollPhysics(),
               child: Column(
                 children: [
                   const SizedBox(height: 14),
@@ -176,7 +201,11 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                                       color: AppColors.limeAccent,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.eco_rounded, size: 14, color: AppColors.darkGreen),
+                                    child: const Icon(
+                                      Icons.eco_rounded,
+                                      size: 14,
+                                      color: AppColors.darkGreen,
+                                    ),
                                   ),
                                   const SizedBox(width: 8),
                                   const Text(
@@ -191,11 +220,18 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                                 ],
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.white.withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: AppColors.limeAccent.withValues(alpha: 0.4)),
+                                  border: Border.all(
+                                    color: AppColors.limeAccent.withValues(
+                                      alpha: 0.4,
+                                    ),
+                                  ),
                                 ),
                                 child: const Text(
                                   'Verified\nEco',
@@ -213,33 +249,52 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                           const SizedBox(height: 10),
                           RichText(
                             text: const TextSpan(
-                              style: TextStyle(fontSize: 11, color: Colors.white70, height: 1.35),
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.white70,
+                                height: 1.35,
+                              ),
                               children: [
                                 TextSpan(text: 'Belanjaan ini menyelamatkan '),
                                 TextSpan(
                                   text: '880g limbah',
-                                  style: TextStyle(color: AppColors.limeAccent, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: AppColors.limeAccent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 TextSpan(text: ' & mencegah '),
                                 TextSpan(
                                   text: '1.2kg emisi CO2',
-                                  style: TextStyle(color: AppColors.limeAccent, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: AppColors.limeAccent,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                                TextSpan(text: ' dari tempat pembuangan akhir!'),
+                                TextSpan(
+                                  text: ' dari tempat pembuangan akhir!',
+                                ),
                               ],
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Row(
+                          const Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
+                            children: [
                               Text(
                                 'Target Batch Pengolahan: 1.0kg',
-                                style: TextStyle(fontSize: 10, color: Colors.white60),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white60,
+                                ),
                               ),
                               Text(
                                 '88% Tercapai',
-                                style: TextStyle(fontSize: 10, color: AppColors.limeAccent, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: AppColors.limeAccent,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -248,8 +303,12 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                             borderRadius: BorderRadius.circular(3),
                             child: LinearProgressIndicator(
                               value: 0.88,
-                              backgroundColor: Colors.white.withValues(alpha: 0.2),
-                              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.limeAccent),
+                              backgroundColor: Colors.white.withValues(
+                                alpha: 0.2,
+                              ),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppColors.limeAccent,
+                              ),
                               minHeight: 5,
                             ),
                           ),
@@ -268,34 +327,48 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                       children: [
                         Expanded(
                           child: Row(
-                          children: [
-                            Checkbox(
-                              value: _isAllSelected,
-                              activeColor: AppColors.darkGreen,
-                              checkColor: AppColors.limeAccent,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                              onChanged: _toggleSelectAll,
-                            ),
-                            Flexible(
-                              child: Text(
-                                'Pilih Semua ($_selectedItemCount item)',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.darkGreen),
-                                overflow: TextOverflow.ellipsis,
+                            children: [
+                              Checkbox(
+                                value: _isAllSelected,
+                                activeColor: AppColors.darkGreen,
+                                checkColor: AppColors.limeAccent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                onChanged: _toggleSelectAll,
                               ),
-                            ),
-                          ],
+                              Flexible(
+                                child: Text(
+                                  'Pilih Semua ($_selectedItemCount item)',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.darkGreen,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      TextButton.icon(
+                        TextButton.icon(
                           onPressed: () {
                             setState(() {
                               _cartItems.removeWhere((item) => item.isSelected);
                             });
                           },
-                          icon: const Icon(Icons.delete_outline, size: 16, color: Color(0xFFE53935)),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            size: 16,
+                            color: Color(0xFFE53935),
+                          ),
                           label: const Text(
                             'Hapus Pilihan',
-                            style: TextStyle(fontSize: 11.5, color: Color(0xFFE53935), fontWeight: FontWeight.w700),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: Color(0xFFE53935),
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ],
@@ -308,7 +381,9 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   _buildMerchantSection(
                     merchantName: 'Karya Mandiri Eco',
                     location: 'Bandung',
-                    items: _cartItems.where((i) => i.id == 'cart-1' || i.id == 'cart-2').toList(),
+                    items: _cartItems
+                        .where((i) => i.id == 'cart-1' || i.id == 'cart-2')
+                        .toList(),
                   ),
 
                   const SizedBox(height: 14),
@@ -330,23 +405,34 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColors.cardBorder, width: 1.2),
+                        border: Border.all(
+                          color: AppColors.cardBorder,
+                          width: 1.2,
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          const Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
+                            children: [
                               Expanded(
                                 child: Row(
                                   children: [
-                                    Icon(Icons.confirmation_number_outlined, size: 16, color: AppColors.darkGreen),
+                                    Icon(
+                                      Icons.confirmation_number_outlined,
+                                      size: 16,
+                                      color: AppColors.darkGreen,
+                                    ),
                                     SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
                                         'Voucher & Keberlanjutan',
-                                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppColors.darkGreen,
+                                        ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -356,7 +442,11 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                               SizedBox(width: 8),
                               Text(
                                 '1 Kupon Tersedia',
-                                style: TextStyle(fontSize: 10, color: Color(0xFF1E8850), fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Color(0xFF1E8850),
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -366,20 +456,32 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                               Expanded(
                                 child: Container(
                                   height: 42,
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: AppColors.bgScreen,
                                     borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(color: AppColors.cardBorder),
+                                    border: Border.all(
+                                      color: AppColors.cardBorder,
+                                    ),
                                   ),
                                   child: Row(
                                     children: [
-                                      const Icon(Icons.sell_outlined, size: 14, color: AppColors.textMuted),
+                                      const Icon(
+                                        Icons.sell_outlined,
+                                        size: 14,
+                                        color: AppColors.textMuted,
+                                      ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: TextField(
                                           controller: _voucherController,
-                                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.darkGreen,
+                                          ),
                                           decoration: const InputDecoration(
                                             border: InputBorder.none,
                                             isDense: true,
@@ -397,8 +499,13 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                                   backgroundColor: AppColors.limeAccent,
                                   foregroundColor: AppColors.darkGreen,
                                   elevation: 0,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -406,29 +513,42 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                                   });
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Voucher ECOHERO-20K berhasil digunakan!'),
+                                      content: Text(
+                                        'Voucher ECOHERO-20K berhasil digunakan!',
+                                      ),
                                       backgroundColor: AppColors.darkGreen,
                                     ),
                                   );
                                 },
                                 child: const Text(
                                   'Gunakan',
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                           if (_isVoucherApplied) ...[
                             const SizedBox(height: 10),
-                            Row(
+                            const Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF1E8850)),
+                              children: [
+                                Icon(
+                                  Icons.check_circle_rounded,
+                                  size: 14,
+                                  color: Color(0xFF1E8850),
+                                ),
                                 SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
                                     'Voucher ECOHERO-20K aktif! Diskon Rp 20.000 berhasil dipotong.',
-                                    style: TextStyle(fontSize: 10.5, color: Color(0xFF1E8850), fontWeight: FontWeight.w600),
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      color: Color(0xFF1E8850),
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -449,34 +569,60 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColors.cardBorder, width: 1.2),
+                        border: Border.all(
+                          color: AppColors.cardBorder,
+                          width: 1.2,
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
                             'Rincian Pembayaran',
-                            style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.darkGreen,
+                            ),
                           ),
                           const SizedBox(height: 12),
-                          _buildPriceRow('Total Harga ($_selectedItemCount Barang)', 'Rp ${_formatPrice(_totalPrice)}'),
+                          _buildPriceRow(
+                            'Total Harga ($_selectedItemCount Barang)',
+                            'Rp ${_formatPrice(_totalPrice)}',
+                          ),
                           const SizedBox(height: 8),
                           if (_isVoucherApplied) ...[
-                            _buildPriceRow('Diskon Voucher Eco', '- Rp ${_formatPrice(_discount)}', isDiscount: true),
+                            _buildPriceRow(
+                              'Diskon Voucher Eco',
+                              '- Rp ${_formatPrice(_discount)}',
+                              isDiscount: true,
+                            ),
                             const SizedBox(height: 8),
                           ],
-                          _buildPriceRow('Biaya Proteksi Daur Ulang', 'Gratis', isHighlight: true),
+                          _buildPriceRow(
+                            'Biaya Proteksi Daur Ulang',
+                            'Gratis',
+                            isHighlight: true,
+                          ),
                           const Divider(height: 20, color: Color(0xFFE2EFE7)),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
                                 'Subtotal Pesanan',
-                                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.darkGreen,
+                                ),
                               ),
                               Text(
                                 'Rp ${_formatPrice(_finalTotal)}',
-                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppColors.darkGreen),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.darkGreen,
+                                ),
                               ),
                             ],
                           ),
@@ -510,7 +656,9 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                 value: _isAllSelected,
                 activeColor: AppColors.darkGreen,
                 checkColor: AppColors.limeAccent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
                 onChanged: _toggleSelectAll,
               ),
               Column(
@@ -519,17 +667,31 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                 children: [
                   Row(
                     children: [
-                      const Text('Total: ', style: TextStyle(fontSize: 11, color: AppColors.textMuted)),
+                      const Text(
+                        'Total: ',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
                       Text(
                         'Rp ${_formatPrice(_finalTotal)}',
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.darkGreen),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.darkGreen,
+                        ),
                       ),
                     ],
                   ),
                   if (_discount > 0)
                     Text(
                       'Hemat Rp ${_formatPrice(_discount)}',
-                      style: const TextStyle(fontSize: 9.5, color: Color(0xFF1E8850), fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontSize: 9.5,
+                        color: Color(0xFF1E8850),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                 ],
               ),
@@ -539,15 +701,22 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                 ),
                 onPressed: _selectedItemCount == 0
                     ? null
                     : () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Melanjutkan ke pembayaran Rp ${_formatPrice(_finalTotal)}...'),
+                            content: Text(
+                              'Melanjutkan ke pembayaran Rp ${_formatPrice(_finalTotal)}...',
+                            ),
                             backgroundColor: AppColors.darkGreen,
                           ),
                         );
@@ -556,7 +725,10 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   children: [
                     Text(
                       'Checkout ($_selectedItemCount)',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Container(
@@ -566,7 +738,11 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                         color: AppColors.limeAccent,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.arrow_forward_rounded, size: 14, color: AppColors.darkGreen),
+                      child: const Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 14,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                   ],
                 ),
@@ -605,7 +781,9 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   value: isMerchantAllSelected,
                   activeColor: AppColors.darkGreen,
                   checkColor: AppColors.limeAccent,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                   onChanged: (val) {
                     setState(() {
                       for (var item in items) {
@@ -614,24 +792,43 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                     });
                   },
                 ),
-                const Icon(Icons.storefront_rounded, size: 16, color: AppColors.darkGreen),
+                const Icon(
+                  Icons.storefront_rounded,
+                  size: 16,
+                  color: AppColors.darkGreen,
+                ),
                 const SizedBox(width: 6),
                 Text(
                   merchantName,
-                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.check_circle_rounded, size: 13, color: Color(0xFF1E8850)),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 13,
+                  color: Color(0xFF1E8850),
+                ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2.5,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.bgScreen,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     location,
-                    style: const TextStyle(fontSize: 9.5, color: AppColors.textMuted, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 9.5,
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -657,7 +854,9 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
             value: item.isSelected,
             activeColor: AppColors.darkGreen,
             checkColor: AppColors.limeAccent,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
             onChanged: (val) {
               setState(() {
                 item.isSelected = val ?? false;
@@ -675,7 +874,10 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                 width: 68,
                 height: 68,
                 color: AppColors.mintSoft,
-                child: const Icon(Icons.inventory_2_outlined, color: AppColors.darkGreen),
+                child: const Icon(
+                  Icons.inventory_2_outlined,
+                  color: AppColors.darkGreen,
+                ),
               ),
             ),
           ),
@@ -690,27 +892,42 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                     Expanded(
                       child: Text(
                         item.variant,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.darkGreen,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     InkWell(
                       onTap: () => _removeItem(item.id),
-                      child: const Icon(Icons.close_rounded, size: 16, color: AppColors.textMuted),
+                      child: const Icon(
+                        Icons.close_rounded,
+                        size: 16,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 3),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE8F6EE),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     item.materialBadge,
-                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Color(0xFF1E8850)),
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E8850),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -719,7 +936,11 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   children: [
                     Text(
                       'Rp ${_formatPrice(item.product.price)}',
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: AppColors.darkGreen),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                     Container(
                       decoration: BoxDecoration(
@@ -735,21 +956,45 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                               }
                             },
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              child: Text('-', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              child: Text(
+                                '-',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.darkGreen,
+                                ),
+                              ),
                             ),
                           ),
                           Text(
                             '${item.quantity}',
-                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.darkGreen,
+                            ),
                           ),
                           InkWell(
                             onTap: () {
                               setState(() => item.quantity++);
                             },
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              child: Text('+', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              child: Text(
+                                '+',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.darkGreen,
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -765,7 +1010,12 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
     );
   }
 
-  Widget _buildPriceRow(String label, String value, {bool isDiscount = false, bool isHighlight = false}) {
+  Widget _buildPriceRow(
+    String label,
+    String value, {
+    bool isDiscount = false,
+    bool isHighlight = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -777,8 +1027,12 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
           value,
           style: TextStyle(
             fontSize: 12,
-            fontWeight: isDiscount || isHighlight ? FontWeight.w800 : FontWeight.w600,
-            color: isDiscount || isHighlight ? const Color(0xFF1E8850) : AppColors.darkGreen,
+            fontWeight: isDiscount || isHighlight
+                ? FontWeight.w800
+                : FontWeight.w600,
+            color: isDiscount || isHighlight
+                ? const Color(0xFF1E8850)
+                : AppColors.darkGreen,
           ),
         ),
       ],
@@ -787,8 +1041,8 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 }

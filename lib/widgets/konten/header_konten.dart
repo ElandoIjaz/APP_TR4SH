@@ -62,7 +62,9 @@ class HeaderKonten extends StatelessWidget {
                   minimumSize: const Size(38, 38),
                 ),
                 icon: Icon(
-                  isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                  isBookmarked
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_outline_rounded,
                   color: AppColors.darkGreen,
                   size: 24,
                 ),

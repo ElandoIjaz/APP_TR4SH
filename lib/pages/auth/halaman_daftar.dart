@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
@@ -23,9 +24,9 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
   bool _isLoading = false;
 
   // Warna tema – hijau TR4SH
-  static const Color _hijauUtama = Color(0xFF8DD832);
-  static const Color _hijauMuda = Color(0xFFE8F5C8);
-  static const Color _abuLatar = Color(0xFFF2F2F2);
+  static const Color _hijauUtama = AppColors.authPrimary;
+  static const Color _hijauMuda = AppColors.authLightGreen;
+  static const Color _abuLatar = AppColors.authBgGrey;
 
   void _daftar() async {
     final nama = _namaController.text;
@@ -73,7 +74,9 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
       );
 
       _showSnackBar(
-        response.message.isNotEmpty ? response.message : 'Pendaftaran berhasil! Silakan masuk.',
+        response.message.isNotEmpty
+            ? response.message
+            : 'Pendaftaran berhasil! Silakan masuk.',
         _hijauUtama,
       );
 
@@ -139,6 +142,7 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -202,14 +206,18 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                   _buildLabel('No. Telepon / WhatsApp'),
                   const Text(
                     '11 - 13 digit angka',
-                    style: TextStyle(fontSize: 11, color: Colors.black45, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.black45,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               _buildTextField(
                 controller: _teleponController,
-                hint: '081234567890 (hanya angka)',
+                hint: '081234567890',
                 prefixIcon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
                 maxLength: 13,
@@ -228,7 +236,11 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                   _buildLabel('Kata Sandi'),
                   const Text(
                     '6 - 32 karakter',
-                    style: TextStyle(fontSize: 11, color: Colors.black45, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.black45,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
@@ -248,8 +260,11 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                   counterText: '',
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Icon(Icons.lock_outline,
-                        color: Colors.grey[600], size: 20),
+                    child: Icon(
+                      Icons.lock_outline,
+                      color: Colors.grey[600],
+                      size: 20,
+                    ),
                   ),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -265,7 +280,9 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                   filled: true,
                   fillColor: _hijauMuda,
                   contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 14),
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -276,8 +293,7 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        const BorderSide(color: _hijauUtama, width: 2),
+                    borderSide: const BorderSide(color: _hijauUtama, width: 2),
                   ),
                 ),
               ),
@@ -291,9 +307,9 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                     value: _setuju,
                     activeColor: _hijauUtama,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4)),
-                    onChanged: (val) =>
-                        setState(() => _setuju = val ?? false),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    onChanged: (val) => setState(() => _setuju = val ?? false),
                   ),
                   Expanded(
                     child: Padding(
@@ -301,7 +317,9 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                       child: RichText(
                         text: TextSpan(
                           style: const TextStyle(
-                              fontSize: 12, color: Colors.black54),
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
                           children: [
                             const TextSpan(text: 'Saya menyetujui '),
                             WidgetSpan(
@@ -380,8 +398,7 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
                   GestureDetector(
                     onTap: () {
                       Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                            builder: (_) => const HalamanLogin()),
+                        MaterialPageRoute(builder: (_) => const HalamanLogin()),
                       );
                     },
                     child: const Text(
@@ -442,8 +459,10 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
         ),
         filled: true,
         fillColor: _hijauMuda,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

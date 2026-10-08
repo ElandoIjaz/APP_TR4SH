@@ -58,10 +58,12 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           ],
         ),
         content: Text(
-          message.isNotEmpty
-              ? message
-              : 'Akun Anda sedang diblokir atau dinonaktifkan oleh Administrator TR4SH.',
-          style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
+          message.isNotEmpty ? message : 'Akun Anda sedang diblokir atau dinonaktifkan oleh Administrator TR4SH.',
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black87,
+            height: 1.4,
+          ),
         ),
         actions: [
           ElevatedButton(
@@ -75,9 +77,14 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text('Ke Halaman Login', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Ke Halaman Login',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -107,9 +114,15 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       final res = await ApiService.fetchRiwayatSetor();
       if (res.success && res.data is Map && mounted) {
         final dataMap = res.data as Map;
-        final items = (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
-        final totalKg = (dataMap['total_kg'] is num) ? (dataMap['total_kg'] as num).toDouble() : 0.0;
-        final totalCount = (dataMap['total'] is int) ? (dataMap['total'] as int) : items.length;
+        final items = (dataMap['items'] is List)
+            ? (dataMap['items'] as List)
+            : [];
+        final totalKg = (dataMap['total_kg'] is num)
+            ? (dataMap['total_kg'] as num).toDouble()
+            : 0.0;
+        final totalCount = (dataMap['total'] is int)
+            ? (dataMap['total'] as int)
+            : items.length;
 
         setState(() {
           _listSampah = items;
@@ -137,13 +150,16 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   Future<void> _loadBerandaEdukasi() async {
     try {
       final res = await ApiService.fetchBeranda();
-      if (res.statusCode == 403 || (res.data is Map && res.data['is_blocked'] == true)) {
+      if (res.statusCode == 403 ||
+          (res.data is Map && res.data['is_blocked'] == true)) {
         if (mounted) {
           _showAccountBlockedDialog(res.message);
         }
         return;
       }
-      if (res.success && res.data is Map && res.data['edukasi_terbaru'] is List) {
+      if (res.success &&
+          res.data is Map &&
+          res.data['edukasi_terbaru'] is List) {
         final list = res.data['edukasi_terbaru'] as List;
         if (mounted) {
           setState(() {
@@ -167,7 +183,8 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     }
   }
 
-  String? _getYoutubeThumbnail(String? url) => KontenValidator.getYoutubeThumbnail(url);
+  String? _getYoutubeThumbnail(String? url) =>
+      KontenValidator.getYoutubeThumbnail(url);
 
   void _showNotificationSheet() {
     showModalBottomSheet(
@@ -252,7 +269,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.darkGreen),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -262,7 +283,10 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 const SizedBox(height: 4),
                 Text(
                   time,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ],
             ),
@@ -300,7 +324,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
             const SizedBox(height: 14),
             const Text(
               'Setor Sampah Mandiri',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.darkGreen,
+              ),
             ),
             const SizedBox(height: 4),
             const Text(
@@ -308,10 +336,26 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               style: TextStyle(fontSize: 13, color: AppColors.textMuted),
             ),
             const SizedBox(height: 14),
-            _buildSetorItem(Icons.water_drop_outlined, 'Plastik (PET/HDPE)', 'Rp 3.500 / kg (+150 Poin)'),
-            _buildSetorItem(Icons.inventory_2_outlined, 'Kertas & Karton', 'Rp 2.200 / kg (+100 Poin)'),
-            _buildSetorItem(Icons.delete_outline_rounded, 'Logam & Kaleng', 'Rp 9.000 / kg (+300 Poin)'),
-            _buildSetorItem(Icons.wine_bar_rounded, 'Kaca & Beling', 'Rp 1.000 / kg (+50 Poin)'),
+            _buildSetorItem(
+              Icons.water_drop_outlined,
+              'Plastik (PET/HDPE)',
+              'Rp 3.500 / kg (+150 Poin)',
+            ),
+            _buildSetorItem(
+              Icons.inventory_2_outlined,
+              'Kertas & Karton',
+              'Rp 2.200 / kg (+100 Poin)',
+            ),
+            _buildSetorItem(
+              Icons.delete_outline_rounded,
+              'Logam & Kaleng',
+              'Rp 9.000 / kg (+300 Poin)',
+            ),
+            _buildSetorItem(
+              Icons.wine_bar_rounded,
+              'Kaca & Beling',
+              'Rp 1.000 / kg (+50 Poin)',
+            ),
             const SizedBox(height: 10),
 
             // Live Auto-Tracked GPS Pickup Location (Compact)
@@ -324,12 +368,20 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.my_location_rounded, size: 14, color: Color(0xFF00C853)),
+                  const Icon(
+                    Icons.my_location_rounded,
+                    size: 14,
+                    color: Color(0xFF00C853),
+                  ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       'Auto-Track GPS: ${LokasiTrackingService.currentAddress} (${LokasiTrackingService.currentAccuracy})',
-                      style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w600, color: AppColors.darkGreen),
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.darkGreen,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -339,12 +391,18 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const HalamanPilihLokasiAkurat()),
+                        MaterialPageRoute(
+                          builder: (_) => const HalamanPilihLokasiAkurat(),
+                        ),
                       );
                     },
                     child: const Text(
                       'GMaps >',
-                      style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                   ),
                 ],
@@ -359,13 +417,17 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   backgroundColor: AppColors.limeAccent,
                   foregroundColor: AppColors.darkGreen,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
                 ),
                 onPressed: () {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Jadwal penjemputan sampah berhasil dibuat ke ${LokasiTrackingService.currentAddress}!'),
+                      content: Text(
+                        'Jadwal penjemputan sampah berhasil dibuat ke ${LokasiTrackingService.currentAddress}!',
+                      ),
                       backgroundColor: AppColors.darkGreen,
                     ),
                   );
@@ -375,13 +437,17 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                     jenisSampah: 'Plastik (PET/HDPE)',
                     jumlah: 1.0,
                     satuan: 'kg',
-                    keterangan: 'Jadwal jemput ke ${LokasiTrackingService.currentAddress}',
+                    keterangan:
+                        'Jadwal jemput ke ${LokasiTrackingService.currentAddress}',
                   ).then((_) {
                     _loadBerandaEdukasi();
                     _loadRiwayatSampah();
                   });
                 },
-                child: const Text('Buat Jadwal Penjemputan', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                child: const Text(
+                  'Buat Jadwal Penjemputan',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -411,12 +477,29 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.darkGreen)),
-                Text(price, style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: AppColors.darkGreen,
+                  ),
+                ),
+                Text(
+                  price,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textMuted,
+                  ),
+                ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.textMuted),
+          const Icon(
+            Icons.arrow_forward_ios_rounded,
+            size: 14,
+            color: AppColors.textMuted,
+          ),
         ],
       ),
     );
@@ -425,9 +508,16 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   void _showVideoPlayerModal([Map<String, dynamic>? item]) {
     bool isPlaying = true;
     final isDynamic = item != null;
-    final title = isDynamic ? (item['title']?.toString() ?? 'Panduan Pilah Sampah Rumah Tangga') : 'Panduan Pilah Sampah Rumah Tangga';
-    final desc = isDynamic ? (item['description']?.toString() ?? 'Pelajari cara memilah sampah organik dan anorganik dari dapur rumah tangga Anda dengan metode 3R praktis untuk pemula.') : 'Pelajari cara memilah sampah organik dan anorganik dari dapur rumah tangga Anda dengan metode 3R praktis untuk pemula.';
-    final author = isDynamic ? (item['penulis']?.toString() ?? 'Komunitas TR4SH') : 'Admin TR4SH';
+    final title = isDynamic
+        ? (item['title']?.toString() ?? 'Panduan Pilah Sampah Rumah Tangga')
+        : 'Panduan Pilah Sampah Rumah Tangga';
+    final desc = isDynamic
+        ? (item['description']?.toString() ??
+              'Pelajari cara memilah sampah organik dan anorganik dari dapur rumah tangga Anda dengan metode 3R praktis untuk pemula.')
+        : 'Pelajari cara memilah sampah organik dan anorganik dari dapur rumah tangga Anda dengan metode 3R praktis untuk pemula.';
+    final author = isDynamic
+        ? (item['penulis']?.toString() ?? 'Komunitas TR4SH')
+        : 'Admin TR4SH';
     final mediaUrl = isDynamic ? (item['media_url']?.toString() ?? '') : '';
     final thumbUrl = _getYoutubeThumbnail(mediaUrl);
 
@@ -470,13 +560,18 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                           height: 200,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            height: 200,
-                            color: AppColors.darkGreen,
-                            child: const Center(
-                              child: Icon(Icons.videocam_rounded, size: 60, color: Colors.white),
-                            ),
-                          ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                height: 200,
+                                color: AppColors.darkGreen,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.videocam_rounded,
+                                    size: 60,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                         )
                       else
                         Image.asset(
@@ -489,7 +584,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                               height: 200,
                               color: AppColors.darkGreen,
                               child: const Center(
-                                child: Icon(Icons.videocam_rounded, size: 60, color: Colors.white),
+                                child: Icon(
+                                  Icons.videocam_rounded,
+                                  size: 60,
+                                  color: Colors.white,
+                                ),
                               ),
                             );
                           },
@@ -508,7 +607,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                           radius: 28,
                           backgroundColor: AppColors.limeAccent,
                           child: Icon(
-                            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                            isPlaying
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
                             size: 34,
                             color: AppColors.darkGreen,
                           ),
@@ -518,7 +619,10 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                         top: 12,
                         left: 12,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.darkGreen,
                             borderRadius: BorderRadius.circular(8),
@@ -526,7 +630,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.verified_rounded, size: 12, color: AppColors.limeAccent),
+                              Icon(
+                                Icons.verified_rounded,
+                                size: 12,
+                                color: AppColors.limeAccent,
+                              ),
                               SizedBox(width: 4),
                               Text(
                                 'DISIMPANKAN KE PUBLIK',
@@ -547,8 +655,19 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('01:15 / 03:40', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-                            Icon(Icons.fullscreen_rounded, color: Colors.white, size: 20),
+                            Text(
+                              '01:15 / 03:40',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Icon(
+                              Icons.fullscreen_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ],
                         ),
                       ),
@@ -559,7 +678,10 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFD8F4E4),
                         borderRadius: BorderRadius.circular(8),
@@ -580,14 +702,19 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                           Clipboard.setData(ClipboardData(text: mediaUrl));
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Tautan video berhasil disalin ke clipboard!'),
+                              content: Text(
+                                'Tautan video berhasil disalin ke clipboard!',
+                              ),
                               backgroundColor: AppColors.darkGreen,
                               duration: Duration(seconds: 1),
                             ),
                           );
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF1F8F4),
                             borderRadius: BorderRadius.circular(8),
@@ -596,9 +723,20 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.link_rounded, size: 13, color: AppColors.darkGreen),
+                              Icon(
+                                Icons.link_rounded,
+                                size: 13,
+                                color: AppColors.darkGreen,
+                              ),
                               SizedBox(width: 4),
-                              Text('Salin Link', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                              Text(
+                                'Salin Link',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.darkGreen,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -608,12 +746,20 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 const SizedBox(height: 8),
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   desc,
-                  style: const TextStyle(fontSize: 13, color: AppColors.textMuted, height: 1.4),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textMuted,
+                    height: 1.4,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -623,7 +769,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.darkGreen,
                           side: const BorderSide(color: Color(0xFFD0E5D7)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         onPressed: () {
@@ -631,12 +779,20 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(_isBookmarked ? 'Video disimpan ke favorit' : 'Dihapus dari favorit'),
+                              content: Text(
+                                _isBookmarked
+                                    ? 'Video disimpan ke favorit'
+                                    : 'Dihapus dari favorit',
+                              ),
                               duration: const Duration(seconds: 1),
                             ),
                           );
                         },
-                        icon: Icon(_isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded),
+                        icon: Icon(
+                          _isBookmarked
+                              ? Icons.bookmark_rounded
+                              : Icons.bookmark_border_rounded,
+                        ),
                         label: Text(_isBookmarked ? 'Tersimpan' : 'Simpan'),
                       ),
                     ),
@@ -646,7 +802,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.darkGreen,
                           foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
                         onPressed: () => Navigator.pop(context),
@@ -680,7 +838,10 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
             child: SizedBox(
               width: 24,
               height: 24,
-              child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.darkGreen),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.darkGreen,
+              ),
             ),
           ),
         ),
@@ -705,7 +866,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                       color: AppColors.limeAccent,
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Icon(Icons.verified_rounded, size: 14, color: AppColors.darkGreen),
+                    child: const Icon(
+                      Icons.verified_rounded,
+                      size: 14,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -742,13 +907,16 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             itemCount: _listEdukasi.length,
             itemBuilder: (context, index) {
               final item = _listEdukasi[index];
-              final itemMap = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+              final itemMap = item is Map
+                  ? Map<String, dynamic>.from(item)
+                  : <String, dynamic>{};
               final title = itemMap['title']?.toString() ?? 'Video Edukasi';
-              final author = itemMap['penulis']?.toString() ?? 'Komunitas TR4SH';
+              final author =
+                  itemMap['penulis']?.toString() ?? 'Komunitas TR4SH';
               final mediaUrl = itemMap['media_url']?.toString() ?? '';
               final thumb = _getYoutubeThumbnail(mediaUrl);
 
@@ -773,7 +941,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ClipRRect(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
                         child: Stack(
                           children: [
                             if (thumb != null && thumb.startsWith('http'))
@@ -782,25 +952,37 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                                 height: 105,
                                 width: 220,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stack) => Container(
-                                  height: 105,
-                                  width: 220,
-                                  color: AppColors.darkGreen,
-                                  child: const Icon(Icons.play_circle_outline, color: Colors.white, size: 36),
-                                ),
+                                errorBuilder: (context, error, stack) =>
+                                    Container(
+                                      height: 105,
+                                      width: 220,
+                                      color: AppColors.darkGreen,
+                                      child: const Icon(
+                                        Icons.play_circle_outline,
+                                        color: Colors.white,
+                                        size: 36,
+                                      ),
+                                    ),
                               )
                             else
                               Container(
                                 height: 105,
                                 width: 220,
                                 color: AppColors.darkGreen,
-                                child: const Icon(Icons.play_circle_outline, color: Colors.white, size: 36),
+                                child: const Icon(
+                                  Icons.play_circle_outline,
+                                  color: Colors.white,
+                                  size: 36,
+                                ),
                               ),
                             Positioned(
                               top: 6,
                               left: 6,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: AppColors.limeAccent,
                                   borderRadius: BorderRadius.circular(6),
@@ -819,7 +1001,10 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                               right: 6,
                               bottom: 6,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.black.withValues(alpha: 0.65),
                                   borderRadius: BorderRadius.circular(6),
@@ -827,9 +1012,20 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.play_arrow_rounded, color: Colors.white, size: 11),
+                                    Icon(
+                                      Icons.play_arrow_rounded,
+                                      color: Colors.white,
+                                      size: 11,
+                                    ),
                                     SizedBox(width: 2),
-                                    Text('YouTube', style: TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.bold)),
+                                    Text(
+                                      'YouTube',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -876,7 +1072,13 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     );
   }
 
-  void _showCategoryDetail(String title, String badge, String subtitle, String description, IconData icon) {
+  void _showCategoryDetail(
+    String title,
+    String badge,
+    String subtitle,
+    String description,
+    IconData icon,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -912,26 +1114,53 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-                    Text(subtitle, style: const TextStyle(fontSize: 13, color: AppColors.textMuted)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGreen,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                   ],
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.mintSoft,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     badge,
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            Text(description, style: const TextStyle(fontSize: 13.5, color: Colors.black87, height: 1.5)),
+            Text(
+              description,
+              style: const TextStyle(
+                fontSize: 13.5,
+                color: Colors.black87,
+                height: 1.5,
+              ),
+            ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
@@ -940,10 +1169,15 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Mengerti & Kembali', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Mengerti & Kembali',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -959,32 +1193,55 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       builder: (context) => AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Pendaftaran Workshop', style: TextStyle(color: AppColors.darkGreen, fontWeight: FontWeight.bold)),
-        content: Column(
+        title: const Text(
+          'Pendaftaran Workshop',
+          style: TextStyle(
+            color: AppColors.darkGreen,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: const Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'Kreasi Lilin dari Limbah Minyak',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.darkGreen),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 15,
+                color: AppColors.darkGreen,
+              ),
             ),
             SizedBox(height: 8),
-            Text('📅 Tanggal: Minggu, 27 September 2026\n⏰ Waktu: 09:00 - 12:00 WIB\n📍 Lokasi: Rumah Komunitas TR4SH!, Jakarta\n🎟 Kuota: Tersisa 8 Kursi',
-                style: TextStyle(fontSize: 13, height: 1.5)),
+            Text(
+              '📅 Tanggal: Minggu, 27 September 2026\n⏰ Waktu: 09:00 - 12:00 WIB\n📍 Lokasi: Rumah Komunitas TR4SH!, Jakarta\n🎟 Kuota: Tersisa 8 Kursi',
+              style: TextStyle(fontSize: 13, height: 1.5),
+            ),
             SizedBox(height: 12),
-            Text('Biaya: GRATIS (Ditanggung Bank Sampah Digital)', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+            Text(
+              'Biaya: GRATIS (Ditanggung Bank Sampah Digital)',
+              style: TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.limeAccent,
               foregroundColor: AppColors.darkGreen,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             onPressed: () {
               Navigator.pop(context);
@@ -995,7 +1252,10 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 ),
               );
             },
-            child: const Text('Konfirmasi Daftar', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Konfirmasi Daftar',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -1009,15 +1269,14 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            await Future.wait([
-              _loadBerandaEdukasi(),
-              _loadRiwayatSampah(),
-            ]);
+            await Future.wait([_loadBerandaEdukasi(), _loadRiwayatSampah()]);
           },
           color: AppColors.darkGreen,
           backgroundColor: AppColors.limeAccent,
           child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: ClampingScrollPhysics(),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -1058,35 +1317,54 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
                 // ── 3. Card Riwayat Setor Sampah (Chart & Summary Sinkron dengan Tracking) ──
                 CardRiwayatSampah(
-                  rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                  rawData:
+                      (UserAccountData.isGuest || UserAccountData.isNewAccount)
                       ? const []
                       : _listSampah,
-                  totalWeight: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                  totalWeight:
+                      (UserAccountData.isGuest || UserAccountData.isNewAccount)
                       ? '0.0'
                       : (_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'),
-                  trendBadge: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                  trendBadge:
+                      (UserAccountData.isGuest || UserAccountData.isNewAccount)
                       ? '+0 setoran'
-                      : (_totalCount > 0 ? '+$_totalCount setoran' : '+28% minggu ini'),
+                      : (_totalCount > 0
+                            ? '+$_totalCount setoran'
+                            : '+28% minggu ini'),
                 ),
 
                 const SizedBox(height: 22),
 
                 // ── 4. Cara Menabung Sampah (Video Tutorial) ──
                 CardVideoTutorial(
-                  onPlayTap: () => _showVideoPlayerModal(_listEdukasi.isNotEmpty ? Map<String, dynamic>.from(_listEdukasi.first) : null),
+                  onPlayTap: () => _showVideoPlayerModal(
+                    _listEdukasi.isNotEmpty
+                        ? Map<String, dynamic>.from(_listEdukasi.first)
+                        : null,
+                  ),
                   onSeeAllTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(builder: (_) => const HalamanKonten()),
                     );
                   },
-                  thumbnailUrl: _listEdukasi.isNotEmpty ? _getYoutubeThumbnail(_listEdukasi.first['media_url']?.toString()) : null,
-                  title: _listEdukasi.isNotEmpty && _listEdukasi.first['title'] != null
+                  thumbnailUrl: _listEdukasi.isNotEmpty
+                      ? _getYoutubeThumbnail(
+                          _listEdukasi.first['media_url']?.toString(),
+                        )
+                      : null,
+                  title:
+                      _listEdukasi.isNotEmpty &&
+                          _listEdukasi.first['title'] != null
                       ? _listEdukasi.first['title'].toString()
                       : 'Panduan Pilah Sampah Rumah Tangga',
-                  subtitle: _listEdukasi.isNotEmpty && _listEdukasi.first['description'] != null
+                  subtitle:
+                      _listEdukasi.isNotEmpty &&
+                          _listEdukasi.first['description'] != null
                       ? _listEdukasi.first['description'].toString()
                       : 'Langkah mudah memisahkan sampah organik & anorganik',
-                  author: _listEdukasi.isNotEmpty ? _listEdukasi.first['penulis']?.toString() : null,
+                  author: _listEdukasi.isNotEmpty
+                      ? _listEdukasi.first['penulis']?.toString()
+                      : null,
                   badgeText: _listEdukasi.isNotEmpty ? 'BARU DISETUJUI' : null,
                 ),
 
@@ -1098,16 +1376,12 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 const SizedBox(height: 22),
 
                 // ── 5. Kenali Jenis Sampah (2x2 Grid) ──
-                GridJenisSampah(
-                  onCategoryTap: _showCategoryDetail,
-                ),
+                GridJenisSampah(onCategoryTap: _showCategoryDetail),
 
                 const SizedBox(height: 18),
 
                 // ── 6. Workshop Card Banner ──
-                CardWorkshop(
-                  onDaftarTap: _showWorkshopModal,
-                ),
+                CardWorkshop(onDaftarTap: _showWorkshopModal),
 
                 const SizedBox(height: 24),
               ],
@@ -1121,17 +1395,14 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
         currentIndex: _currentNavIndex,
         onTap: (index) {
           if (index == 2) {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const HalamanKonten()),
-            );
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const HalamanKonten()));
           } else if (index == 1) {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const HalamanProduk()),
-            );
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const HalamanProduk()));
           } else if (index == 4) {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const HalamanAkun()),
-            );
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (_) => const HalamanAkun()));
           } else if (index == 3) {
             if (UserAccountData.isGuest) {
               AuthRequiredModal.show(
@@ -1142,9 +1413,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               );
               return;
             }
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const HalamanTracking()),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const HalamanTracking()));
           } else {
             setState(() {
               _currentNavIndex = index;

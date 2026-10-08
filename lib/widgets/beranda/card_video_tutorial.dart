@@ -88,17 +88,21 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                 GestureDetector(
                   onTap: widget.onPlayTap,
                   child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        if (widget.thumbnailUrl != null && widget.thumbnailUrl!.startsWith('http'))
+                        if (widget.thumbnailUrl != null &&
+                            widget.thumbnailUrl!.startsWith('http'))
                           Image.network(
                             widget.thumbnailUrl!,
                             height: 180,
                             width: double.infinity,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => _buildFallbackThumbnail(),
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildFallbackThumbnail(),
                           )
                         else
                           _buildFallbackThumbnail(),
@@ -131,7 +135,10 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                             top: 12,
                             left: 12,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.limeAccent,
                                 borderRadius: BorderRadius.circular(10),
@@ -158,7 +165,10 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                           right: 12,
                           bottom: 12,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.6),
                               borderRadius: BorderRadius.circular(10),
@@ -166,7 +176,11 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.schedule_rounded, size: 12, color: Colors.white),
+                                const Icon(
+                                  Icons.schedule_rounded,
+                                  size: 12,
+                                  color: Colors.white,
+                                ),
                                 const SizedBox(width: 4),
                                 Text(
                                   widget.duration,
@@ -214,7 +228,8 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                                 height: 1.3,
                               ),
                             ),
-                            if (widget.author != null && widget.author!.isNotEmpty) ...[
+                            if (widget.author != null &&
+                                widget.author!.isNotEmpty) ...[
                               const SizedBox(height: 4),
                               Text(
                                 'Oleh: ${widget.author}',
@@ -230,8 +245,12 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                       ),
                       IconButton(
                         icon: Icon(
-                          _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                          color: _isBookmarked ? AppColors.darkGreen : AppColors.textMuted,
+                          _isBookmarked
+                              ? Icons.bookmark_rounded
+                              : Icons.bookmark_border_rounded,
+                          color: _isBookmarked
+                              ? AppColors.darkGreen
+                              : AppColors.textMuted,
                         ),
                         onPressed: () {
                           setState(() {
@@ -239,7 +258,11 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                           });
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(_isBookmarked ? 'Video ditambahkan ke bookmark!' : 'Bookmark dihapus'),
+                              content: Text(
+                                _isBookmarked
+                                    ? 'Video ditambahkan ke bookmark!'
+                                    : 'Bookmark dihapus',
+                              ),
                               duration: const Duration(seconds: 1),
                             ),
                           );
@@ -271,7 +294,11 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
             ),
           ),
           child: const Center(
-            child: Icon(Icons.recycling_rounded, size: 60, color: Colors.white38),
+            child: Icon(
+              Icons.recycling_rounded,
+              size: 60,
+              color: Colors.white38,
+            ),
           ),
         );
       },

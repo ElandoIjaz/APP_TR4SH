@@ -12,7 +12,9 @@ void main() {
     UserAccountData.userPoints = 500;
   });
 
-  testWidgets('HalamanBeranda renders correctly with all widgets', (WidgetTester tester) async {
+  testWidgets('HalamanBeranda renders correctly with all widgets', (
+    WidgetTester tester,
+  ) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp(initialHome: HalamanBeranda()));
     await tester.pump();
@@ -93,7 +95,10 @@ void main() {
 
     // Verify Impact Banner
     expect(find.text('DAMPAK POSITIFMU'), findsOneWidget);
-    expect(find.text('Total 12.5 kg sampah berhasil dikurangi dari TPA'), findsOneWidget);
+    expect(
+      find.text('Total 12.5 kg sampah berhasil dikurangi dari TPA'),
+      findsOneWidget,
+    );
     expect(find.text('Setara 18.2 kg reduksi CO2e'), findsOneWidget);
 
     // Verify Menu List
@@ -149,6 +154,9 @@ void main() {
     // Verify HalamanProduk elements
     expect(find.text('ECO MARKETPLACE'), findsOneWidget);
     expect(find.text('Karya Daur Ulang Penuh Makna'), findsOneWidget);
-    expect(find.text('Pot Bunga dari Botol Plastik Daur Ulang'), findsOneWidget);
+    expect(
+      find.text('Pot Bunga dari Botol Plastik Daur Ulang'),
+      findsOneWidget,
+    );
   });
 }

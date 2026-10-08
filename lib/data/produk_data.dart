@@ -1,66 +1,8 @@
-class ProdukItem {
-  final String id;
-  final String title;
-  final int price;
-  final int originalPrice;
-  final String discount;
-  final String image;
-  final String badge;
-  final String materialTag;
-  final double rating;
-  final int reviewCount;
-  final String soldCount;
-  final String category;
-  final String plasticSaved;
-  final String carbonReduction;
-  final String merchantName;
-  final String merchantLocation;
-  final String material;
-  final String dimensions;
-  final String mainFeature;
-  final String description;
+export 'models/produk_item_model.dart';
+export 'models/item_keranjang_model.dart';
 
-  const ProdukItem({
-    required this.id,
-    required this.title,
-    required this.price,
-    required this.originalPrice,
-    required this.discount,
-    required this.image,
-    required this.badge,
-    required this.materialTag,
-    required this.rating,
-    required this.reviewCount,
-    required this.soldCount,
-    required this.category,
-    required this.plasticSaved,
-    required this.carbonReduction,
-    required this.merchantName,
-    required this.merchantLocation,
-    required this.material,
-    required this.dimensions,
-    required this.mainFeature,
-    required this.description,
-  });
-}
-
-class ItemKeranjang {
-  final String id;
-  final ProdukItem product;
-  final String variant;
-  final String materialBadge;
-  int quantity;
-  bool isSelected;
-
-  ItemKeranjang({
-    required this.id,
-    required this.product,
-    required this.variant,
-    required this.materialBadge,
-    this.quantity = 1,
-    this.isSelected = true,
-  });
-}
+import 'models/produk_item_model.dart';
+import 'models/item_keranjang_model.dart';
 
 class ProdukData {
   ProdukData._();
@@ -86,8 +28,7 @@ class ProdukData {
       material: '100% Recycled PET Plastic & Natural Mineral Powder',
       dimensions: 'Diameter 12 cm, Tinggi 14 cm',
       mainFeature: 'Lubang drainase terintegrasi, tahan cuaca outdoor',
-      description:
-          'Pot tanaman premium bergaya minimalis kontemporer. Dibuat secara presisi dari lelehan botol plastik bekas yang dipadukan dengan bubuk mineral alami untuk menghasilkan tekstur matte sentuhan marmer sage green yang tahan banting, awet, dan ramah lingkungan.',
+      description: 'Pot tanaman premium bergaya minimalis kontemporer. Dibuat secara presisi dari lelehan botol plastik bekas yang dipadukan dengan bubuk mineral alami untuk menghasilkan tekstur matte sentuhan marmer sage green yang tahan banting, awet, dan ramah lingkungan.',
     ),
     ProdukItem(
       id: 'prod-2',
@@ -109,8 +50,7 @@ class ProdukData {
       material: 'Upcycled Glass Bottle & Solid Oak Wood Base',
       dimensions: 'Diameter 10 cm, Tinggi 28 cm',
       mainFeature: 'Warm LED Edison Bulb, hemat energi & kabel vintage',
-      description:
-          'Lampu meja hias unik bernuansa industrial vintage yang diproduksi dari daur ulang botol kaca minuman tebal berkualitas tinggi. Dilengkapi dudukan kayu jati belanda rekondisi.',
+      description: 'Lampu meja hias unik bernuansa industrial vintage yang diproduksi dari daur ulang botol kaca minuman tebal berkualitas tinggi. Dilengkapi dudukan kayu jati belanda rekondisi.',
     ),
     ProdukItem(
       id: 'prod-3',
@@ -132,8 +72,7 @@ class ProdukData {
       material: 'Vintage Burlap Coffee Sack & Heavyweight Cotton Canvas',
       dimensions: 'Panjang 38 cm, Lebar 10 cm, Tinggi 42 cm',
       mainFeature: 'Tali katun kanvas kuat, jahitan ganda tahan beban 12 kg',
-      description:
-          'Tas tote bag fungsional dengan estetika rustic otentik yang dijahit dari karung kopi goni pilihan. Dicuci bersih dan disterilkan secara ramah lingkungan sebelum diproduksi.',
+      description: 'Tas tote bag fungsional dengan estetika rustic otentik yang dijahit dari karung kopi goni pilihan. Dicuci bersih dan disterilkan secara ramah lingkungan sebelum diproduksi.',
     ),
     ProdukItem(
       id: 'prod-4',
@@ -155,8 +94,7 @@ class ProdukData {
       material: 'Multi-layer Recycled Kraft Cardboard dengan coating tahan air',
       dimensions: '18 cm x 12 cm x 10 cm',
       mainFeature: 'Desain geometris modular dengan 4 sekat fungsional',
-      description:
-          'Organizer meja dan tempat alat tulis serbaguna dengan desain geometris elegan. Dibuat dari potongan kardus kemasan berdensitas tinggi yang dilapisi lilin lebah alami agar tahan percikan air.',
+      description: 'Organizer meja dan tempat alat tulis serbaguna dengan desain geometris elegan. Dibuat dari potongan kardus kemasan berdensitas tinggi yang dilapisi lilin lebah alami agar tahan percikan air.',
     ),
   ];
 

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,11 +46,18 @@ class ApiConfig {
   }
 
   /// Cek cepat apakah koneksi ke host tertentu aktif
-  static Future<bool> pingHost(String ipOrHost, {int? checkPort, int timeoutMs = 800}) async {
+  static Future<bool> pingHost(
+    String ipOrHost, {
+    int? checkPort,
+    int timeoutMs = 800,
+  }) async {
     try {
       final p = checkPort ?? port;
-      final client = HttpClient()..connectionTimeout = Duration(milliseconds: timeoutMs);
-      final req = await client.getUrl(Uri.parse('http://$ipOrHost:$p/api/ping'));
+      final client = HttpClient()
+        ..connectionTimeout = Duration(milliseconds: timeoutMs);
+      final req = await client.getUrl(
+        Uri.parse('http://$ipOrHost:$p/api/ping'),
+      );
       final res = await req.close().timeout(Duration(milliseconds: timeoutMs));
       final isOk = res.statusCode == 200;
       client.close();

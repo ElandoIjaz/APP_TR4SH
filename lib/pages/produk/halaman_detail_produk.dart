@@ -6,10 +6,7 @@ import 'package:test23/pages/produk/halaman_keranjang.dart';
 class HalamanDetailProduk extends StatefulWidget {
   final ProdukItem product;
 
-  const HalamanDetailProduk({
-    super.key,
-    required this.product,
-  });
+  const HalamanDetailProduk({super.key, required this.product});
 
   @override
   State<HalamanDetailProduk> createState() => _HalamanDetailProdukState();
@@ -41,7 +38,11 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   color: const Color(0xFFD6F3DD),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: AppColors.darkGreen, size: 20),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.darkGreen,
+                  size: 20,
+                ),
               ),
             ),
           ),
@@ -70,7 +71,9 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
           ),
           IconButton(
             icon: Icon(
-              _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              _isFavorite
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
               color: _isFavorite ? Colors.redAccent : AppColors.darkGreen,
             ),
             onPressed: () {
@@ -79,7 +82,11 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(_isFavorite ? 'Disimpan ke wishlist!' : 'Dihapus dari wishlist'),
+                  content: Text(
+                    _isFavorite
+                        ? 'Disimpan ke wishlist!'
+                        : 'Dihapus dari wishlist',
+                  ),
                   duration: const Duration(milliseconds: 800),
                   backgroundColor: AppColors.darkGreen,
                 ),
@@ -90,7 +97,7 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
         ],
       ),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -104,7 +111,11 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: AppColors.mintSoft,
-                      child: const Icon(Icons.yard_rounded, size: 60, color: AppColors.darkGreen),
+                      child: const Icon(
+                        Icons.yard_rounded,
+                        size: 60,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                   ),
                 ),
@@ -117,15 +128,22 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.darkGreen,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.eco_rounded, size: 12, color: AppColors.limeAccent),
+                          children: [
+                            Icon(
+                              Icons.eco_rounded,
+                              size: 12,
+                              color: AppColors.limeAccent,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'Eco-Friendly',
@@ -140,15 +158,22 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                       ),
                       const SizedBox(height: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.darkGreen,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.local_fire_department_rounded, size: 12, color: Color(0xFFFF9800)),
+                          children: [
+                            Icon(
+                              Icons.local_fire_department_rounded,
+                              size: 12,
+                              color: Color(0xFFFF9800),
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'Produk Terlaris',
@@ -170,7 +195,10 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   right: 14,
                   bottom: 14,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.darkGreen.withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(12),
@@ -216,7 +244,10 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFD6F5E1),
                           borderRadius: BorderRadius.circular(6),
@@ -250,7 +281,11 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   // Rating & Sold Count
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF9A825)),
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 16,
+                        color: Color(0xFFF9A825),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${product.rating}',
@@ -284,9 +319,13 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: const [
-                            Icon(Icons.recycling_rounded, color: AppColors.darkGreen, size: 20),
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.recycling_rounded,
+                              color: AppColors.darkGreen,
+                              size: 20,
+                            ),
                             SizedBox(width: 8),
                             Text(
                               'Dampak Lingkungan Produk Ini',
@@ -311,20 +350,41 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      children: const [
-                                        Icon(Icons.delete_outline_rounded, size: 14, color: Color(0xFF1E8850)),
+                                    const Row(
+                                      children: [
+                                        Icon(
+                                          Icons.delete_outline_rounded,
+                                          size: 14,
+                                          color: Color(0xFF1E8850),
+                                        ),
                                         SizedBox(width: 4),
-                                        Text('Plastik PET', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                                        Text(
+                                          'Plastik PET',
+                                          style: TextStyle(
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.darkGreen,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       product.plasticSaved,
-                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.darkGreen),
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.darkGreen,
+                                      ),
                                     ),
                                     const SizedBox(height: 2),
-                                    const Text('Sampah didaur ulang', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                                    const Text(
+                                      'Sampah didaur ulang',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.textMuted,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -340,20 +400,41 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      children: const [
-                                        Icon(Icons.trending_down_rounded, size: 14, color: Color(0xFF1E8850)),
+                                    const Row(
+                                      children: [
+                                        Icon(
+                                          Icons.trending_down_rounded,
+                                          size: 14,
+                                          color: Color(0xFF1E8850),
+                                        ),
                                         SizedBox(width: 4),
-                                        Text('Jejak Karbon', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                                        Text(
+                                          'Jejak Karbon',
+                                          style: TextStyle(
+                                            fontSize: 10.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.darkGreen,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       product.carbonReduction,
-                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.darkGreen),
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.darkGreen,
+                                      ),
                                     ),
                                     const SizedBox(height: 2),
-                                    const Text('Setara emisi CO2e', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                                    const Text(
+                                      'Setara emisi CO2e',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.textMuted,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -372,7 +453,10 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.cardBorder, width: 1.2),
+                      border: Border.all(
+                        color: AppColors.cardBorder,
+                        width: 1.2,
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -382,7 +466,11 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                             width: 44,
                             height: 44,
                             color: AppColors.mintSoft,
-                            child: const Icon(Icons.storefront_rounded, color: AppColors.darkGreen, size: 24),
+                            child: const Icon(
+                              Icons.storefront_rounded,
+                              color: AppColors.darkGreen,
+                              size: 24,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -395,23 +483,38 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                                   Flexible(
                                     child: Text(
                                       product.merchantName,
-                                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                                      style: const TextStyle(
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.darkGreen,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  const Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF1E8850)),
+                                  const Icon(
+                                    Icons.check_circle_rounded,
+                                    size: 14,
+                                    color: Color(0xFF1E8850),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 2),
                               Row(
                                 children: [
-                                  const Icon(Icons.location_on_outlined, size: 12, color: AppColors.textMuted),
+                                  const Icon(
+                                    Icons.location_on_outlined,
+                                    size: 12,
+                                    color: AppColors.textMuted,
+                                  ),
                                   const SizedBox(width: 2),
                                   Expanded(
                                     child: Text(
                                       product.merchantLocation,
-                                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.textMuted,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -424,19 +527,32 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                           style: OutlinedButton.styleFrom(
                             side: const BorderSide(color: Color(0xFF6EC6A1)),
                             backgroundColor: const Color(0xFFF0FAF4),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Membuka toko ${product.merchantName}')),
+                              SnackBar(
+                                content: Text(
+                                  'Membuka toko ${product.merchantName}',
+                                ),
+                              ),
                             );
                           },
                           child: const Text(
                             'Kunjungi Toko',
-                            style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.darkGreen,
+                            ),
                           ),
                         ),
                       ],
@@ -448,7 +564,11 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   // ── 5. Spesifikasi Produk ──
                   const Text(
                     'Spesifikasi Produk',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                   const SizedBox(height: 10),
                   Container(
@@ -473,12 +593,20 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   // ── 6. Tentang Koleksi Ini ──
                   const Text(
                     'Tentang Koleksi Ini',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     product.description,
-                    style: const TextStyle(fontSize: 12.5, color: Color(0xFF4C6656), height: 1.45),
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF4C6656),
+                      height: 1.45,
+                    ),
                   ),
 
                   const SizedBox(height: 20),
@@ -489,13 +617,21 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                     children: [
                       const Text(
                         'Ulasan Pembeli',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.darkGreen,
+                        ),
                       ),
                       InkWell(
                         onTap: () {},
                         child: const Text(
                           'Lihat Semua (320)',
-                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: Color(0xFF1E8850)),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1E8850),
+                          ),
                         ),
                       ),
                     ],
@@ -506,7 +642,10 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.cardBorder, width: 1.2),
+                      border: Border.all(
+                        color: AppColors.cardBorder,
+                        width: 1.2,
+                      ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,22 +655,46 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                             const CircleAvatar(
                               radius: 16,
                               backgroundColor: Color(0xFFD8F4E4),
-                              child: Text('AN', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                              child: Text(
+                                'AN',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.darkGreen,
+                                ),
+                              ),
                             ),
                             const SizedBox(width: 10),
-                            Expanded(
+                            const Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  Text('Anindya Putri', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-                                  Text('2 hari lalu • Pembeli Terverifikasi', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                                children: [
+                                  Text(
+                                    'Anindya Putri',
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.darkGreen,
+                                    ),
+                                  ),
+                                  Text(
+                                    '2 hari lalu • Pembeli Terverifikasi',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                             Row(
                               children: List.generate(
                                 5,
-                                (index) => const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF9A825)),
+                                (index) => const Icon(
+                                  Icons.star_rounded,
+                                  size: 14,
+                                  color: Color(0xFFF9A825),
+                                ),
                               ),
                             ),
                           ],
@@ -539,7 +702,11 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                         const SizedBox(height: 10),
                         const Text(
                           '"Kualitas di luar ekspektasi! Warnanya sage green mewah banget dan teksturnya kokoh, nggak kelihatan dari plastik daur ulang. Drainasenya rapi buat monstera mini saya."',
-                          style: TextStyle(fontSize: 11.5, color: Color(0xFF43584D), height: 1.35),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: Color(0xFF43584D),
+                            height: 1.35,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         ClipRRect(
@@ -588,10 +755,16 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   border: Border.all(color: AppColors.cardBorder, width: 1.5),
                 ),
                 child: IconButton(
-                  icon: const Icon(Icons.chat_outlined, color: AppColors.darkGreen, size: 20),
+                  icon: const Icon(
+                    Icons.chat_outlined,
+                    color: AppColors.darkGreen,
+                    size: 20,
+                  ),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Membuka percakapan dengan penjual...')),
+                      const SnackBar(
+                        content: Text('Membuka percakapan dengan penjual...'),
+                      ),
                     );
                   },
                 ),
@@ -605,22 +778,37 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    side: const BorderSide(color: AppColors.darkGreen, width: 1.4),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    side: const BorderSide(
+                      color: AppColors.darkGreen,
+                      width: 1.4,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('${product.title} berhasil dimasukkan ke keranjang!'),
+                        content: Text(
+                          '${product.title} berhasil dimasukkan ke keranjang!',
+                        ),
                         duration: const Duration(milliseconds: 900),
                         backgroundColor: AppColors.darkGreen,
                       ),
                     );
                   },
-                  icon: const Icon(Icons.shopping_bag_outlined, color: AppColors.darkGreen, size: 18),
+                  icon: const Icon(
+                    Icons.shopping_bag_outlined,
+                    color: AppColors.darkGreen,
+                    size: 18,
+                  ),
                   label: const Text(
                     'Keranjang',
-                    style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.darkGreen, fontSize: 13),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkGreen,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ),
@@ -636,15 +824,23 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const HalamanKeranjang()),
+                      MaterialPageRoute(
+                        builder: (_) => const HalamanKeranjang(),
+                      ),
                     );
                   },
-                  icon: const Icon(Icons.bolt_rounded, color: AppColors.limeAccent, size: 18),
+                  icon: const Icon(
+                    Icons.bolt_rounded,
+                    color: AppColors.limeAccent,
+                    size: 18,
+                  ),
                   label: const Text(
                     'Beli Sekarang',
                     style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
@@ -668,13 +864,21 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
             width: 90,
             child: Text(
               label,
-              style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 11.5, color: AppColors.darkGreen, fontWeight: FontWeight.w700),
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: AppColors.darkGreen,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -684,8 +888,8 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 }

@@ -1,23 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test23/core/api_config.dart';
 import 'package:test23/data/user_account_data.dart';
 
-class ApiResponse {
-  final bool success;
-  final String message;
-  final dynamic data;
-  final int statusCode;
+export 'models/api_response.dart';
 
-  const ApiResponse({
-    required this.success,
-    required this.message,
-    this.data,
-    this.statusCode = 200,
-  });
-}
+import 'models/api_response.dart';
 
 class ApiService {
   ApiService._();
@@ -63,7 +54,9 @@ class ApiService {
     UserAccountData.resetSession();
   }
 
-  static Future<Map<String, String>> _getHeaders({bool requireAuth = false}) async {
+  static Future<Map<String, String>> _getHeaders({
+    bool requireAuth = false,
+  }) async {
     final headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
@@ -132,7 +125,8 @@ class ApiService {
       }
       return ApiResponse(
         success: false,
-        message: 'Koneksi timeout ke ${ApiConfig.login}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan IP server sesuai.',
+        message:
+            'Koneksi timeout ke ${ApiConfig.login}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan IP server sesuai.',
         statusCode: 408,
       );
     } catch (e) {
@@ -143,7 +137,8 @@ class ApiService {
       }
       return ApiResponse(
         success: false,
-        message: 'Tidak dapat terhubung ke server Laravel (${ApiConfig.baseUrl}): $e',
+        message:
+            'Tidak dapat terhubung ke server Laravel (${ApiConfig.baseUrl}): $e',
         statusCode: 500,
       );
     }
@@ -157,16 +152,14 @@ class ApiService {
         .post(
           Uri.parse(ApiConfig.login),
           headers: await _getHeaders(),
-          body: jsonEncode({
-            'username': userIdentifier,
-            'password': password,
-          }),
+          body: jsonEncode({'username': userIdentifier, 'password': password}),
         )
         .timeout(_timeoutDuration);
 
     final Map<String, dynamic> body = _parseJson(response.body);
 
-    if (response.statusCode == 200 && (body['success'] == true || body['token'] != null)) {
+    if (response.statusCode == 200 &&
+        (body['success'] == true || body['token'] != null)) {
       final token = body['token']?.toString() ?? '';
       final userData = body['data'] is Map<String, dynamic>
           ? Map<String, dynamic>.from(body['data'])
@@ -183,7 +176,9 @@ class ApiService {
         statusCode: response.statusCode,
       );
     } else {
-      String errorMsg = (body['message'] != null && body['message'].toString().trim().isNotEmpty)
+      String errorMsg =
+          (body['message'] != null &&
+              body['message'].toString().trim().isNotEmpty)
           ? body['message'].toString()
           : 'Username atau kata sandi tidak valid.';
       if (body['errors'] is Map) {
@@ -228,7 +223,8 @@ class ApiService {
       }
       return ApiResponse(
         success: false,
-        message: 'Koneksi timeout ke ${ApiConfig.register}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan IP server sesuai.',
+        message:
+            'Koneksi timeout ke ${ApiConfig.register}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan IP server sesuai.',
         statusCode: 408,
       );
     } catch (e) {
@@ -264,7 +260,10 @@ class ApiService {
       final token = body['token']?.toString() ?? '';
       final userData = body['data'] is Map<String, dynamic>
           ? Map<String, dynamic>.from(body['data'])
-          : <String, dynamic>{'username': username, 'nama_lengkap': namaLengkap};
+          : <String, dynamic>{
+              'username': username,
+              'nama_lengkap': namaLengkap,
+            };
 
       if (token.isNotEmpty) {
         await saveSession(token: token, user: userData);
@@ -277,7 +276,9 @@ class ApiService {
         statusCode: response.statusCode,
       );
     } else {
-      String errorMsg = (body['message'] != null && body['message'].toString().trim().isNotEmpty)
+      String errorMsg =
+          (body['message'] != null &&
+              body['message'].toString().trim().isNotEmpty)
           ? body['message'].toString()
           : 'Pendaftaran akun gagal.';
       if (body['errors'] is Map) {
@@ -342,7 +343,10 @@ class ApiService {
       final effectiveJenis = (jenisSampah != null && jenisSampah.isNotEmpty)
           ? jenisSampah
           : (kategori ?? 'Sampah Anorganik');
-      final effectiveJumlah = jumlah ?? beratKg ?? (jumlahItem != null ? jumlahItem.toDouble() : 1.0);
+      final effectiveJumlah =
+          jumlah ??
+          beratKg ??
+          (jumlahItem != null ? jumlahItem.toDouble() : 1.0);
 
       String effectiveKet = keterangan ?? '';
       if (effectiveKet.isEmpty && alamatJemput != null) {
@@ -404,7 +408,12 @@ class ApiService {
       final listRaw = body['data'] is List ? (body['data'] as List) : [];
       final double totalKg = (body['total_kg'] != null)
           ? (double.tryParse(body['total_kg'].toString()) ?? 0.0)
-          : (listRaw.fold(0.0, (sum, item) => sum + (double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0)));
+          : (listRaw.fold(
+              0.0,
+              (sum, item) =>
+                  sum +
+                  (double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0),
+            ));
       final int totalCount = (body['total'] != null)
           ? (int.tryParse(body['total'].toString()) ?? listRaw.length)
           : listRaw.length;
@@ -418,16 +427,33 @@ class ApiService {
       } else {
         UserAccountData.listRiwayatSetor = listRaw.map((item) {
           final idSampah = item['id_sampah']?.toString() ?? '0';
-          final kategori = item['nama_kategori']?.toString() ?? (item['jenis_sampah']?.toString() ?? 'Sampah');
-          final berat = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
+          final kategori =
+              item['nama_kategori']?.toString() ??
+              (item['jenis_sampah']?.toString() ?? 'Sampah');
+          final berat =
+              double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
           final tanggalRaw = item['created_at']?.toString() ?? '';
 
           String tanggalFmt = tanggalRaw;
           try {
             if (tanggalRaw.isNotEmpty) {
               final dt = DateTime.parse(tanggalRaw).toLocal();
-              const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-              tanggalFmt = '${dt.day} ${months[dt.month - 1]} ${dt.year}, ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+              const months = [
+                'Jan',
+                'Feb',
+                'Mar',
+                'Apr',
+                'Mei',
+                'Jun',
+                'Jul',
+                'Agu',
+                'Sep',
+                'Okt',
+                'Nov',
+                'Des',
+              ];
+              tanggalFmt =
+                  '${dt.day} ${months[dt.month - 1]} ${dt.year}, ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
             }
           } catch (_) {}
 
@@ -437,7 +463,9 @@ class ApiService {
             kategori: kategori,
             beratKg: berat,
             poin: (berat * 15).round(),
-            lokasiBankSampah: (item['keterangan'] != null && item['keterangan'].toString().isNotEmpty)
+            lokasiBankSampah:
+                (item['keterangan'] != null &&
+                    item['keterangan'].toString().isNotEmpty)
                 ? item['keterangan'].toString()
                 : 'TR4SH Drop Point & Eco Hub',
             status: 'Selesai',
@@ -449,11 +477,7 @@ class ApiService {
       return ApiResponse(
         success: response.statusCode == 200,
         message: body['message'] ?? 'Riwayat sampah berhasil dimuat.',
-        data: {
-          'items': listRaw,
-          'total_kg': totalKg,
-          'total': totalCount,
-        },
+        data: {'items': listRaw, 'total_kg': totalKg, 'total': totalCount},
         statusCode: response.statusCode,
       );
     } catch (e) {
@@ -469,7 +493,10 @@ class ApiService {
   static Future<ApiResponse> fetchKategoriSampah() async {
     try {
       final response = await http
-          .get(Uri.parse(ApiConfig.kategoriSampah), headers: await _getHeaders())
+          .get(
+            Uri.parse(ApiConfig.kategoriSampah),
+            headers: await _getHeaders(),
+          )
           .timeout(_timeoutDuration);
 
       final Map<String, dynamic> body = _parseJson(response.body);
@@ -523,14 +550,22 @@ class ApiService {
   // ── 6. Konten Edukasi Publik ──
 
   /// Ambil konten edukasi publik dari `/api/edukasi`
-  static Future<ApiResponse> fetchEdukasi({String? kategori, String? search}) async {
+  static Future<ApiResponse> fetchEdukasi({
+    String? kategori,
+    String? search,
+  }) async {
     try {
       final queryParams = <String, String>{};
-      if (kategori != null && kategori.isNotEmpty) queryParams['kategori'] = kategori;
+      if (kategori != null && kategori.isNotEmpty) {
+        queryParams['kategori'] = kategori;
+      }
       if (search != null && search.isNotEmpty) queryParams['search'] = search;
 
-      final uri = Uri.parse(ApiConfig.listEdukasi).replace(queryParameters: queryParams.isEmpty ? null : queryParams);
-      final response = await http.get(uri, headers: await _getHeaders()).timeout(_timeoutDuration);
+      final uri = Uri.parse(ApiConfig.listEdukasi)
+          .replace(queryParameters: queryParams.isEmpty ? null : queryParams);
+      final response = await http
+          .get(uri, headers: await _getHeaders())
+          .timeout(_timeoutDuration);
 
       final Map<String, dynamic> body = _parseJson(response.body);
 
@@ -583,12 +618,16 @@ class ApiService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return ApiResponse(
           success: true,
-          message: body['message'] ?? 'Konten berhasil dikirim! Menunggu konfirmasi admin.',
+          message:
+              body['message'] ??
+              'Konten berhasil dikirim! Menunggu konfirmasi admin.',
           data: body['data'] ?? body,
           statusCode: response.statusCode,
         );
       } else {
-        String errorMsg = (body['message'] != null && body['message'].toString().trim().isNotEmpty)
+        String errorMsg =
+            (body['message'] != null &&
+                body['message'].toString().trim().isNotEmpty)
             ? body['message'].toString()
             : 'Gagal mengunggah konten.';
         if (body['errors'] is Map) {
@@ -648,11 +687,15 @@ class ApiService {
     }
   }
 
-    /// Periksa status keaktifan akun user secara langsung ke server TR4SH
+  /// Periksa status keaktifan akun user secara langsung ke server TR4SH
   static Future<ApiResponse> checkUserStatus(dynamic userId) async {
     try {
       if (userId == null) {
-        return const ApiResponse(success: false, message: 'ID pengguna tidak valid', statusCode: 400);
+        return const ApiResponse(
+          success: false,
+          message: 'ID pengguna tidak valid',
+          statusCode: 400,
+        );
       }
       final url = '${ApiConfig.baseUrl}/auth/check-status/$userId';
       final response = await http
@@ -660,7 +703,10 @@ class ApiService {
           .timeout(const Duration(seconds: 4));
 
       final Map<String, dynamic> body = _parseJson(response.body);
-      final bool isBlocked = (response.statusCode == 403 || body['is_blocked'] == true || body['status_akun'] == 'diblokir');
+      final bool isBlocked =
+          (response.statusCode == 403 ||
+          body['is_blocked'] == true ||
+          body['status_akun'] == 'diblokir');
 
       if (isBlocked) {
         await clearSession();
@@ -668,7 +714,11 @@ class ApiService {
 
       return ApiResponse(
         success: !isBlocked && response.statusCode == 200,
-        message: body['message'] ?? (isBlocked ? 'Akun Anda sedang diblokir oleh Admin.' : 'Akun aktif.'),
+        message:
+            body['message'] ??
+            (isBlocked
+                ? 'Akun Anda sedang diblokir oleh Admin.'
+                : 'Akun aktif.'),
         data: body,
         statusCode: response.statusCode,
       );

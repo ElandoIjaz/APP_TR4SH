@@ -120,6 +120,7 @@ class _ModalPengaturanServerState extends State<ModalPengaturanServer> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -137,7 +138,11 @@ class _ModalPengaturanServerState extends State<ModalPengaturanServer> {
             const SizedBox(height: 16),
             const Row(
               children: [
-                Icon(Icons.wifi_tethering_rounded, color: AppColors.forestGreen, size: 24),
+                Icon(
+                  Icons.wifi_tethering_rounded,
+                  color: AppColors.forestGreen,
+                  size: 24,
+                ),
                 SizedBox(width: 10),
                 Text(
                   'Pengaturan IP Server Backend',
@@ -160,7 +165,10 @@ class _ModalPengaturanServerState extends State<ModalPengaturanServer> {
               children: [
                 ActionChip(
                   avatar: const Icon(Icons.phone_android_rounded, size: 16),
-                  label: const Text('Mode Emulator (10.0.2.2)', style: TextStyle(fontSize: 12)),
+                  label: const Text(
+                    'Mode Emulator (10.0.2.2)',
+                    style: TextStyle(fontSize: 12),
+                  ),
                   backgroundColor: _isEmulator ? const Color(0xFFE8F5E9) : null,
                   onPressed: () {
                     setState(() {
@@ -171,8 +179,12 @@ class _ModalPengaturanServerState extends State<ModalPengaturanServer> {
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.wifi_rounded, size: 16),
-                  label: const Text('WiFi Laptop (10.10.181.109)', style: TextStyle(fontSize: 12)),
-                  backgroundColor: (!_isEmulator && _ipController.text == '10.10.181.109')
+                  label: const Text(
+                    'WiFi Laptop (10.10.181.109)',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  backgroundColor:
+                      (!_isEmulator && _ipController.text == '10.10.181.109')
                       ? const Color(0xFFE8F5E9)
                       : null,
                   onPressed: () {
@@ -185,7 +197,10 @@ class _ModalPengaturanServerState extends State<ModalPengaturanServer> {
                 ),
                 ActionChip(
                   avatar: const Icon(Icons.auto_awesome_rounded, size: 16),
-                  label: const Text('Deteksi Otomatis', style: TextStyle(fontSize: 12)),
+                  label: const Text(
+                    'Deteksi Otomatis',
+                    style: TextStyle(fontSize: 12),
+                  ),
                   onPressed: () async {
                     setState(() => _isTesting = true);
                     final found = await ApiConfig.autoDetectWorkingHost();
@@ -216,7 +231,10 @@ class _ModalPengaturanServerState extends State<ModalPengaturanServer> {
               keyboardType: TextInputType.text,
               decoration: InputDecoration(
                 hintText: 'Contoh: 10.10.181.109',
-                prefixIcon: const Icon(Icons.laptop_chromebook_rounded, size: 20),
+                prefixIcon: const Icon(
+                  Icons.laptop_chromebook_rounded,
+                  size: 20,
+                ),
                 filled: true,
                 fillColor: const Color(0xFFF5F6F8),
                 border: OutlineInputBorder(
@@ -274,18 +292,26 @@ class _ModalPengaturanServerState extends State<ModalPengaturanServer> {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: _testSuccess ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE),
+                  color: _testSuccess
+                      ? const Color(0xFFE8F5E9)
+                      : const Color(0xFFFFEBEE),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: _testSuccess ? Colors.green.shade400 : Colors.red.shade400,
+                    color: _testSuccess
+                        ? Colors.green.shade400
+                        : Colors.red.shade400,
                   ),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
-                      _testSuccess ? Icons.check_circle_rounded : Icons.error_rounded,
-                      color: _testSuccess ? Colors.green.shade700 : Colors.red.shade700,
+                      _testSuccess
+                          ? Icons.check_circle_rounded
+                          : Icons.error_rounded,
+                      color: _testSuccess
+                          ? Colors.green.shade700
+                          : Colors.red.shade700,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -294,7 +320,9 @@ class _ModalPengaturanServerState extends State<ModalPengaturanServer> {
                         _testResult!,
                         style: TextStyle(
                           fontSize: 12,
-                          color: _testSuccess ? Colors.green.shade900 : Colors.red.shade900,
+                          color: _testSuccess
+                              ? Colors.green.shade900
+                              : Colors.red.shade900,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -319,7 +347,9 @@ class _ModalPengaturanServerState extends State<ModalPengaturanServer> {
                     label: const Text('Tes Ping'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
@@ -333,7 +363,9 @@ class _ModalPengaturanServerState extends State<ModalPengaturanServer> {
                       backgroundColor: AppColors.forestGreen,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),

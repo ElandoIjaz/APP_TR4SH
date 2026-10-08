@@ -112,7 +112,10 @@ class AuthValidator {
     final cleanTelepon = telepon.trim();
     final cleanPassword = password.trim();
 
-    if (cleanNama.isEmpty || cleanUsername.isEmpty || cleanTelepon.isEmpty || cleanPassword.isEmpty) {
+    if (cleanNama.isEmpty ||
+        cleanUsername.isEmpty ||
+        cleanTelepon.isEmpty ||
+        cleanPassword.isEmpty) {
       return 'Semua kolom harus diisi!';
     }
 

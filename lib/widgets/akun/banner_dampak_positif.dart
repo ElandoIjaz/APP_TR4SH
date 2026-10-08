@@ -66,7 +66,10 @@ class BannerDampakPositif extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(14),
@@ -74,7 +77,11 @@ class BannerDampakPositif extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.eco_rounded, size: 13, color: Color(0xFF1E8850)),
+                      const Icon(
+                        Icons.eco_rounded,
+                        size: 13,
+                        color: Color(0xFF1E8850),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         reduksiCO2,

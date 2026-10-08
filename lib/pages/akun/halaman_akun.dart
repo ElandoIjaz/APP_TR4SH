@@ -110,8 +110,13 @@ class _HalamanAkunState extends State<HalamanAkun> {
                 ],
                 decoration: InputDecoration(
                   labelText: 'Nama Lengkap (huruf saja)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -123,8 +128,13 @@ class _HalamanAkunState extends State<HalamanAkun> {
                 ],
                 decoration: InputDecoration(
                   labelText: 'Username (huruf saja)',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 12),
@@ -139,8 +149,13 @@ class _HalamanAkunState extends State<HalamanAkun> {
                 decoration: InputDecoration(
                   labelText: 'Nomor Telepon (11-13 digit)',
                   counterText: '',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -151,7 +166,9 @@ class _HalamanAkunState extends State<HalamanAkun> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.limeAccent,
                     foregroundColor: AppColors.darkGreen,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   onPressed: () {
                     final cleanPhone = phoneCtrl.text.trim();
@@ -179,7 +196,10 @@ class _HalamanAkunState extends State<HalamanAkun> {
                       ),
                     );
                   },
-                  child: const Text('Simpan Perubahan', style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Simpan Perubahan',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
             ],
@@ -197,7 +217,10 @@ class _HalamanAkunState extends State<HalamanAkun> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text(
           'Konfirmasi Keluar',
-          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.darkGreen,
+          ),
         ),
         content: const Text(
           'Apakah Anda yakin ingin keluar dari akun TR4SH!?',
@@ -206,13 +229,18 @@ class _HalamanAkunState extends State<HalamanAkun> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFE53935),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             onPressed: () async {
               final navigator = Navigator.of(context);
@@ -223,7 +251,10 @@ class _HalamanAkunState extends State<HalamanAkun> {
                 (route) => false,
               );
             },
-            child: const Text('Ya, Keluar', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Ya, Keluar',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -266,7 +297,11 @@ class _HalamanAkunState extends State<HalamanAkun> {
             const SizedBox(height: 10),
             Text(
               description,
-              style: const TextStyle(fontSize: 13.5, color: Colors.black87, height: 1.5),
+              style: const TextStyle(
+                fontSize: 13.5,
+                color: Colors.black87,
+                height: 1.5,
+              ),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -276,10 +311,15 @@ class _HalamanAkunState extends State<HalamanAkun> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Tutup', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Tutup',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -294,7 +334,7 @@ class _HalamanAkunState extends State<HalamanAkun> {
       backgroundColor: AppColors.bgScreen,
       body: SafeArea(
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -304,12 +344,16 @@ class _HalamanAkunState extends State<HalamanAkun> {
               HeaderAkun(
                 onNotificationTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
+                    MaterialPageRoute(
+                      builder: (_) => const HalamanNotifikasi(),
+                    ),
                   );
                 },
                 onSettingsTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const HalamanPengaturanAkun()),
+                    MaterialPageRoute(
+                      builder: (_) => const HalamanPengaturanAkun(),
+                    ),
                   );
                 },
               ),
@@ -320,10 +364,14 @@ class _HalamanAkunState extends State<HalamanAkun> {
               CardProfilUser(
                 name: _namaLengkap,
                 username: _username,
-                status: UserAccountData.isGuest ? 'Mode Eksplorasi' : 'Anggota Aktif',
+                status: UserAccountData.isGuest
+                    ? 'Mode Eksplorasi'
+                    : 'Anggota Aktif',
                 isGuest: UserAccountData.isGuest,
                 isVerified: !UserAccountData.isGuest,
-                avatarAsset: UserAccountData.isGuest ? null : UserAccountData.currentFoto,
+                avatarAsset: UserAccountData.isGuest
+                    ? null
+                    : UserAccountData.currentFoto,
                 onEditTap: () {
                   if (UserAccountData.isGuest) {
                     AuthRequiredModal.show(
@@ -341,13 +389,18 @@ class _HalamanAkunState extends State<HalamanAkun> {
 
               // ── 3. Stats / Metrics Card (CardStatistikAkun) ──
               CardStatistikAkun(
-                sampahTerkumpul: (UserAccountData.isNewAccount || UserAccountData.isGuest)
+                sampahTerkumpul:
+                    (UserAccountData.isNewAccount || UserAccountData.isGuest)
                     ? '0.0 kg'
                     : (UserAccountData.totalSampahKg > 0
-                        ? '${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg'
-                        : '12.5 kg'),
-                poinHijau: (UserAccountData.isNewAccount || UserAccountData.isGuest) ? '0 Poin' : '5 Poin',
-                misiSelesai: (UserAccountData.isNewAccount || UserAccountData.isGuest)
+                          ? '${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg'
+                          : '12.5 kg'),
+                poinHijau:
+                    (UserAccountData.isNewAccount || UserAccountData.isGuest)
+                    ? '0 Poin'
+                    : '5 Poin',
+                misiSelesai:
+                    (UserAccountData.isNewAccount || UserAccountData.isGuest)
                     ? '0 Misi'
                     : '${UserAccountData.totalMisiSelesai > 0 ? UserAccountData.totalMisiSelesai : 3} Misi',
               ),
@@ -356,23 +409,26 @@ class _HalamanAkunState extends State<HalamanAkun> {
 
               // ── 4. Dampak Positifmu Banner (BannerDampakPositif) ──
               BannerDampakPositif(
-                sampahDikurangi: (UserAccountData.isNewAccount || UserAccountData.isGuest)
+                sampahDikurangi:
+                    (UserAccountData.isNewAccount || UserAccountData.isGuest)
                     ? 'Total 0.0 kg sampah berhasil dikurangi dari TPA'
                     : (UserAccountData.totalSampahKg > 0
-                        ? 'Total ${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg sampah berhasil dikurangi dari TPA'
-                        : 'Total 12.5 kg sampah berhasil dikurangi dari TPA'),
-                reduksiCO2: (UserAccountData.isNewAccount || UserAccountData.isGuest)
+                          ? 'Total ${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg sampah berhasil dikurangi dari TPA'
+                          : 'Total 12.5 kg sampah berhasil dikurangi dari TPA'),
+                reduksiCO2:
+                    (UserAccountData.isNewAccount || UserAccountData.isGuest)
                     ? 'Setara 0.0 kg reduksi CO2e'
                     : (UserAccountData.totalSampahKg > 0
-                        ? 'Setara ${(UserAccountData.totalSampahKg * 1.45).toStringAsFixed(1)} kg reduksi CO2e'
-                        : 'Setara 18.2 kg reduksi CO2e'),
+                          ? 'Setara ${(UserAccountData.totalSampahKg * 1.45).toStringAsFixed(1)} kg reduksi CO2e'
+                          : 'Setara 18.2 kg reduksi CO2e'),
               ),
 
               const SizedBox(height: 16),
 
               // ── 5. Menu List Card (CardMenuAkun) ──
               CardMenuAkun(
-                poinReward: (UserAccountData.isNewAccount || UserAccountData.isGuest)
+                poinReward:
+                    (UserAccountData.isNewAccount || UserAccountData.isGuest)
                     ? '${UserAccountData.userPoints} Pts'
                     : '500 Pts',
                 onMenuTap: (menuTitle) {
@@ -386,42 +442,59 @@ class _HalamanAkunState extends State<HalamanAkun> {
                     AuthRequiredModal.show(
                       context,
                       title: '$menuTitle Memerlukan Akun',
-                      message: 'Silakan masuk atau daftar akun terlebih dahulu untuk mengakses menu $menuTitle.',
+                      message:
+                          'Silakan masuk atau daftar akun terlebih dahulu untuk mengakses menu $menuTitle.',
                     );
                     return;
                   }
 
                   if (menuTitle == 'Riwayat Transaksi') {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HalamanRiwayatTransaksi()),
+                      MaterialPageRoute(
+                        builder: (_) => const HalamanRiwayatTransaksi(),
+                      ),
                     );
                   } else if (menuTitle == 'Riwayat Setor Sampah') {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HalamanRiwayatSetor()),
+                      MaterialPageRoute(
+                        builder: (_) => const HalamanRiwayatSetor(),
+                      ),
                     );
                   } else if (menuTitle == 'Konten Edukasi Saya') {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HalamanUploadKonten()),
+                      MaterialPageRoute(
+                        builder: (_) => const HalamanUploadKonten(),
+                      ),
                     );
                   } else if (menuTitle == 'Poin & Hadiah') {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HalamanPoinHadiah()),
+                      MaterialPageRoute(
+                        builder: (_) => const HalamanPoinHadiah(),
+                      ),
                     );
                   } else if (menuTitle == 'Alamat Pengiriman') {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HalamanAlamatPengiriman()),
+                      MaterialPageRoute(
+                        builder: (_) => const HalamanAlamatPengiriman(),
+                      ),
                     );
                   } else if (menuTitle == 'Notifikasi') {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
+                      MaterialPageRoute(
+                        builder: (_) => const HalamanNotifikasi(),
+                      ),
                     );
                   } else if (menuTitle == 'Bantuan & FAQ') {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HalamanBantuanFaq()),
+                      MaterialPageRoute(
+                        builder: (_) => const HalamanBantuanFaq(),
+                      ),
                     );
                   } else if (menuTitle == 'Pengaturan Akun') {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HalamanPengaturanAkun()),
+                      MaterialPageRoute(
+                        builder: (_) => const HalamanPengaturanAkun(),
+                      ),
                     );
                   } else {
                     _showMenuDetail(
@@ -443,7 +516,9 @@ class _HalamanAkunState extends State<HalamanAkun> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const HalamanLogin()),
+                          MaterialPageRoute(
+                            builder: (_) => const HalamanLogin(),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -457,15 +532,16 @@ class _HalamanAkunState extends State<HalamanAkun> {
                       icon: const Icon(Icons.login_rounded, size: 20),
                       label: const Text(
                         'Masuk / Buat Akun Baru',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),
                 )
               else
-                TombolKeluar(
-                  onLogoutTap: _showLogoutDialog,
-                ),
+                TombolKeluar(onLogoutTap: _showLogoutDialog),
 
               const SizedBox(height: 24),
             ],
