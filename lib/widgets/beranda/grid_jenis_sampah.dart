@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 
 class GridJenisSampah extends StatelessWidget {
-  final void Function(String title, String badge, String subtitle, String description, IconData icon) onCategoryTap;
+  final void Function(
+    String title,
+    String badge,
+    String subtitle,
+    String description,
+    IconData icon,
+  )
+  onCategoryTap;
 
-  const GridJenisSampah({
-    super.key,
-    required this.onCategoryTap,
-  });
+  const GridJenisSampah({super.key, required this.onCategoryTap});
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +155,10 @@ class GridJenisSampah extends StatelessWidget {
                   child: Icon(icon, color: AppColors.darkGreen, size: 18),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: badgeBg,
                     borderRadius: BorderRadius.circular(10),

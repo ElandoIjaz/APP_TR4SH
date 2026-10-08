@@ -67,11 +67,15 @@ class CardProfilUser extends StatelessWidget {
                   border: Border.all(color: const Color(0xFFBFE7CA), width: 2),
                 ),
                 child: ClipOval(
-                  child: (avatarAsset != null && avatarAsset!.isNotEmpty && !isGuest)
+                  child:
+                      (avatarAsset != null &&
+                          avatarAsset!.isNotEmpty &&
+                          !isGuest)
                       ? Image.asset(
                           avatarAsset!,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => _buildEmptyAvatar(),
+                          errorBuilder: (context, error, stackTrace) =>
+                              _buildEmptyAvatar(),
                         )
                       : _buildEmptyAvatar(),
                 ),
@@ -128,7 +132,10 @@ class CardProfilUser extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.mintSoft,
                     borderRadius: BorderRadius.circular(12),
@@ -136,7 +143,11 @@ class CardProfilUser extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.circle, size: 7, color: Color(0xFF1E8850)),
+                      const Icon(
+                        Icons.circle,
+                        size: 7,
+                        color: Color(0xFF1E8850),
+                      ),
                       const SizedBox(width: 5),
                       Text(
                         status,
@@ -178,4 +189,3 @@ class CardProfilUser extends StatelessWidget {
     );
   }
 }
-

@@ -4,10 +4,7 @@ import 'package:test23/core/app_colors.dart';
 class ModalFilterProduk extends StatefulWidget {
   final VoidCallback onApply;
 
-  const ModalFilterProduk({
-    super.key,
-    required this.onApply,
-  });
+  const ModalFilterProduk({super.key, required this.onApply});
 
   @override
   State<ModalFilterProduk> createState() => _ModalFilterProdukState();
@@ -30,6 +27,7 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -52,9 +50,13 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: const [
-                    Icon(Icons.tune_rounded, color: AppColors.darkGreen, size: 22),
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.tune_rounded,
+                      color: AppColors.darkGreen,
+                      size: 22,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Filter Produk',
@@ -67,7 +69,10 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                   ],
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, color: AppColors.darkGreen),
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppColors.darkGreen,
+                  ),
                   onPressed: () => Navigator.pop(context),
                   visualDensity: VisualDensity.compact,
                 ),
@@ -77,9 +82,9 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
             const SizedBox(height: 16),
 
             // ── 1. Kategori (Multi-Pilihan) ──
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 Text(
                   'Kategori',
                   style: TextStyle(
@@ -105,59 +110,72 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: [
-                'Fashion Daur Ulang',
-                'Rumah Tangga',
-                'Aksesoris',
-              ].map((category) {
-                final bool isSelected = _selectedCategories.contains(category);
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      if (isSelected) {
-                        _selectedCategories.remove(category);
-                      } else {
-                        _selectedCategories.add(category);
-                      }
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.darkGreen : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected ? AppColors.darkGreen : AppColors.cardBorder,
+              children: ['Fashion Daur Ulang', 'Rumah Tangga', 'Aksesoris'].map(
+                (category) {
+                  final bool isSelected = _selectedCategories.contains(
+                    category,
+                  );
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedCategories.remove(category);
+                        } else {
+                          _selectedCategories.add(category);
+                        }
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.darkGreen : Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.darkGreen
+                              : AppColors.cardBorder,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            category,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFF3B5646),
+                            ),
+                          ),
+                          if (isSelected) ...[
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.check_rounded,
+                              size: 14,
+                              color: AppColors.limeAccent,
+                            ),
+                          ],
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          category,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                            color: isSelected ? Colors.white : const Color(0xFF3B5646),
-                          ),
-                        ),
-                        if (isSelected) ...[
-                          const SizedBox(width: 4),
-                          const Icon(Icons.check_rounded, size: 14, color: AppColors.limeAccent),
-                        ],
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
+                  );
+                },
+              ).toList(),
             ),
 
             const SizedBox(height: 18),
 
             // ── 2. Dampak Lingkungan ──
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 Text(
                   'Dampak Lingkungan',
                   style: TextStyle(
@@ -199,9 +217,9 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
             const SizedBox(height: 18),
 
             // ── 3. Rentang Harga ──
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 Text(
                   'Rentang Harga',
                   style: TextStyle(
@@ -227,18 +245,34 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.bgScreen,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppColors.cardBorder),
                     ),
-                    child: Column(
+                    child: const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Minimum', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                      children: [
+                        Text(
+                          'Minimum',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
                         SizedBox(height: 2),
-                        Text('Rp 0', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                        Text(
+                          'Rp 0',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.darkGreen,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -246,18 +280,34 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.bgScreen,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppColors.cardBorder),
                     ),
-                    child: Column(
+                    child: const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: const [
-                        Text('Maksimum', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                      children: [
+                        Text(
+                          'Maksimum',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
                         SizedBox(height: 2),
-                        Text('Rp 150.000', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                        Text(
+                          'Rp 150.000',
+                          style: TextStyle(
+                            fontSize: 13.5,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.darkGreen,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -299,10 +349,14 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
-                        color: _selectedRating == '4.0' ? AppColors.darkGreen : Colors.white,
+                        color: _selectedRating == '4.0'
+                            ? AppColors.darkGreen
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _selectedRating == '4.0' ? AppColors.darkGreen : AppColors.cardBorder,
+                          color: _selectedRating == '4.0'
+                              ? AppColors.darkGreen
+                              : AppColors.cardBorder,
                         ),
                       ),
                       child: Row(
@@ -311,7 +365,9 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                           Icon(
                             Icons.star_rounded,
                             size: 16,
-                            color: _selectedRating == '4.0' ? AppColors.limeAccent : const Color(0xFFF9A825),
+                            color: _selectedRating == '4.0'
+                                ? AppColors.limeAccent
+                                : const Color(0xFFF9A825),
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -319,7 +375,9 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: _selectedRating == '4.0' ? Colors.white : AppColors.darkGreen,
+                              color: _selectedRating == '4.0'
+                                  ? Colors.white
+                                  : AppColors.darkGreen,
                             ),
                           ),
                         ],
@@ -334,10 +392,14 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
-                        color: _selectedRating == 'all' ? AppColors.darkGreen : Colors.white,
+                        color: _selectedRating == 'all'
+                            ? AppColors.darkGreen
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: _selectedRating == 'all' ? AppColors.darkGreen : AppColors.cardBorder,
+                          color: _selectedRating == 'all'
+                              ? AppColors.darkGreen
+                              : AppColors.cardBorder,
                         ),
                       ),
                       child: Row(
@@ -346,7 +408,9 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                           Icon(
                             Icons.star_outline_rounded,
                             size: 16,
-                            color: _selectedRating == 'all' ? AppColors.limeAccent : AppColors.textMuted,
+                            color: _selectedRating == 'all'
+                                ? AppColors.limeAccent
+                                : AppColors.textMuted,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -354,7 +418,9 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: _selectedRating == 'all' ? Colors.white : AppColors.darkGreen,
+                              color: _selectedRating == 'all'
+                                  ? Colors.white
+                                  : AppColors.darkGreen,
                             ),
                           ),
                         ],
@@ -375,8 +441,13 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      side: const BorderSide(color: AppColors.cardBorder, width: 1.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      side: const BorderSide(
+                        color: AppColors.cardBorder,
+                        width: 1.5,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
                     ),
                     onPressed: () {
                       setState(() {
@@ -407,7 +478,9 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
                     ),
                     onPressed: () {
                       Navigator.pop(context);
@@ -418,11 +491,17 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                       children: [
                         const Text(
                           'Terapkan Filter',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.limeAccent,
                             borderRadius: BorderRadius.circular(10),
@@ -482,7 +561,11 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                 ),
               ),
               child: isChecked
-                  ? const Icon(Icons.check, size: 14, color: AppColors.limeAccent)
+                  ? const Icon(
+                      Icons.check,
+                      size: 14,
+                      color: AppColors.limeAccent,
+                    )
                   : null,
             ),
             const SizedBox(width: 12),
@@ -500,7 +583,10 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
                   ),
                   Text(
                     subtitle,
-                    style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted),
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ],
               ),
@@ -513,7 +599,11 @@ class _ModalFilterProdukState extends State<ModalFilterProduk> {
               ),
               child: Text(
                 itemCount,
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textMuted),
+                style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textMuted,
+                ),
               ),
             ),
           ],

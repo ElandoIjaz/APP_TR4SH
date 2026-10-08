@@ -68,7 +68,11 @@ class CardStatistikAkun extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.eco_rounded, size: 16, color: AppColors.limeAccent),
+                    const Icon(
+                      Icons.eco_rounded,
+                      size: 16,
+                      color: AppColors.limeAccent,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       poinHijau,
@@ -85,10 +89,7 @@ class CardStatistikAkun extends StatelessWidget {
                 const Text(
                   'Poin Hijau',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    color: Color(0xFFD2E8DB),
-                  ),
+                  style: TextStyle(fontSize: 10.5, color: Color(0xFFD2E8DB)),
                 ),
               ],
             ),
@@ -114,10 +115,7 @@ class CardStatistikAkun extends StatelessWidget {
                 const Text(
                   'Misi Selesai',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    color: Color(0xFFD2E8DB),
-                  ),
+                  style: TextStyle(fontSize: 10.5, color: Color(0xFFD2E8DB)),
                 ),
               ],
             ),

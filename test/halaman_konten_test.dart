@@ -3,17 +3,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 
 void main() {
-  testWidgets('HalamanKonten renders correctly with all elements from design', (WidgetTester tester) async {
+  testWidgets('HalamanKonten renders correctly with all elements from design', (
+    WidgetTester tester,
+  ) async {
     // Provide a standard phone screen size
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HalamanKonten(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: HalamanKonten()));
     await tester.pump();
 
     // 1. Verify Header Branding & Icons

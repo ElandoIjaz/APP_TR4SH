@@ -50,11 +50,19 @@ class HeaderAkun extends StatelessWidget {
           Row(
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_none_rounded, color: AppColors.darkGreen, size: 23),
+                icon: const Icon(
+                  Icons.notifications_none_rounded,
+                  color: AppColors.darkGreen,
+                  size: 23,
+                ),
                 onPressed: onNotificationTap,
               ),
               IconButton(
-                icon: const Icon(Icons.settings_outlined, color: AppColors.darkGreen, size: 23),
+                icon: const Icon(
+                  Icons.settings_outlined,
+                  color: AppColors.darkGreen,
+                  size: 23,
+                ),
                 onPressed: onSettingsTap,
               ),
             ],

@@ -40,28 +40,41 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
   bool _isBookmarked = false;
 
   String get _title {
-    if (widget.title != null && widget.title!.trim().isNotEmpty) return widget.title!.trim();
-    if (widget.item != null && widget.item!['title'] != null && widget.item!['title'].toString().trim().isNotEmpty) {
+    if (widget.title != null && widget.title!.trim().isNotEmpty) {
+      return widget.title!.trim();
+    }
+    if (widget.item != null &&
+        widget.item!['title'] != null &&
+        widget.item!['title'].toString().trim().isNotEmpty) {
       return widget.item!['title'].toString().trim();
     }
     return 'Edukasi Pengolahan Sampah';
   }
 
   String get _description {
-    if (widget.description != null && widget.description!.trim().isNotEmpty) return widget.description!.trim();
-    if (widget.item != null && widget.item!['description'] != null && widget.item!['description'].toString().trim().isNotEmpty) {
+    if (widget.description != null && widget.description!.trim().isNotEmpty) {
+      return widget.description!.trim();
+    }
+    if (widget.item != null &&
+        widget.item!['description'] != null &&
+        widget.item!['description'].toString().trim().isNotEmpty) {
       return widget.item!['description'].toString().trim();
     }
     return 'Pelajari langkah praktis memilah dan mengolah sampah untuk lingkungan yang lebih asri.';
   }
 
   String get _author {
-    if (widget.author != null && widget.author!.trim().isNotEmpty) return widget.author!.trim();
+    if (widget.author != null && widget.author!.trim().isNotEmpty) {
+      return widget.author!.trim();
+    }
     if (widget.item != null) {
-      if (widget.item!['penulis'] != null && widget.item!['penulis'].toString().trim().isNotEmpty) {
+      if (widget.item!['penulis'] != null &&
+          widget.item!['penulis'].toString().trim().isNotEmpty) {
         return widget.item!['penulis'].toString().trim();
       }
-      if (widget.item!['user'] != null && widget.item!['user'] is Map && widget.item!['user']['nama'] != null) {
+      if (widget.item!['user'] != null &&
+          widget.item!['user'] is Map &&
+          widget.item!['user']['nama'] != null) {
         return widget.item!['user']['nama'].toString().trim();
       }
     }
@@ -69,15 +82,21 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
   }
 
   String get _category {
-    if (widget.category != null && widget.category!.trim().isNotEmpty) return widget.category!.trim();
-    if (widget.item != null && widget.item!['jenis_edukasi'] != null && widget.item!['jenis_edukasi'].toString().trim().isNotEmpty) {
+    if (widget.category != null && widget.category!.trim().isNotEmpty) {
+      return widget.category!.trim();
+    }
+    if (widget.item != null &&
+        widget.item!['jenis_edukasi'] != null &&
+        widget.item!['jenis_edukasi'].toString().trim().isNotEmpty) {
       return widget.item!['jenis_edukasi'].toString().trim();
     }
     return 'Edukasi Lingkungan';
   }
 
   String get _mediaUrl {
-    if (widget.mediaUrl != null && widget.mediaUrl!.trim().isNotEmpty) return widget.mediaUrl!.trim();
+    if (widget.mediaUrl != null && widget.mediaUrl!.trim().isNotEmpty) {
+      return widget.mediaUrl!.trim();
+    }
     if (widget.item != null && widget.item!['media_url'] != null) {
       return widget.item!['media_url'].toString().trim();
     }
@@ -85,7 +104,9 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
   }
 
   String get _timeAgo {
-    if (widget.timeAgo != null && widget.timeAgo!.isNotEmpty) return widget.timeAgo!;
+    if (widget.timeAgo != null && widget.timeAgo!.isNotEmpty) {
+      return widget.timeAgo!;
+    }
     return 'Terbaru';
   }
 
@@ -106,7 +127,9 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _isBookmarked ? 'Video disimpan ke Koleksi!' : 'Dihapus dari Koleksi',
+            _isBookmarked
+                ? 'Video disimpan ke Koleksi!'
+                : 'Dihapus dari Koleksi',
           ),
           duration: const Duration(milliseconds: 900),
           backgroundColor: AppColors.darkGreen,
@@ -179,7 +202,9 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
               children: [
                 // ── Thumbnail with Video Player UI ──
                 ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -190,13 +215,18 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                           height: 195,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            height: 195,
-                            color: AppColors.darkGreen,
-                            child: const Center(
-                              child: Icon(Icons.videocam_rounded, size: 60, color: Colors.white),
-                            ),
-                          ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                height: 195,
+                                color: AppColors.darkGreen,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.videocam_rounded,
+                                    size: 60,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                         )
                       else
                         Image.asset(
@@ -204,13 +234,18 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                           height: 195,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            height: 195,
-                            color: AppColors.darkGreen,
-                            child: const Center(
-                              child: Icon(Icons.play_circle_outline, size: 60, color: Colors.white),
-                            ),
-                          ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                height: 195,
+                                color: AppColors.darkGreen,
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.play_circle_outline,
+                                    size: 60,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
                         ),
 
                       // Gradient Bottom Scrim for duration contrast
@@ -240,7 +275,10 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.darkGreen,
                                 borderRadius: BorderRadius.circular(6),
@@ -257,7 +295,10 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                             ),
                             const SizedBox(width: 5),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 7,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.85),
                                 borderRadius: BorderRadius.circular(6),
@@ -297,7 +338,9 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                                 ],
                               ),
                               child: Icon(
-                                _isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                                _isBookmarked
+                                    ? Icons.bookmark_rounded
+                                    : Icons.bookmark_border_rounded,
                                 color: AppColors.darkGreen,
                                 size: 18,
                               ),
@@ -354,7 +397,9 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                                   children: [
                                     Container(
                                       height: 3.5,
-                                      color: Colors.white.withValues(alpha: 0.35),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.35,
+                                      ),
                                     ),
                                     FractionallySizedBox(
                                       widthFactor: 0.65,
@@ -395,7 +440,10 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                         children: [
                           Flexible(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFD8F4E4),
                                 borderRadius: BorderRadius.circular(12),
@@ -466,13 +514,20 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                                 onTap: _toggleLike,
                                 borderRadius: BorderRadius.circular(8),
                                 child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 2,
+                                  ),
                                   child: Row(
                                     children: [
                                       Icon(
-                                        _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                        _isLiked
+                                            ? Icons.favorite_rounded
+                                            : Icons.favorite_border_rounded,
                                         size: 17,
-                                        color: _isLiked ? Colors.redAccent : const Color(0xFF285943),
+                                        color: _isLiked
+                                            ? Colors.redAccent
+                                            : const Color(0xFF285943),
                                       ),
                                       const SizedBox(width: 5),
                                       Text(
@@ -495,7 +550,10 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                                 onTap: widget.onCommentTap,
                                 borderRadius: BorderRadius.circular(8),
                                 child: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 2,
+                                  ),
                                   child: Row(
                                     children: [
                                       Icon(
@@ -524,7 +582,10 @@ class _CardSorotanUtamaState extends State<CardSorotanUtama> {
                             onTap: widget.onShareTap,
                             borderRadius: BorderRadius.circular(8),
                             child: const Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: 2,
+                              ),
                               child: Row(
                                 children: [
                                   Icon(

@@ -21,9 +21,9 @@ class _HalamanLoginState extends State<HalamanLogin> {
   bool _isLoading = false;
 
   // Warna tema – hijau TR4SH
-  static const Color _hijauUtama = Color(0xFF8DD832);
-  static const Color _hijauMuda = Color(0xFFE8F5C8);
-  static const Color _abuLatar = Color(0xFFF2F2F2);
+  static const Color _hijauUtama = AppColors.authPrimary;
+  static const Color _hijauMuda = AppColors.authLightGreen;
+  static const Color _abuLatar = AppColors.authBgGrey;
 
   void _login() async {
     final username = _usernameController.text;
@@ -59,7 +59,9 @@ class _HalamanLoginState extends State<HalamanLogin> {
     if (response.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(response.message.isNotEmpty ? response.message : 'Login berhasil!'),
+          content: Text(
+            response.message.isNotEmpty ? response.message : 'Login berhasil!',
+          ),
           backgroundColor: _hijauUtama,
           behavior: SnackBarBehavior.floating,
         ),
@@ -114,6 +116,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -158,7 +161,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
 
               // ── Label Username ──
               const Text(
-                'Username atau No. Telepon',
+                'Nama Pengguna / Username',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -173,17 +176,20 @@ class _HalamanLoginState extends State<HalamanLogin> {
                 keyboardType: TextInputType.text,
                 maxLength: 50,
                 inputFormatters: [
-                  FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
                   LengthLimitingTextInputFormatter(50),
                 ],
                 style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'Masukkan username atau no. telepon',
+                  hintText: 'Masukkan nama pengguna / username (huruf saja)',
                   hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Icon(Icons.person_outline_rounded,
-                        color: Colors.grey[600], size: 20),
+                    child: Icon(
+                      Icons.person_outline_rounded,
+                      color: Colors.grey[600],
+                      size: 20,
+                    ),
                   ),
                   counterText: '',
                   filled: true,
@@ -202,7 +208,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: _hijauUtama, width: 2),
+                    borderSide: const BorderSide(color: _hijauUtama, width: 2),
                   ),
                 ),
               ),
@@ -224,7 +230,8 @@ class _HalamanLoginState extends State<HalamanLogin> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                            builder: (_) => const HalamanLupaPw()),
+                          builder: (_) => const HalamanLupaPw(),
+                        ),
                       );
                     },
                     child: const Text(
@@ -252,13 +259,15 @@ class _HalamanLoginState extends State<HalamanLogin> {
                 style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
                   hintText: '••••••••',
-                  hintStyle:
-                      const TextStyle(color: Colors.grey, fontSize: 14),
+                  hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
                   counterText: '',
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),
-                    child: Icon(Icons.lock_outline,
-                        color: Colors.grey[600], size: 20),
+                    child: Icon(
+                      Icons.lock_outline,
+                      color: Colors.grey[600],
+                      size: 20,
+                    ),
                   ),
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -269,8 +278,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
                       size: 20,
                     ),
                     onPressed: () {
-                      setState(
-                          () => _obscurePassword = !_obscurePassword);
+                      setState(() => _obscurePassword = !_obscurePassword);
                     },
                   ),
                   filled: true,
@@ -289,7 +297,7 @@ class _HalamanLoginState extends State<HalamanLogin> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: _hijauUtama, width: 2),
+                    borderSide: const BorderSide(color: _hijauUtama, width: 2),
                   ),
                 ),
               ),
@@ -347,7 +355,8 @@ class _HalamanLoginState extends State<HalamanLogin> {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                            builder: (_) => const HalamanDaftar()),
+                          builder: (_) => const HalamanDaftar(),
+                        ),
                       );
                     },
                     child: const Text(

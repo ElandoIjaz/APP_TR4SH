@@ -34,12 +34,12 @@ class CardWorkshop extends StatelessWidget {
       child: Stack(
         children: [
           // Background organic leaf pattern
-          Positioned(
+          const Positioned(
             right: -25,
             bottom: -30,
             child: Opacity(
               opacity: 0.15,
-              child: const Icon(
+              child: Icon(
                 Icons.spa_rounded,
                 size: 140,
                 color: Colors.white,
@@ -53,7 +53,11 @@ class CardWorkshop extends StatelessWidget {
               // Date Row
               Row(
                 children: [
-                  const Icon(Icons.calendar_today_rounded, size: 12, color: AppColors.limeAccent),
+                  const Icon(
+                    Icons.calendar_today_rounded,
+                    size: 12,
+                    color: AppColors.limeAccent,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     date,
@@ -101,7 +105,10 @@ class CardWorkshop extends StatelessWidget {
                   backgroundColor: AppColors.limeAccent,
                   foregroundColor: AppColors.darkGreen,
                   elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 10,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),

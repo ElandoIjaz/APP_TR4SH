@@ -9,7 +9,8 @@ class HalamanPilihLokasiAkurat extends StatefulWidget {
   const HalamanPilihLokasiAkurat({super.key, this.initialAlamat});
 
   @override
-  State<HalamanPilihLokasiAkurat> createState() => _HalamanPilihLokasiAkuratState();
+  State<HalamanPilihLokasiAkurat> createState() =>
+      _HalamanPilihLokasiAkuratState();
 }
 
 class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
@@ -17,7 +18,8 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
   late double _longitude;
   String _accuracyText = '±1.2 meter - GPS Sangat Akurat';
   bool _isLocating = false;
-  int _mapModeIndex = 0; // 0: Normal Google Maps, 1: Satelit GMaps, 2: Hybrid GMaps
+  int _mapModeIndex =
+      0; // 0: Normal Google Maps, 1: Satelit GMaps, 2: Hybrid GMaps
 
   late TextEditingController _gmapsSearchController;
   late TextEditingController _labelController;
@@ -45,14 +47,24 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
 
     _gmapsSearchController = TextEditingController();
     _labelController = TextEditingController(text: a?.label ?? 'Rumah');
-    _penerimaController = TextEditingController(text: a?.penerima ?? 'Bintang Pratama');
-    _teleponController = TextEditingController(text: a?.telepon ?? '0812-3456-7890');
+    _penerimaController = TextEditingController(
+      text: a?.penerima ?? 'Bintang Pratama',
+    );
+    _teleponController = TextEditingController(
+      text: a?.telepon ?? '0812-3456-7890',
+    );
     _alamatController = TextEditingController(
       text: a?.alamatLengkap ?? LokasiTrackingService.currentAddress,
     );
-    _patokanController = TextEditingController(text: a?.patokan ?? LokasiTrackingService.currentPatokan);
-    _kotaController = TextEditingController(text: a?.kota ?? LokasiTrackingService.currentCity);
-    _kodePosController = TextEditingController(text: a?.kodePos ?? LokasiTrackingService.currentPostalCode);
+    _patokanController = TextEditingController(
+      text: a?.patokan ?? LokasiTrackingService.currentPatokan,
+    );
+    _kotaController = TextEditingController(
+      text: a?.kota ?? LokasiTrackingService.currentCity,
+    );
+    _kodePosController = TextEditingController(
+      text: a?.kodePos ?? LokasiTrackingService.currentPostalCode,
+    );
   }
 
   @override
@@ -128,13 +140,16 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
       if (!mounted) return;
       setState(() {
         _latitude = -6.907482 + (0.0002 * (DateTime.now().millisecond % 5 - 2));
-        _longitude = 107.618954 + (0.0002 * (DateTime.now().millisecond % 4 - 2));
+        _longitude =
+            107.618954 + (0.0002 * (DateTime.now().millisecond % 4 - 2));
         _accuracyText = '±1.2 meter - GPS Sangat Akurat';
         _isLocating = false;
-        _alamatController.text = 'Jl. Riau No. 45, RT 03 / RW 07, Kel. Citarum, Kec. Bandung Wetan';
+        _alamatController.text =
+            'Jl. Riau No. 45, RT 03 / RW 07, Kel. Citarum, Kec. Bandung Wetan';
         _kotaController.text = 'Kota Bandung, Jawa Barat';
         _kodePosController.text = '40115';
-        _patokanController.text = 'Pagar besi hitam, seberang Bank Sampah RT 03';
+        _patokanController.text =
+            'Pagar besi hitam, seberang Bank Sampah RT 03';
       });
 
       LokasiTrackingService.updateTrackedLocation(
@@ -149,7 +164,9 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('🎯 Lokasi GPS Akurat Terkunci! (Radius 1.2m tersinkronisasi)'),
+          content: Text(
+            '🎯 Lokasi GPS Akurat Terkunci! (Radius 1.2m tersinkronisasi)',
+          ),
           backgroundColor: AppColors.darkGreen,
           duration: Duration(seconds: 1),
         ),
@@ -184,12 +201,20 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                         color: const Color(0xFFD6F3DD),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(Icons.pin_drop_rounded, color: AppColors.darkGreen, size: 22),
+                      child: const Icon(
+                        Icons.pin_drop_rounded,
+                        color: AppColors.darkGreen,
+                        size: 22,
+                      ),
                     ),
                     const SizedBox(width: 10),
                     const Text(
                       'Navigasi Google Maps',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                   ],
                 ),
@@ -210,17 +235,31 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Titik Koordinat GMaps:',
-                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.textMuted)),
+                  const Text(
+                    'Titik Koordinat GMaps:',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(
                     '${_latitude.toStringAsFixed(6)}, ${_longitude.toStringAsFixed(6)}',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.darkGreen),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     url,
-                    style: const TextStyle(fontSize: 10.5, color: Color(0xFF1E8850), fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      color: Color(0xFF1E8850),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -228,7 +267,11 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
             const SizedBox(height: 14),
             const Text(
               'Titik ini akan digunakan kurir marketplace dan penjemput sampah untuk navigasi rute langsung ke lokasi Anda.',
-              style: TextStyle(fontSize: 11.5, color: Color(0xFF4C6656), height: 1.3),
+              style: TextStyle(
+                fontSize: 11.5,
+                color: Color(0xFF4C6656),
+                height: 1.3,
+              ),
             ),
             const SizedBox(height: 18),
             SizedBox(
@@ -238,19 +281,30 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: () {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Membuka tautan Google Maps langsung ke titik koordinat...'),
+                      content: Text(
+                        'Membuka tautan Google Maps langsung ke titik koordinat...',
+                      ),
                       backgroundColor: AppColors.darkGreen,
                     ),
                   );
                 },
-                icon: const Icon(Icons.map_rounded, size: 16, color: AppColors.limeAccent),
-                label: const Text('Buka Aplikasi Google Maps', style: TextStyle(fontWeight: FontWeight.bold)),
+                icon: const Icon(
+                  Icons.map_rounded,
+                  size: 16,
+                  color: AppColors.limeAccent,
+                ),
+                label: const Text(
+                  'Buka Aplikasi Google Maps',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -260,7 +314,8 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
   }
 
   void _saveAddress() {
-    if (_alamatController.text.trim().isEmpty || _penerimaController.text.trim().isEmpty) {
+    if (_alamatController.text.trim().isEmpty ||
+        _penerimaController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Mohon lengkapi nama penerima dan alamat pengiriman'),
@@ -271,7 +326,9 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
     }
 
     final newAlamat = AlamatModel(
-      id: widget.initialAlamat?.id ?? 'addr-${DateTime.now().millisecondsSinceEpoch}',
+      id:
+          widget.initialAlamat?.id ??
+          'addr-${DateTime.now().millisecondsSinceEpoch}',
       label: _selectedLabelType,
       penerima: _penerimaController.text.trim(),
       telepon: _teleponController.text.trim(),
@@ -291,8 +348,9 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
       }
     }
 
-    final existingIndex =
-        UserAccountData.listAlamat.indexWhere((a) => a.id == newAlamat.id);
+    final existingIndex = UserAccountData.listAlamat.indexWhere(
+      (a) => a.id == newAlamat.id,
+    );
     if (existingIndex != -1) {
       UserAccountData.listAlamat[existingIndex] = newAlamat;
     } else {
@@ -321,7 +379,10 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: AppColors.darkGreen),
+          icon: const Icon(
+            Icons.arrow_back_rounded,
+            color: AppColors.darkGreen,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -343,7 +404,7 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
         ],
       ),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -351,9 +412,7 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
             Container(
               height: 290,
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE4EDE7),
-              ),
+              decoration: const BoxDecoration(color: Color(0xFFE4EDE7)),
               child: Stack(
                 children: [
                   // Map Canvas Background (Simulated Google Maps)
@@ -361,13 +420,19 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                     child: GestureDetector(
                       onTapDown: (details) {
                         setState(() {
-                          _latitude = -6.907482 + (details.localPosition.dy - 145) * 0.0001;
-                          _longitude = 107.618954 + (details.localPosition.dx - 180) * 0.0001;
+                          _latitude =
+                              -6.907482 +
+                              (details.localPosition.dy - 145) * 0.0001;
+                          _longitude =
+                              107.618954 +
+                              (details.localPosition.dx - 180) * 0.0001;
                           _accuracyText = '±1.2 meter (Pin Maps Disesuaikan)';
                         });
                       },
                       child: CustomPaint(
-                        painter: _SimulatedMapPainter(isSatellite: _mapModeIndex == 1),
+                        painter: _SimulatedMapPainter(
+                          isSatellite: _mapModeIndex == 1,
+                        ),
                       ),
                     ),
                   ),
@@ -396,14 +461,28 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                           child: TextField(
                             controller: _gmapsSearchController,
                             onChanged: _onGmapsSearchChanged,
-                            style: const TextStyle(fontSize: 12, color: AppColors.darkGreen),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.darkGreen,
+                            ),
                             decoration: InputDecoration(
                               hintText: 'Cari tempat di Google Maps (cth: Dago, BEC, PVJ)...',
-                              hintStyle: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-                              prefixIcon: const Icon(Icons.search_rounded, size: 18, color: AppColors.darkGreen),
+                              hintStyle: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.textMuted,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.search_rounded,
+                                size: 18,
+                                color: AppColors.darkGreen,
+                              ),
                               suffixIcon: _gmapsSearchController.text.isNotEmpty
                                   ? IconButton(
-                                      icon: const Icon(Icons.clear_rounded, size: 16, color: AppColors.textMuted),
+                                      icon: const Icon(
+                                        Icons.clear_rounded,
+                                        size: 16,
+                                        color: AppColors.textMuted,
+                                      ),
                                       onPressed: () {
                                         _gmapsSearchController.clear();
                                         _onGmapsSearchChanged('');
@@ -411,7 +490,9 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                                     )
                                   : null,
                               border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                              contentPadding: const EdgeInsets.symmetric(
+                                vertical: 10,
+                              ),
                             ),
                           ),
                         ),
@@ -431,9 +512,28 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                                 children: _searchResults.map((item) {
                                   return ListTile(
                                     dense: true,
-                                    leading: const Icon(Icons.place_rounded, color: AppColors.darkGreen, size: 18),
-                                    title: Text(item.namaTempat, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-                                    subtitle: Text(item.alamatLengkap, style: const TextStyle(fontSize: 10, color: AppColors.textMuted), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                    leading: const Icon(
+                                      Icons.place_rounded,
+                                      color: AppColors.darkGreen,
+                                      size: 18,
+                                    ),
+                                    title: Text(
+                                      item.namaTempat,
+                                      style: const TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.darkGreen,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      item.alamatLengkap,
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.textMuted,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                     onTap: () => _selectGmapsPlace(item),
                                   );
                                 }).toList(),
@@ -450,7 +550,10 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                     left: 14,
                     right: 14,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.95),
                         borderRadius: BorderRadius.circular(12),
@@ -541,7 +644,9 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.darkGreen.withValues(alpha: 0.35),
+                                color: AppColors.darkGreen.withValues(
+                                  alpha: 0.35,
+                                ),
                                 blurRadius: 16,
                                 spreadRadius: 4,
                               ),
@@ -578,12 +683,27 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                             backgroundColor: Colors.white,
                             foregroundColor: AppColors.darkGreen,
                             elevation: 3,
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                           ),
                           onPressed: _showGoogleMapsModal,
-                          icon: const Icon(Icons.map_outlined, size: 15, color: AppColors.darkGreen),
-                          label: const Text('Buka di GMaps', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          icon: const Icon(
+                            Icons.map_outlined,
+                            size: 15,
+                            color: AppColors.darkGreen,
+                          ),
+                          label: const Text(
+                            'Buka di GMaps',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                         FloatingActionButton.extended(
                           heroTag: 'gps_button',
@@ -602,7 +722,10 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                               : const Icon(Icons.my_location_rounded, size: 18),
                           label: Text(
                             _isLocating ? 'Mencari GPS...' : 'Kunci GPS Saya',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           onPressed: _detectCurrentGpsLocation,
                         ),
@@ -641,7 +764,9 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                         labelStyle: TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w700,
-                          color: isSelected ? AppColors.limeAccent : AppColors.darkGreen,
+                          color: isSelected
+                              ? AppColors.limeAccent
+                              : AppColors.darkGreen,
                         ),
                         onSelected: (val) {
                           setState(() {
@@ -723,7 +848,8 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                   _buildTextField(
                     controller: _patokanController,
                     label: 'Patokan Khusus Kurir (Opsional)',
-                    hint: 'cth: Pagar besi hitam, seberang bank sampah, lantai 2',
+                    hint:
+                        'cth: Pagar besi hitam, seberang bank sampah, lantai 2',
                     icon: Icons.flag_outlined,
                   ),
 
@@ -731,7 +857,10 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
 
                   // Atur sebagai Alamat Utama
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.bgScreen,
                       borderRadius: BorderRadius.circular(14),
@@ -740,10 +869,10 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Expanded(
+                        const Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
                                 'Atur sebagai Alamat Utama',
                                 style: TextStyle(
@@ -754,7 +883,10 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                               ),
                               Text(
                                 'Digunakan otomatis untuk pesanan marketplace',
-                                style: TextStyle(fontSize: 10.5, color: AppColors.textMuted),
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  color: AppColors.textMuted,
+                                ),
                               ),
                             ],
                           ),
@@ -789,10 +921,16 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
                         ),
                       ),
                       onPressed: _saveAddress,
-                      icon: const Icon(Icons.check_circle_outline_rounded, color: AppColors.limeAccent),
+                      icon: const Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: AppColors.limeAccent,
+                      ),
                       label: const Text(
                         'Simpan Lokasi Akurat',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ),
@@ -858,11 +996,19 @@ class _HalamanPilihLokasiAkuratState extends State<HalamanPilihLokasiAkurat> {
             controller: controller,
             maxLines: maxLines,
             keyboardType: keyboardType,
-            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.darkGreen),
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: AppColors.darkGreen,
+            ),
             decoration: InputDecoration(
               icon: Icon(icon, size: 18, color: const Color(0xFF1E8850)),
               hintText: hint,
-              hintStyle: const TextStyle(fontSize: 11.5, color: AppColors.textMuted, fontWeight: FontWeight.normal),
+              hintStyle: const TextStyle(
+                fontSize: 11.5,
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.normal,
+              ),
               border: InputBorder.none,
               isDense: true,
               contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -882,7 +1028,8 @@ class _SimulatedMapPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final bgPaint = Paint()..color = isSatellite ? const Color(0xFF2C3E33) : const Color(0xFFE8EFEA);
+    final bgPaint = Paint()
+      ..color = isSatellite ? const Color(0xFF2C3E33) : const Color(0xFFE8EFEA);
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
     final roadPaint = Paint()
@@ -896,15 +1043,35 @@ class _SimulatedMapPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     // Main road horizontal
-    canvas.drawLine(Offset(0, size.height * 0.45), Offset(size.width, size.height * 0.45), roadPaint);
-    canvas.drawLine(Offset(0, size.height * 0.45), Offset(size.width, size.height * 0.45), roadLinePaint);
+    canvas.drawLine(
+      Offset(0, size.height * 0.45),
+      Offset(size.width, size.height * 0.45),
+      roadPaint,
+    );
+    canvas.drawLine(
+      Offset(0, size.height * 0.45),
+      Offset(size.width, size.height * 0.45),
+      roadLinePaint,
+    );
 
     // Main road vertical
-    canvas.drawLine(Offset(size.width * 0.5, 0), Offset(size.width * 0.5, size.height), roadPaint);
-    canvas.drawLine(Offset(size.width * 0.5, 0), Offset(size.width * 0.5, size.height), roadLinePaint);
+    canvas.drawLine(
+      Offset(size.width * 0.5, 0),
+      Offset(size.width * 0.5, size.height),
+      roadPaint,
+    );
+    canvas.drawLine(
+      Offset(size.width * 0.5, 0),
+      Offset(size.width * 0.5, size.height),
+      roadLinePaint,
+    );
 
     // Diagonal arterial road
-    canvas.drawLine(Offset(0, size.height * 0.8), Offset(size.width * 0.9, 0), roadPaint);
+    canvas.drawLine(
+      Offset(0, size.height * 0.8),
+      Offset(size.width * 0.9, 0),
+      roadPaint,
+    );
 
     // River / water feature
     final riverPaint = Paint()
@@ -913,14 +1080,20 @@ class _SimulatedMapPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
     final riverPath = Path();
     riverPath.moveTo(0, size.height * 0.2);
-    riverPath.quadraticBezierTo(size.width * 0.4, size.height * 0.25, size.width, size.height * 0.15);
+    riverPath.quadraticBezierTo(
+      size.width * 0.4,
+      size.height * 0.25,
+      size.width,
+      size.height * 0.15,
+    );
     canvas.drawPath(riverPath, riverPaint);
 
     // Park / Green zones
-    final parkPaint = Paint()..color = isSatellite ? const Color(0xFF1B3D28) : const Color(0xFFD3EAD8);
+    final parkPaint = Paint()
+      ..color = isSatellite ? const Color(0xFF1B3D28) : const Color(0xFFD3EAD8);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(20, 20, 100, 70),
+        const Rect.fromLTWH(20, 20, 100, 70),
         const Radius.circular(12),
       ),
       parkPaint,

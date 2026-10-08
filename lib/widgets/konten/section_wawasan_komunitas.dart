@@ -24,8 +24,8 @@ class SectionWawasanKomunitas extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: const [
+              const Row(
+                children: [
                   Icon(
                     Icons.groups_outlined,
                     size: 20,
@@ -88,7 +88,10 @@ class SectionWawasanKomunitas extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 3.5,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFD8F4E4),
                           borderRadius: BorderRadius.circular(10),
@@ -102,8 +105,8 @@ class SectionWawasanKomunitas extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Row(
-                        children: const [
+                      const Row(
+                        children: [
                           Icon(
                             Icons.check_circle_rounded,
                             size: 14,
@@ -152,10 +155,10 @@ class SectionWawasanKomunitas extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // Bottom Author & Replies Info
-                  Row(
+                  const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'Budi Prakoso • Komunitas Depok',
                           style: TextStyle(
@@ -166,9 +169,9 @@ class SectionWawasanKomunitas extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Row(
-                        children: const [
+                        children: [
                           Icon(
                             Icons.chat_bubble_outline_rounded,
                             size: 13,
@@ -222,7 +225,10 @@ class SectionWawasanKomunitas extends StatelessWidget {
                       children: [
                         // Pill Tag
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 9,
+                            vertical: 3.5,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFD8F4E4),
                             borderRadius: BorderRadius.circular(10),
@@ -266,8 +272,8 @@ class SectionWawasanKomunitas extends StatelessWidget {
                         const SizedBox(height: 10),
 
                         // Views Counter
-                        Row(
-                          children: const [
+                        const Row(
+                          children: [
                             Icon(
                               Icons.visibility_outlined,
                               size: 13,
@@ -300,18 +306,25 @@ class SectionWawasanKomunitas extends StatelessWidget {
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            width: 80,
-                            height: 80,
-                            color: AppColors.mintSoft,
-                            child: const Icon(Icons.coffee_rounded, color: AppColors.darkGreen),
-                          ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                width: 80,
+                                height: 80,
+                                color: AppColors.mintSoft,
+                                child: const Icon(
+                                  Icons.coffee_rounded,
+                                  color: AppColors.darkGreen,
+                                ),
+                              ),
                         ),
                         Positioned(
                           right: 5,
                           bottom: 5,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 5,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: AppColors.darkGreen,
                               borderRadius: BorderRadius.circular(4),

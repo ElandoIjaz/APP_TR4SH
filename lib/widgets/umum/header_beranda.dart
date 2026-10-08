@@ -141,15 +141,18 @@ class HeaderBeranda extends StatelessWidget {
                 onTap: onProfileTap,
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFD6F3DD),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: const Color(0xFFBFE7CA)),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: const [
+                    children: [
                       CircleAvatar(
                         radius: 11,
                         backgroundColor: Color(0xFF88D89F),

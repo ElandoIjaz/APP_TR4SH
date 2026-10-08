@@ -23,13 +23,21 @@ class _CardProdukGridState extends State<CardProdukGrid> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
-    
+
     // Ekstraksi data dari API Laravel (Disempurnakan dengan fallback)
-    final String namaProduk = product['nama_product'] ?? product['nama_produk'] ?? product['title'] ?? 'Tanpa Nama';
+    final String namaProduk =
+        product['nama_product'] ??
+        product['nama_produk'] ??
+        product['title'] ??
+        'Tanpa Nama';
     final int harga = int.tryParse(product['harga'].toString()) ?? 0;
-    
+
     // Penanganan URL Gambar yang aman
-    final String fotoUrl = product['foto'] ?? product['gambar'] ?? product['image'] ?? 'https://via.placeholder.com/150';
+    final String fotoUrl =
+        product['foto'] ??
+        product['gambar'] ??
+        product['image'] ??
+        'https://via.placeholder.com/150';
 
     // Dummy data untuk mempertahankan desain UI aslimu
     const String badgeDummy = 'Eco Friendly';
@@ -58,7 +66,9 @@ class _CardProdukGridState extends State<CardProdukGrid> {
           children: [
             // ── Image with Badges ──
             ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(17)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(17),
+              ),
               child: Stack(
                 children: [
                   AspectRatio(
@@ -68,7 +78,11 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: AppColors.mintSoft,
-                        child: const Icon(Icons.inventory_2_outlined, color: AppColors.darkGreen, size: 36),
+                        child: const Icon(
+                          Icons.inventory_2_outlined,
+                          color: AppColors.darkGreen,
+                          size: 36,
+                        ),
                       ),
                     ),
                   ),
@@ -78,14 +92,17 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                     top: 8,
                     left: 8,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3.5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 3.5,
+                      ),
                       decoration: BoxDecoration(
                         color: badgeDummy == 'Eco Friendly'
                             ? Colors.white.withValues(alpha: 0.9)
                             : AppColors.darkGreen,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Text(
+                      child: const Text(
                         badgeDummy,
                         style: TextStyle(
                           fontSize: 9.5,
@@ -115,9 +132,13 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          _isFavorite
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
                           size: 16,
-                          color: _isFavorite ? Colors.redAccent : AppColors.darkGreen,
+                          color: _isFavorite
+                              ? Colors.redAccent
+                              : AppColors.darkGreen,
                         ),
                       ),
                     ),
@@ -139,23 +160,26 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                       children: [
                         // Material Tag (Dummy)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2.5,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFE8F6EE),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Row(
+                          child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.recycling_rounded,
                                 size: 10,
                                 color: Color(0xFF1E8850),
                               ),
-                              const SizedBox(width: 3),
+                              SizedBox(width: 3),
                               Text(
                                 materialDummy,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.w700,
                                   color: Color(0xFF1E8850),
@@ -168,26 +192,26 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                         const SizedBox(height: 4),
 
                         // Rating Row (Dummy)
-                        Row(
+                        const Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.star_rounded,
                               size: 14,
                               color: Color(0xFFF9A825),
                             ),
-                            const SizedBox(width: 3),
+                            SizedBox(width: 3),
                             Text(
                               '$ratingDummy',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 10.5,
                                 fontWeight: FontWeight.w800,
                                 color: AppColors.darkGreen,
                               ),
                             ),
-                            const SizedBox(width: 2),
+                            SizedBox(width: 2),
                             Text(
                               '($reviewCountDummy)',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 10,
                                 color: AppColors.textMuted,
                               ),
@@ -259,8 +283,8 @@ class _CardProdukGridState extends State<CardProdukGrid> {
   // Fungsi bawaanmu tetap dipertahankan
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 }

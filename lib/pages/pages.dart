@@ -1,6 +1,7 @@
 // ── Barrel File: Pages Exports ──
 
 // Auth
+export 'auth/auth_gate.dart';
 export 'auth/halaman_daftar.dart';
 export 'auth/halaman_login.dart';
 export 'auth/halaman_lupa_pw.dart';

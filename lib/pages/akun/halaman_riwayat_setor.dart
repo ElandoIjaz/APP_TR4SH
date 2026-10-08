@@ -28,19 +28,27 @@ class HalamanRiwayatSetor extends StatelessWidget {
                   color: const Color(0xFFD6F3DD),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: AppColors.darkGreen, size: 20),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.darkGreen,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           'Riwayat Setor Sampah',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: AppColors.darkGreen,
+          ),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         child: Column(
           children: [
             const SizedBox(height: 14),
@@ -63,9 +71,9 @@ class HalamanRiwayatSetor extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
+                      children: [
                         Text(
                           'TOTAL KONTRIBUSI ANDA',
                           style: TextStyle(
@@ -75,7 +83,11 @@ class HalamanRiwayatSetor extends StatelessWidget {
                             letterSpacing: 0.8,
                           ),
                         ),
-                        Icon(Icons.recycling_rounded, color: AppColors.limeAccent, size: 18),
+                        Icon(
+                          Icons.recycling_rounded,
+                          color: AppColors.limeAccent,
+                          size: 18,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 14),
@@ -83,25 +95,30 @@ class HalamanRiwayatSetor extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         _buildMetricColumn(
-                          (UserAccountData.isNewAccount || UserAccountData.isGuest)
+                          (UserAccountData.isNewAccount ||
+                                  UserAccountData.isGuest)
                               ? '0.0 kg'
                               : (UserAccountData.totalSampahKg > 0
-                                  ? '${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg'
-                                  : '14.8 kg'),
+                                    ? '${UserAccountData.totalSampahKg.toStringAsFixed(1)} kg'
+                                    : '14.8 kg'),
                           'Sampah Disetor',
                         ),
                         Container(width: 1, height: 36, color: Colors.white24),
                         _buildMetricColumn(
-                          (UserAccountData.isNewAccount || UserAccountData.isGuest) ? '+0' : '+1.900',
+                          (UserAccountData.isNewAccount ||
+                                  UserAccountData.isGuest)
+                              ? '+0'
+                              : '+1.900',
                           'Poin Diperoleh',
                         ),
                         Container(width: 1, height: 36, color: Colors.white24),
                         _buildMetricColumn(
-                          (UserAccountData.isNewAccount || UserAccountData.isGuest)
+                          (UserAccountData.isNewAccount ||
+                                  UserAccountData.isGuest)
                               ? '0.0 kg'
                               : (UserAccountData.totalSampahKg > 0
-                                  ? '${(UserAccountData.totalSampahKg * 1.55).toStringAsFixed(1)} kg'
-                                  : '23.0 kg'),
+                                    ? '${(UserAccountData.totalSampahKg * 1.55).toStringAsFixed(1)} kg'
+                                    : '23.0 kg'),
                           'Reduksi CO2e',
                         ),
                       ],
@@ -114,13 +131,17 @@ class HalamanRiwayatSetor extends StatelessWidget {
             const SizedBox(height: 18),
 
             // Section Title
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
               child: Row(
-                children: const [
+                children: [
                   Text(
                     'Catatan Penyetoran Terverifikasi',
-                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                 ],
               ),
@@ -130,21 +151,35 @@ class HalamanRiwayatSetor extends StatelessWidget {
 
             // Deposit History Cards
             if (list.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+              const Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 32,
+                ),
                 child: Center(
                   child: Column(
-                    children: const [
-                      Icon(Icons.recycling_rounded, size: 48, color: AppColors.textMuted),
+                    children: [
+                      Icon(
+                        Icons.recycling_rounded,
+                        size: 48,
+                        color: AppColors.textMuted,
+                      ),
                       SizedBox(height: 10),
                       Text(
                         'Belum ada riwayat setoran sampah',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.darkGreen,
+                        ),
                       ),
                       SizedBox(height: 4),
                       Text(
                         'Mulai setor sampah daur ulang pertamamu sekarang!',
-                        style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textMuted,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -177,7 +212,9 @@ class HalamanRiwayatSetor extends StatelessWidget {
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
             onPressed: () {
               Navigator.push(
@@ -185,7 +222,11 @@ class HalamanRiwayatSetor extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const HalamanTracking()),
               );
             },
-            icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.limeAccent, size: 20),
+            icon: const Icon(
+              Icons.add_circle_outline_rounded,
+              color: AppColors.limeAccent,
+              size: 20,
+            ),
             label: const Text(
               'Setor Sampah Sekarang',
               style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w900),
@@ -201,7 +242,11 @@ class HalamanRiwayatSetor extends StatelessWidget {
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.white),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+          ),
         ),
         const SizedBox(height: 2),
         Text(
@@ -237,10 +282,14 @@ class HalamanRiwayatSetor extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    CircleAvatar(
+                    const CircleAvatar(
                       radius: 16,
-                      backgroundColor: const Color(0xFFD6F3DD),
-                      child: const Icon(Icons.recycling_rounded, size: 18, color: AppColors.darkGreen),
+                      backgroundColor: Color(0xFFD6F3DD),
+                      child: Icon(
+                        Icons.recycling_rounded,
+                        size: 18,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                     const SizedBox(width: 10),
                     Column(
@@ -248,22 +297,39 @@ class HalamanRiwayatSetor extends StatelessWidget {
                       children: [
                         Text(
                           item.kategori,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.darkGreen,
+                          ),
                         ),
-                        Text(item.tanggal, style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                        Text(
+                          item.tanggal,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textMuted,
+                          ),
+                        ),
                       ],
                     ),
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.mintSoft,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     '+${item.poin} Poin',
-                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF1E8850)),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF1E8850),
+                    ),
                   ),
                 ),
               ],
@@ -275,20 +341,40 @@ class HalamanRiwayatSetor extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Total Timbangan', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                    const Text(
+                      'Total Timbangan',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                     Text(
                       '${item.beratKg} kg',
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                   ],
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    const Text('Mitra Bank Sampah', style: TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                    const Text(
+                      'Mitra Bank Sampah',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
                     Text(
                       item.lokasiBankSampah,
-                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.darkGreen),
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                   ],
                 ),
@@ -303,11 +389,19 @@ class HalamanRiwayatSetor extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.eco_outlined, size: 14, color: Color(0xFF1E8850)),
+                  const Icon(
+                    Icons.eco_outlined,
+                    size: 14,
+                    color: Color(0xFF1E8850),
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     'Dampak: ${item.estimasiCo2}',
-                    style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Color(0xFF1E8850)),
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E8850),
+                    ),
                   ),
                 ],
               ),
