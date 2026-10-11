@@ -10,9 +10,9 @@ class CardRiwayatSampah extends StatelessWidget {
 
   const CardRiwayatSampah({
     super.key,
-    this.totalWeight = '14.8',
+    this.totalWeight = '0.0',
     this.targetWeight = 'Target: 20 kg',
-    this.trendBadge = '+28% minggu ini',
+    this.trendBadge = '+0 setoran',
     this.rawData,
     this.chartData,
   });

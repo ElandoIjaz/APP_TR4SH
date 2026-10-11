@@ -4,10 +4,7 @@ import 'package:test23/core/app_colors.dart';
 class BannerKontributorKonten extends StatelessWidget {
   final VoidCallback onBerbagiIdeTap;
 
-  const BannerKontributorKonten({
-    super.key,
-    required this.onBerbagiIdeTap,
-  });
+  const BannerKontributorKonten({super.key, required this.onBerbagiIdeTap});
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +18,7 @@ class BannerKontributorKonten extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0D4330),
-              Color(0xFF072B1C),
-            ],
+            colors: [Color(0xFF0D4330), Color(0xFF072B1C)],
           ),
           boxShadow: [
             BoxShadow(
@@ -90,9 +84,9 @@ class BannerKontributorKonten extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                 ),
                 onPressed: onBerbagiIdeTap,
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Text(
                       'Mulai Berbagi Ide',
                       style: TextStyle(

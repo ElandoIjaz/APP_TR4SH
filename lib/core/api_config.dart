@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,13 +11,13 @@ class ApiConfig {
   static const String _keyUseEmulator = 'app_use_emulator';
 
   /// IP Laptop / Server lokal saat testing di HP fisik via WiFi yang sama.
-  /// Berdasarkan command `ipconfig`, IP WiFi laptop saat ini adalah 192.168.1.11
-  static String laptopWifiIp = '192.168.1.11';
+  /// Berdasarkan command `ipconfig`, IP WiFi laptop saat ini adalah 10.10.181.109
+  static String laptopWifiIp = '10.10.181.109';
 
   /// Port standar Laravel `php artisan serve`
   static int port = 8000;
 
-  /// Mode Android Emulator (10.0.2.2). Default false karena user menggunakan HP fisik (Xiaomi).
+  /// Mode Android Emulator (10.0.2.2). Default false, otomatis disetel true jika emulator terdeteksi.
   static bool useAndroidEmulator = false;
 
   /// Custom Base URL jika ingin di-override secara eksplisit
@@ -37,8 +38,68 @@ class ApiConfig {
       final savedEmulator = prefs.getBool(_keyUseEmulator);
       if (savedEmulator != null) {
         useAndroidEmulator = savedEmulator;
+      } else {
+        // Auto-deteksi jika belum disimpan secara manual oleh user
+        await autoDetectWorkingHost();
       }
     } catch (_) {}
+  }
+
+  /// Cek cepat apakah koneksi ke host tertentu aktif
+  static Future<bool> pingHost(
+    String ipOrHost, {
+    int? checkPort,
+    int timeoutMs = 800,
+  }) async {
+    try {
+      final p = checkPort ?? port;
+      final client = HttpClient()
+        ..connectionTimeout = Duration(milliseconds: timeoutMs);
+      final req = await client.getUrl(
+        Uri.parse('http://$ipOrHost:$p/api/ping'),
+      );
+      final res = await req.close().timeout(Duration(milliseconds: timeoutMs));
+      final isOk = res.statusCode == 200;
+      client.close();
+      return isOk;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Melakukan deteksi otomatis antara Android Emulator (10.0.2.2) dan HP Fisik via WiFi (laptopWifiIp)
+  static Future<bool> autoDetectWorkingHost() async {
+    if (kIsWeb) return false;
+
+    try {
+      if (Platform.isAndroid) {
+        // 1. Coba loopback Android emulator (10.0.2.2)
+        final emuOk = await pingHost('10.0.2.2', timeoutMs: 600);
+        if (emuOk) {
+          useAndroidEmulator = true;
+          return true;
+        }
+
+        // 2. Coba IP WiFi laptop
+        final wifiOk = await pingHost(laptopWifiIp, timeoutMs: 800);
+        if (wifiOk) {
+          useAndroidEmulator = false;
+          return true;
+        }
+
+        // 3. Coba IP default cadangan jika laptopWifiIp belum sesuai
+        if (laptopWifiIp != '10.10.181.109') {
+          final defaultWifiOk = await pingHost('10.10.181.109', timeoutMs: 800);
+          if (defaultWifiOk) {
+            laptopWifiIp = '10.10.181.109';
+            useAndroidEmulator = false;
+            return true;
+          }
+        }
+      }
+    } catch (_) {}
+
+    return false;
   }
 
   /// Simpan IP dan konfigurasi server baru ke SharedPreferences
@@ -63,7 +124,7 @@ class ApiConfig {
   /// - Web: Menggunakan 127.0.0.1
   /// - Windows Desktop / macOS / Linux: Menggunakan 127.0.0.1
   /// - Android Emulator: Menggunakan 10.0.2.2 (jika useAndroidEmulator == true)
-  /// - HP Fisik Android/iOS: Menggunakan IP WiFi Laptop (192.168.1.11)
+  /// - HP Fisik Android/iOS: Menggunakan IP WiFi Laptop (10.10.181.109)
   static String get baseUrl {
     if (customBaseUrl != null && customBaseUrl!.trim().isNotEmpty) {
       return customBaseUrl!.trim();

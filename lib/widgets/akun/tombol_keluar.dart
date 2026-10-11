@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class TombolKeluar extends StatelessWidget {
   final VoidCallback onLogoutTap;
 
-  const TombolKeluar({
-    super.key,
-    required this.onLogoutTap,
-  });
+  const TombolKeluar({super.key, required this.onLogoutTap});
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +20,9 @@ class TombolKeluar extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
           ),
-          child: Row(
+          child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               Icon(Icons.logout_rounded, size: 18, color: Color(0xFFE53935)),
               SizedBox(width: 8),
               Text(

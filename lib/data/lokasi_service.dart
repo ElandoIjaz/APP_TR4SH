@@ -1,22 +1,6 @@
-class LokasiGmapsItem {
-  final String namaTempat;
-  final String alamatLengkap;
-  final String kota;
-  final String kodePos;
-  final double latitude;
-  final double longitude;
-  final String patokan;
+export 'models/lokasi_gmaps_item_model.dart';
 
-  const LokasiGmapsItem({
-    required this.namaTempat,
-    required this.alamatLengkap,
-    required this.kota,
-    required this.kodePos,
-    required this.latitude,
-    required this.longitude,
-    required this.patokan,
-  });
-}
+import 'models/lokasi_gmaps_item_model.dart';
 
 class LokasiTrackingService {
   LokasiTrackingService._();
@@ -25,18 +9,21 @@ class LokasiTrackingService {
   static double currentLatitude = -6.907482;
   static double currentLongitude = 107.618954;
   static String currentAccuracy = '±1.2 meter (GPS Sangat Akurat)';
-  static String currentAddress = 'Jl. Riau No. 45, RT 03 / RW 07, Kel. Citarum, Kec. Bandung Wetan';
+  static String currentAddress =
+      'Jl. Riau No. 45, RT 03 / RW 07, Kel. Citarum, Kec. Bandung Wetan';
   static String currentCity = 'Kota Bandung, Jawa Barat';
   static String currentPostalCode = '40115';
   static String currentPatokan = 'Pagar besi hitam, seberang Bank Sampah RT 03';
-  static String nearestBankSampah = 'Bank Sampah Citarum Bersih (0.8 km • Driver Siap Jemput)';
+  static String nearestBankSampah =
+      'Bank Sampah Citarum Bersih (0.8 km • Driver Siap Jemput)';
   static bool isGpsActive = true;
 
   // Google Maps preset places for instant search in GMaps mode
   static final List<LokasiGmapsItem> gmapsPlaces = [
     const LokasiGmapsItem(
       namaTempat: 'Rumah Tinggal (Jl. Riau)',
-      alamatLengkap: 'Jl. Riau No. 45, RT 03 / RW 07, Kel. Citarum, Kec. Bandung Wetan',
+      alamatLengkap:
+          'Jl. Riau No. 45, RT 03 / RW 07, Kel. Citarum, Kec. Bandung Wetan',
       kota: 'Kota Bandung, Jawa Barat',
       kodePos: '40115',
       latitude: -6.907482,

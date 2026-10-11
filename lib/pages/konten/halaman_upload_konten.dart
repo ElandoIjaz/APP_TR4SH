@@ -73,7 +73,8 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
   }
 
   Future<void> _muatKontenSaya() async {
-    if (UserAccountData.isNewAccount && UserAccountData.listKontenSaya.isEmpty) {
+    if (UserAccountData.isNewAccount &&
+        UserAccountData.listKontenSaya.isEmpty) {
       if (mounted) {
         setState(() {
           _isLoadingRiwayat = false;
@@ -257,7 +258,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                         width: 70,
                         height: 48,
                         color: Colors.grey.shade300,
-                        child: const Icon(Icons.play_circle_outline, color: Colors.grey),
+                        child: const Icon(
+                          Icons.play_circle_outline,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   ),
@@ -301,7 +305,9 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   elevation: 0,
                 ),
                 onPressed: () {
@@ -358,7 +364,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
           indicatorWeight: 3.5,
           labelColor: AppColors.limeAccent,
           unselectedLabelColor: Colors.white70,
-          labelStyle: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
+          labelStyle: const TextStyle(
+            fontSize: 13.5,
+            fontWeight: FontWeight.bold,
+          ),
           tabs: const [
             Tab(
               icon: Icon(Icons.video_library_rounded, size: 20),
@@ -373,10 +382,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildFormUploadTab(),
-          _buildRiwayatKontenTab(),
-        ],
+        children: [_buildFormUploadTab(), _buildRiwayatKontenTab()],
       ),
     );
   }
@@ -384,6 +390,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
   // ── TAB 1: FORM UPLOAD KONTEN ──
   Widget _buildFormUploadTab() {
     return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -399,7 +406,11 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.lock_outline_rounded, color: Color(0xFF856404), size: 22),
+                  const Icon(
+                    Icons.lock_outline_rounded,
+                    color: Color(0xFF856404),
+                    size: 22,
+                  ),
                   const SizedBox(width: 10),
                   const Expanded(
                     child: Text(
@@ -415,15 +426,29 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                     style: TextButton.styleFrom(
                       backgroundColor: AppColors.darkGreen,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const HalamanLogin()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const HalamanLogin()),
+                      );
                     },
-                    child: const Text('Masuk', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'Masuk',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -441,7 +466,11 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.lightbulb_outline, color: Color(0xFF2E7D32), size: 22),
+                const Icon(
+                  Icons.lightbulb_outline,
+                  color: Color(0xFF2E7D32),
+                  size: 22,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -477,17 +506,27 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5),
               filled: true,
               fillColor: Colors.white,
-              prefixIcon: const Icon(Icons.smart_display_rounded, color: Colors.redAccent),
+              prefixIcon: const Icon(
+                Icons.smart_display_rounded,
+                color: Colors.redAccent,
+              ),
               suffixIcon: _urlController.text.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
+                      icon: const Icon(
+                        Icons.clear,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
                       onPressed: () {
                         _urlController.clear();
                         setState(() => _detectedYoutubeId = null);
                       },
                     )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 14,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: AppColors.cardBorder),
@@ -498,7 +537,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.darkGreen, width: 1.8),
+                borderSide: const BorderSide(
+                  color: AppColors.darkGreen,
+                  width: 1.8,
+                ),
               ),
             ),
           ),
@@ -528,7 +570,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               filled: true,
               fillColor: Colors.white,
               prefixIcon: const Icon(Icons.title, color: AppColors.darkGreen),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 14,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: AppColors.cardBorder),
@@ -539,7 +584,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.darkGreen, width: 1.8),
+                borderSide: const BorderSide(
+                  color: AppColors.darkGreen,
+                  width: 1.8,
+                ),
               ),
             ),
           ),
@@ -566,13 +614,19 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               child: DropdownButton<String>(
                 value: _selectedKategori,
                 isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: AppColors.darkGreen),
+                icon: const Icon(
+                  Icons.arrow_drop_down,
+                  color: AppColors.darkGreen,
+                ),
                 items: _kategoriList.map((String k) {
                   return DropdownMenuItem<String>(
                     value: k,
                     child: Text(
                       k,
-                      style: const TextStyle(fontSize: 13.5, color: Colors.black87),
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        color: Colors.black87,
+                      ),
                     ),
                   );
                 }).toList(),
@@ -601,8 +655,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
             maxLines: 5,
             style: const TextStyle(fontSize: 13.5),
             decoration: InputDecoration(
-              hintText:
-                  'Tuliskan ringkasan video, alat/bahan yang dibutuhkan, atau poin penting yang bisa dipelajari penonton...',
+              hintText: 'Tuliskan ringkasan video, alat/bahan yang dibutuhkan, atau poin penting yang bisa dipelajari penonton...',
               hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5),
               filled: true,
               fillColor: Colors.white,
@@ -617,7 +670,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.darkGreen, width: 1.8),
+                borderSide: const BorderSide(
+                  color: AppColors.darkGreen,
+                  width: 1.8,
+                ),
               ),
             ),
           ),
@@ -631,7 +687,9 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                 backgroundColor: AppColors.darkGreen,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               onPressed: _isLoading ? null : _kirimKonten,
               child: _isLoading
@@ -674,13 +732,20 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.cardBorder, style: BorderStyle.solid),
+          border: Border.all(
+            color: AppColors.cardBorder,
+            style: BorderStyle.solid,
+          ),
         ),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.video_library_outlined, size: 32, color: Colors.grey.shade400),
+              Icon(
+                Icons.video_library_outlined,
+                size: 32,
+                color: Colors.grey.shade400,
+              ),
               const SizedBox(height: 6),
               Text(
                 'Pratinjau video YouTube akan muncul di sini',
@@ -692,7 +757,8 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
       );
     }
 
-    final thumbUrl = 'https://img.youtube.com/vi/$_detectedYoutubeId/hqdefault.jpg';
+    final thumbUrl =
+        'https://img.youtube.com/vi/$_detectedYoutubeId/hqdefault.jpg';
 
     return Container(
       decoration: BoxDecoration(
@@ -724,7 +790,11 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                     height: 180,
                     color: Colors.black87,
                     child: const Center(
-                      child: Icon(Icons.broken_image, color: Colors.white54, size: 40),
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Colors.white54,
+                        size: 40,
+                      ),
                     ),
                   ),
                 ),
@@ -748,7 +818,11 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: [
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF2E7D32), size: 16),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF2E7D32),
+                  size: 16,
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
@@ -816,7 +890,9 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: () => _tabController.animateTo(0),
                 icon: const Icon(Icons.add_rounded, size: 18),
@@ -832,6 +908,9 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
       color: AppColors.darkGreen,
       onRefresh: _muatKontenSaya,
       child: ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: ClampingScrollPhysics(),
+        ),
         padding: const EdgeInsets.all(16),
         itemCount: _listKontenSaya.length,
         separatorBuilder: (context, index) => const SizedBox(height: 14),
@@ -845,7 +924,8 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
 
   Widget _buildKartuKontenUser(Map<String, dynamic> item) {
     final title = item['title']?.toString() ?? 'Konten Edukasi';
-    final status = (item['status_moderasi']?.toString() ?? 'pending').toLowerCase();
+    final status = (item['status_moderasi']?.toString() ?? 'pending')
+        .toLowerCase();
     final kategori = item['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan';
     final desc = item['description']?.toString() ?? '';
     final mediaUrl = item['media_url']?.toString() ?? '';
@@ -896,7 +976,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: badgeBg,
                   borderRadius: BorderRadius.circular(12),
@@ -949,7 +1032,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                           width: 80,
                           height: 56,
                           color: Colors.grey.shade300,
-                          child: const Icon(Icons.smart_display, color: Colors.grey),
+                          child: const Icon(
+                            Icons.smart_display,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                       Container(
@@ -959,7 +1045,11 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                           color: Colors.red,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.play_arrow, size: 14, color: Colors.white),
+                        child: const Icon(
+                          Icons.play_arrow,
+                          size: 14,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
                   ),
@@ -1008,12 +1098,19 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.info_outline, size: 16, color: Color(0xFFDC2626)),
+                  const Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: Color(0xFFDC2626),
+                  ),
                   const SizedBox(width: 6),
                   Expanded(
                     child: Text(
                       'Catatan Admin: $alasan',
-                      style: const TextStyle(fontSize: 11.5, color: Color(0xFF991B1B)),
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        color: Color(0xFF991B1B),
+                      ),
                     ),
                   ),
                 ],

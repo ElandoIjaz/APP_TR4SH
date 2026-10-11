@@ -26,7 +26,7 @@ class KategoriKontenTabs extends StatelessWidget {
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         itemCount: categories.length,
         separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
@@ -42,7 +42,9 @@ class KategoriKontenTabs extends StatelessWidget {
                 color: isSelected ? AppColors.darkGreen : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: isSelected ? AppColors.darkGreen : AppColors.cardBorder,
+                  color: isSelected
+                      ? AppColors.darkGreen
+                      : AppColors.cardBorder,
                   width: 1.2,
                 ),
                 boxShadow: isSelected
@@ -79,8 +81,12 @@ class KategoriKontenTabs extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontSize: 12,
-                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                      color: isSelected ? AppColors.limeAccent : const Color(0xFF4C6656),
+                      fontWeight: isSelected
+                          ? FontWeight.w800
+                          : FontWeight.w600,
+                      color: isSelected
+                          ? AppColors.limeAccent
+                          : const Color(0xFF4C6656),
                     ),
                   ),
                 ],

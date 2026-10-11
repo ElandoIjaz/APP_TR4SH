@@ -3,7 +3,14 @@ import 'package:test23/core/app_colors.dart';
 
 class GridKategoriSetor extends StatefulWidget {
   final int initialSelectedIndex;
-  final void Function(int index, String title, String unit, double weightPerUnit, int pointsPerUnit)? onCategorySelected;
+  final void Function(
+    int index,
+    String title,
+    String unit,
+    double weightPerUnit,
+    int pointsPerUnit,
+  )?
+  onCategorySelected;
 
   const GridKategoriSetor({
     super.key,
@@ -23,8 +30,8 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
       'title': 'Plastik',
       'subtitle': 'Botol, kantong kresek',
       'badge': '100% Recyclable',
-      'badgeBg': Color(0xFFD8F4E4),
-      'badgeColor': Color(0xFF1E8850),
+      'badgeBg': const Color(0xFFD8F4E4),
+      'badgeColor': const Color(0xFF1E8850),
       'icon': Icons.water_drop_outlined,
       'unit': 'Botol',
       'weightPerUnit': 0.1,
@@ -34,8 +41,8 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
       'title': 'Kaca',
       'subtitle': 'Beling, Piring kaca,...',
       'badge': 'Rapuh',
-      'badgeBg': Color(0xFFFFEBEE),
-      'badgeColor': Color(0xFFE53935),
+      'badgeBg': const Color(0xFFFFEBEE),
+      'badgeColor': const Color(0xFFE53935),
       'icon': Icons.wine_bar_rounded,
       'unit': 'Botol/Piring',
       'weightPerUnit': 0.4,
@@ -45,8 +52,8 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
       'title': 'Kertas & Karton',
       'subtitle': 'Kardus, buku, majalah',
       'badge': 'Mudah Terurai',
-      'badgeBg': Color(0xFFE8F5E9),
-      'badgeColor': Color(0xFF2E7D32),
+      'badgeBg': const Color(0xFFE8F5E9),
+      'badgeColor': const Color(0xFF2E7D32),
       'icon': Icons.inventory_2_outlined,
       'unit': 'Lembar/Dus',
       'weightPerUnit': 0.2,
@@ -56,8 +63,8 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
       'title': 'Logam / Kaleng',
       'subtitle': 'Kaleng, aluminium',
       'badge': 'Nilai Tinggi',
-      'badgeBg': Color(0xFFEDF8B6),
-      'badgeColor': Color(0xFF0D4330),
+      'badgeBg': const Color(0xFFEDF8B6),
+      'badgeColor': const Color(0xFF0D4330),
       'icon': Icons.delete_outline_rounded,
       'unit': 'Kaleng',
       'weightPerUnit': 0.15,
@@ -95,9 +102,9 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header Row
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
+            children: [
               Text(
                 'Kategori Sampah',
                 style: TextStyle(
@@ -176,10 +183,17 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
                 CircleAvatar(
                   radius: 17,
                   backgroundColor: AppColors.mintSoft,
-                  child: Icon(cat['icon'] as IconData, color: AppColors.darkGreen, size: 18),
+                  child: Icon(
+                    cat['icon'] as IconData,
+                    color: AppColors.darkGreen,
+                    size: 18,
+                  ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 7,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: cat['badgeBg'] as Color,
                     borderRadius: BorderRadius.circular(10),
@@ -213,10 +227,7 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
             // Subtitle
             Text(
               cat['subtitle'] as String,
-              style: const TextStyle(
-                fontSize: 11,
-                color: AppColors.textMuted,
-              ),
+              style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
             ),
           ],
         ),

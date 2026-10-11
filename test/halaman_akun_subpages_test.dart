@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/akun/halaman_alamat_pengiriman.dart';
@@ -10,73 +10,76 @@ import 'package:test23/pages/akun/halaman_riwayat_setor.dart';
 import 'package:test23/pages/akun/halaman_riwayat_transaksi.dart';
 
 void main() {
-  testWidgets('HalamanAlamatPengiriman and HalamanPilihLokasiAkurat work accurately',
-      (WidgetTester tester) async {
+  testWidgets(
+    'HalamanAlamatPengiriman and HalamanPilihLokasiAkurat work accurately',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(
+        const MaterialApp(home: HalamanAlamatPengiriman()),
+      );
+      await tester.pump();
+
+      // Verify Title & Header
+      expect(find.text('Alamat Pengiriman'), findsWidgets);
+      expect(find.text('Penentuan Lokasi Akurat via GPS'), findsOneWidget);
+
+      // Verify existing dummy address cards
+      expect(find.text('Rumah'), findsOneWidget);
+      expect(find.text('Kantor'), findsOneWidget);
+      expect(find.text('Utama'), findsOneWidget);
+
+      // Verify accuracy badge
+      expect(find.textContaining('Titik GPS:'), findsWidgets);
+
+      // Test tapping Tambah Alamat Baru
+      await tester.tap(find.text('Tambah Alamat Baru (GPS Akurat)'));
+      await tester.pumpAndSettle();
+
+      // Now in HalamanPilihLokasiAkurat
+      expect(find.text('Tentukan Lokasi Akurat'), findsOneWidget);
+      expect(find.textContaining('Titik Pin Presisi:'), findsOneWidget);
+      expect(find.text('Kunci GPS Saya'), findsOneWidget);
+
+      // Test locking GPS
+      await tester.tap(find.text('Kunci GPS Saya'));
+      await tester.pumpAndSettle();
+
+      // Drag to scroll form into view
+      await tester.drag(
+        find.byType(SingleChildScrollView),
+        const Offset(0, -200),
+      );
+      await tester.pumpAndSettle();
+
+      // Select label chip 'Apartemen'
+      await tester.tap(find.text('Apartemen'));
+      await tester.pump();
+
+      // Scroll to Simpan button and tap
+      await tester.drag(
+        find.byType(SingleChildScrollView),
+        const Offset(0, -600),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Simpan Lokasi Akurat'));
+      await tester.pumpAndSettle();
+
+      // Returned to address list
+      expect(find.text('Alamat Pengiriman'), findsWidgets);
+    },
+  );
+
+  testWidgets('HalamanRiwayatTransaksi renders and filters orders', (
+    WidgetTester tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HalamanAlamatPengiriman(),
-      ),
-    );
-    await tester.pump();
-
-    // Verify Title & Header
-    expect(find.text('Alamat Pengiriman'), findsWidgets);
-    expect(find.text('Penentuan Lokasi Akurat via GPS'), findsOneWidget);
-
-    // Verify existing dummy address cards
-    expect(find.text('Rumah'), findsOneWidget);
-    expect(find.text('Kantor'), findsOneWidget);
-    expect(find.text('Utama'), findsOneWidget);
-
-    // Verify accuracy badge
-    expect(find.textContaining('Titik GPS:'), findsWidgets);
-
-    // Test tapping Tambah Alamat Baru
-    await tester.tap(find.text('Tambah Alamat Baru (GPS Akurat)'));
-    await tester.pumpAndSettle();
-
-    // Now in HalamanPilihLokasiAkurat
-    expect(find.text('Tentukan Lokasi Akurat'), findsOneWidget);
-    expect(find.textContaining('Titik Pin Presisi:'), findsOneWidget);
-    expect(find.text('Kunci GPS Saya'), findsOneWidget);
-
-    // Test locking GPS
-    await tester.tap(find.text('Kunci GPS Saya'));
-    await tester.pumpAndSettle();
-
-    // Drag to scroll form into view
-    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -200));
-    await tester.pumpAndSettle();
-
-    // Select label chip 'Apartemen'
-    await tester.tap(find.text('Apartemen'));
-    await tester.pump();
-
-    // Scroll to Simpan button and tap
-    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -600));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Simpan Lokasi Akurat'));
-    await tester.pumpAndSettle();
-
-    // Returned to address list
-    expect(find.text('Alamat Pengiriman'), findsWidgets);
-  });
-
-  testWidgets('HalamanRiwayatTransaksi renders and filters orders',
-      (WidgetTester tester) async {
-    tester.view.physicalSize = const Size(1080, 2400);
-    tester.view.devicePixelRatio = 2.0;
-    addTearDown(tester.view.resetPhysicalSize);
-
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HalamanRiwayatTransaksi(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: HalamanRiwayatTransaksi()));
     await tester.pump();
 
     expect(find.text('Riwayat Transaksi'), findsOneWidget);
@@ -100,17 +103,14 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('HalamanRiwayatSetor renders metrics and waste history',
-      (WidgetTester tester) async {
+  testWidgets('HalamanRiwayatSetor renders metrics and waste history', (
+    WidgetTester tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HalamanRiwayatSetor(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: HalamanRiwayatSetor()));
     await tester.pump();
 
     expect(find.text('Riwayat Setor Sampah'), findsOneWidget);
@@ -125,17 +125,14 @@ void main() {
     expect(find.text('Setor Sampah Sekarang'), findsOneWidget);
   });
 
-  testWidgets('HalamanPoinHadiah allows reward redemption',
-      (WidgetTester tester) async {
+  testWidgets('HalamanPoinHadiah allows reward redemption', (
+    WidgetTester tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HalamanPoinHadiah(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: HalamanPoinHadiah()));
     await tester.pump();
 
     expect(find.text('Poin & Hadiah'), findsOneWidget);
@@ -160,44 +157,45 @@ void main() {
     expect(find.text('300'), findsOneWidget);
   });
 
-  testWidgets('HalamanNotifikasi renders notifications and handles marking read',
-      (WidgetTester tester) async {
+  testWidgets(
+    'HalamanNotifikasi renders notifications and handles marking read',
+    (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.0;
+      addTearDown(tester.view.resetPhysicalSize);
+
+      await tester.pumpWidget(const MaterialApp(home: HalamanNotifikasi()));
+      await tester.pump();
+
+      expect(find.text('Notifikasi'), findsOneWidget);
+      expect(find.text('Semua'), findsOneWidget);
+      expect(find.text('Transaksi'), findsOneWidget);
+      expect(find.text('Setor Sampah'), findsOneWidget);
+      expect(find.text('Info & Promo'), findsOneWidget);
+
+      expect(
+        find.text('Penyetoran Sampah 4.2 kg Terverifikasi'),
+        findsOneWidget,
+      );
+
+      // Tap Tandai Semua Dibaca via icon
+      await tester.tap(find.byIcon(Icons.done_all_rounded));
+      await tester.pumpAndSettle();
+      expect(
+        find.text('Semua notifikasi ditandai telah dibaca'),
+        findsOneWidget,
+      );
+    },
+  );
+
+  testWidgets('HalamanBantuanFaq renders search and expandable FAQs', (
+    WidgetTester tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HalamanNotifikasi(),
-      ),
-    );
-    await tester.pump();
-
-    expect(find.text('Notifikasi'), findsOneWidget);
-    expect(find.text('Semua'), findsOneWidget);
-    expect(find.text('Transaksi'), findsOneWidget);
-    expect(find.text('Setor Sampah'), findsOneWidget);
-    expect(find.text('Info & Promo'), findsOneWidget);
-
-    expect(find.text('Penyetoran Sampah 4.2 kg Terverifikasi'), findsOneWidget);
-
-    // Tap Tandai Semua Dibaca via icon
-    await tester.tap(find.byIcon(Icons.done_all_rounded));
-    await tester.pumpAndSettle();
-    expect(find.text('Semua notifikasi ditandai telah dibaca'), findsOneWidget);
-  });
-
-  testWidgets('HalamanBantuanFaq renders search and expandable FAQs',
-      (WidgetTester tester) async {
-    tester.view.physicalSize = const Size(1080, 2400);
-    tester.view.devicePixelRatio = 2.0;
-    addTearDown(tester.view.resetPhysicalSize);
-
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HalamanBantuanFaq(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: HalamanBantuanFaq()));
     await tester.pump();
 
     expect(find.text('Bantuan & FAQ'), findsOneWidget);
@@ -206,23 +204,23 @@ void main() {
     expect(find.text('Setor Sampah'), findsOneWidget);
 
     // Expand FAQ
-    expect(find.text('Bagaimana cara menyetor sampah di TR4SH!?'), findsOneWidget);
+    expect(
+      find.text('Bagaimana cara menyetor sampah di TR4SH!?'),
+      findsOneWidget,
+    );
     await tester.tap(find.text('Bagaimana cara menyetor sampah di TR4SH!?'));
     await tester.pumpAndSettle();
     expect(find.textContaining('Setor Mandiri'), findsOneWidget);
   });
 
-  testWidgets('HalamanPengaturanAkun toggles settings and opens modal',
-      (WidgetTester tester) async {
+  testWidgets('HalamanPengaturanAkun toggles settings and opens modal', (
+    WidgetTester tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HalamanPengaturanAkun(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: HalamanPengaturanAkun()));
     await tester.pump();
 
     expect(find.text('Pengaturan Akun'), findsOneWidget);
@@ -245,17 +243,14 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('HalamanAkun navigates correctly to all 7 subpages',
-      (WidgetTester tester) async {
+  testWidgets('HalamanAkun navigates correctly to all 7 subpages', (
+    WidgetTester tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.0;
     addTearDown(tester.view.resetPhysicalSize);
 
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: HalamanAkun(),
-      ),
-    );
+    await tester.pumpWidget(const MaterialApp(home: HalamanAkun()));
     await tester.pump();
 
     // 1. Riwayat Transaksi

@@ -8,12 +8,10 @@ class GridJenisSampah extends StatelessWidget {
     String subtitle,
     String description,
     IconData icon,
-  ) onCategoryTap;
+  )
+  onCategoryTap;
 
-  const GridJenisSampah({
-    super.key,
-    required this.onCategoryTap,
-  });
+  const GridJenisSampah({super.key, required this.onCategoryTap});
 
   @override
   Widget build(BuildContext context) {
@@ -165,83 +163,68 @@ class _CategoryCardState extends State<CategoryCard> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: _isHovered ? 0.08 : 0.02),
-              blurRadius: _isHovered ? 16 : 8,
-              offset: Offset(0, _isHovered ? 8 : 4),
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Material(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: widget.onTap,
-            hoverColor: AppColors.mintSoft.withValues(alpha: 0.2),
-            splashColor: AppColors.mintSoft,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _isHovered
-                      ? AppColors.darkGreen.withValues(alpha: 0.4)
-                      : AppColors.cardBorder,
-                  width: _isHovered ? 1.5 : 1.0,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Row: Icon circle + Pill Badge
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.mintSoft,
+                  child: Icon(icon, color: AppColors.darkGreen, size: 18),
                 ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      CircleAvatar(
-                        radius: 18,
-                        backgroundColor: AppColors.mintSoft,
-                        child: Icon(widget.icon,
-                            color: AppColors.darkGreen, size: 18),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: widget.badgeBg,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          widget.badge,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: widget.badgeTextColor,
-                          ),
-                        ),
-                      ),
-                    ],
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontSize: 14.5,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.darkGreen,
+                  decoration: BoxDecoration(
+                    color: badgeBg,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    badge,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: badgeTextColor,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    widget.subtitle,
-                    style: const TextStyle(
-                      fontSize: 11.5,
-                      color: AppColors.textMuted,
-                    ),
-                  ),
-                ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // Title
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14.5,
+                fontWeight: FontWeight.bold,
+                color: AppColors.darkGreen,
               ),
             ),
-          ),
+
+            const SizedBox(height: 2),
+
+            // Subtitle
+            Text(
+              subtitle,
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: AppColors.textMuted,
+              ),
+            ),
+          ],
         ),
       ),
     );

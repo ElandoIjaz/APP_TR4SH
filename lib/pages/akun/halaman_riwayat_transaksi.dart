@@ -6,7 +6,8 @@ class HalamanRiwayatTransaksi extends StatefulWidget {
   const HalamanRiwayatTransaksi({super.key});
 
   @override
-  State<HalamanRiwayatTransaksi> createState() => _HalamanRiwayatTransaksiState();
+  State<HalamanRiwayatTransaksi> createState() =>
+      _HalamanRiwayatTransaksiState();
 }
 
 class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
@@ -38,7 +39,11 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
               children: [
                 const Text(
                   'Pelacakan Ekspedisi Kurir',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded),
@@ -49,7 +54,11 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
             const SizedBox(height: 6),
             Text(
               trx.noInvoice,
-              style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 12,
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 14),
             _buildTimelineItem(
@@ -73,10 +82,15 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Tutup Pelacakan', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Tutup Pelacakan',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -85,7 +99,11 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
     );
   }
 
-  Widget _buildTimelineItem({required String title, required String time, bool isLatest = false}) {
+  Widget _buildTimelineItem({
+    required String title,
+    required String time,
+    bool isLatest = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -110,11 +128,19 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: isLatest ? FontWeight.bold : FontWeight.w500,
-                    color: isLatest ? AppColors.darkGreen : const Color(0xFF4C6656),
+                    color: isLatest
+                        ? AppColors.darkGreen
+                        : const Color(0xFF4C6656),
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(time, style: const TextStyle(fontSize: 10, color: AppColors.textMuted)),
+                Text(
+                  time,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: AppColors.textMuted,
+                  ),
+                ),
               ],
             ),
           ),
@@ -143,14 +169,22 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
                   color: const Color(0xFFD6F3DD),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: AppColors.darkGreen, size: 20),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.darkGreen,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           'Riwayat Transaksi',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: AppColors.darkGreen,
+          ),
         ),
         centerTitle: true,
       ),
@@ -165,7 +199,7 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 itemCount: _filters.length,
                 separatorBuilder: (context, index) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
@@ -173,20 +207,31 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
                   return GestureDetector(
                     onTap: () => setState(() => _selectedFilterIndex = index),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.darkGreen : AppColors.bgScreen,
+                        color: isSelected
+                            ? AppColors.darkGreen
+                            : AppColors.bgScreen,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isSelected ? AppColors.darkGreen : AppColors.cardBorder,
+                          color: isSelected
+                              ? AppColors.darkGreen
+                              : AppColors.cardBorder,
                         ),
                       ),
                       child: Text(
                         _filters[index],
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          color: isSelected ? AppColors.limeAccent : AppColors.darkGreen,
+                          fontWeight: isSelected
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: isSelected
+                              ? AppColors.limeAccent
+                              : AppColors.darkGreen,
                         ),
                       ),
                     ),
@@ -199,24 +244,32 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
           // Transaction List
           Expanded(
             child: _filteredList.isEmpty
-                ? Center(
+                ? const Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.receipt_long_outlined, size: 54, color: AppColors.textMuted),
+                      children: [
+                        Icon(
+                          Icons.receipt_long_outlined,
+                          size: 54,
+                          color: AppColors.textMuted,
+                        ),
                         SizedBox(height: 10),
                         Text(
                           'Tidak ada transaksi pada status ini',
-                          style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.textMuted,
+                          ),
                         ),
                       ],
                     ),
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.all(20),
-                    physics: const BouncingScrollPhysics(),
+                    physics: const ClampingScrollPhysics(),
                     itemCount: _filteredList.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final item = _filteredList[index];
                       return _buildTransactionCard(item);
@@ -252,18 +305,28 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.storefront_rounded, size: 16, color: AppColors.darkGreen),
+                  const Icon(
+                    Icons.storefront_rounded,
+                    size: 16,
+                    color: AppColors.darkGreen,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     trx.namaToko,
-                    style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                 ],
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: trx.status == 'Selesai' ? const Color(0xFFD6F5E1) : const Color(0xFFE3F2FD),
+                  color: trx.status == 'Selesai'
+                      ? const Color(0xFFD6F5E1)
+                      : const Color(0xFFE3F2FD),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -271,7 +334,9 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
                   style: TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.w800,
-                    color: trx.status == 'Selesai' ? const Color(0xFF1E8850) : const Color(0xFF1565C0),
+                    color: trx.status == 'Selesai'
+                        ? const Color(0xFF1E8850)
+                        : const Color(0xFF1565C0),
                   ),
                 ),
               ),
@@ -279,7 +344,10 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
           ),
 
           const SizedBox(height: 4),
-          Text(trx.tanggal, style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
+          Text(
+            trx.tanggal,
+            style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted),
+          ),
 
           const Divider(height: 18, color: Color(0xFFEDF5F0)),
 
@@ -298,7 +366,10 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
                     width: 58,
                     height: 58,
                     color: AppColors.mintSoft,
-                    child: const Icon(Icons.shopping_bag_outlined, color: AppColors.darkGreen),
+                    child: const Icon(
+                      Icons.shopping_bag_outlined,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                 ),
               ),
@@ -309,18 +380,28 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
                   children: [
                     Text(
                       trx.judulProduk,
-                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGreen,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${trx.jumlahBarang} Barang x Rp ${_formatPrice(trx.totalHarga)}',
-                      style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFE8F6EE),
                         borderRadius: BorderRadius.circular(6),
@@ -328,11 +409,19 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.eco_rounded, size: 10, color: Color(0xFF1E8850)),
+                          const Icon(
+                            Icons.eco_rounded,
+                            size: 10,
+                            color: Color(0xFF1E8850),
+                          ),
                           const SizedBox(width: 3),
                           Text(
                             trx.limbahTerselamatkan,
-                            style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Color(0xFF1E8850)),
+                            style: const TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E8850),
+                            ),
                           ),
                         ],
                       ),
@@ -352,10 +441,20 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Total Belanja', style: TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
+                  const Text(
+                    'Total Belanja',
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
                   Text(
                     'Rp ${_formatPrice(trx.totalHarga)}',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: AppColors.darkGreen),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                 ],
               ),
@@ -366,32 +465,57 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.darkGreen,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       onPressed: () => _showTrackingModal(trx),
-                      child: const Text('Lacak', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Lacak',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     )
                   else
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF98CCA8)),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Menambahkan ${trx.judulProduk} ke keranjang'),
+                            content: Text(
+                              'Menambahkan ${trx.judulProduk} ke keranjang',
+                            ),
                             backgroundColor: AppColors.darkGreen,
                           ),
                         );
                       },
-                      child: const Text('Beli Lagi', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                      child: const Text(
+                        'Beli Lagi',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.darkGreen,
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -404,8 +528,8 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
   }
 }

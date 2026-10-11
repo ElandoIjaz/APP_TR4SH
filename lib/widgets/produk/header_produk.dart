@@ -37,10 +37,10 @@ class HeaderProduk extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Column(
+              const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Text(
                     'TR4SH!',
                     style: TextStyle(
@@ -156,7 +156,10 @@ class HeaderProduk extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFFD6F3DD),
-                  border: Border.all(color: const Color(0xFFBFE7CA), width: 1.5),
+                  border: Border.all(
+                    color: const Color(0xFFBFE7CA),
+                    width: 1.5,
+                  ),
                 ),
                 child: const ClipOval(
                   child: Center(

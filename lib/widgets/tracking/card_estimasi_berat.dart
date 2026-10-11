@@ -6,7 +6,8 @@ class CardEstimasiBerat extends StatefulWidget {
   final String itemUnit;
   final double weightPerUnit;
   final int pointsPerUnit;
-  final void Function(int itemCount, double totalWeight, int totalPoints)? onInputSampah;
+  final void Function(int itemCount, double totalWeight, int totalPoints)?
+  onInputSampah;
 
   const CardEstimasiBerat({
     super.key,
@@ -80,10 +81,14 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
                   color: AppColors.mintSoft,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.bolt_rounded, size: 13, color: Color(0xFF1E8850)),
+                  children: [
+                    Icon(
+                      Icons.bolt_rounded,
+                      size: 13,
+                      color: Color(0xFF1E8850),
+                    ),
                     SizedBox(width: 3),
                     Text(
                       'Auto-Converted',
@@ -111,10 +116,10 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
             ),
             child: Row(
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 20,
                   backgroundColor: AppColors.darkGreen,
-                  child: const Icon(
+                  child: Icon(
                     Icons.hourglass_empty_rounded,
                     color: AppColors.limeAccent,
                     size: 20,
@@ -165,7 +170,11 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
                 // Minus Button
                 IconButton(
                   onPressed: _decrement,
-                  icon: const Icon(Icons.remove, size: 20, color: AppColors.darkGreen),
+                  icon: const Icon(
+                    Icons.remove,
+                    size: 20,
+                    color: AppColors.darkGreen,
+                  ),
                   splashRadius: 20,
                 ),
 
@@ -182,7 +191,11 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
                 // Plus Button
                 IconButton(
                   onPressed: _increment,
-                  icon: const Icon(Icons.add, size: 20, color: AppColors.darkGreen),
+                  icon: const Icon(
+                    Icons.add,
+                    size: 20,
+                    color: AppColors.darkGreen,
+                  ),
                   splashRadius: 20,
                 ),
               ],
@@ -202,7 +215,9 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Berhasil mencatat $_itemCount ${widget.itemUnit} (+$totalPoints EcoPoints)!'),
+                      content: Text(
+                        'Berhasil mencatat $_itemCount ${widget.itemUnit} (+$totalPoints EcoPoints)!',
+                      ),
                       backgroundColor: AppColors.darkGreen,
                     ),
                   );
@@ -216,10 +231,14 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.add_circle_outline_rounded, size: 18, color: AppColors.darkGreen),
+                children: [
+                  Icon(
+                    Icons.add_circle_outline_rounded,
+                    size: 18,
+                    color: AppColors.darkGreen,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     '+ Input Sampah',

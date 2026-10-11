@@ -34,12 +34,12 @@ class CardBankSampah extends StatelessWidget {
       child: Stack(
         children: [
           // Background organic leaf / tree watermark
-          Positioned(
+          const Positioned(
             right: -10,
             bottom: -15,
             child: Opacity(
               opacity: 0.12,
-              child: const Icon(
+              child: Icon(
                 Icons.park_rounded,
                 size: 150,
                 color: Colors.white,
@@ -52,16 +52,23 @@ class CardBankSampah extends StatelessWidget {
             children: [
               // Badge Bank Sampah Digital
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.limeAccent.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: AppColors.limeAccent, width: 1.2),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.recycling_rounded, size: 14, color: AppColors.limeAccent),
+                  children: [
+                    Icon(
+                      Icons.recycling_rounded,
+                      size: 14,
+                      color: AppColors.limeAccent,
+                    ),
                     SizedBox(width: 6),
                     Text(
                       'Bank Sampah Digital',
@@ -93,10 +100,7 @@ class CardBankSampah extends StatelessWidget {
               // Subtitle
               const Text(
                 'Kumpulkan poin belanja dari pilah sampah harianmu.',
-                style: TextStyle(
-                  color: Color(0xFFD0E9DA),
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Color(0xFFD0E9DA), fontSize: 12),
               ),
 
               const SizedBox(height: 18),
@@ -110,14 +114,17 @@ class CardBankSampah extends StatelessWidget {
                       backgroundColor: AppColors.limeAccent,
                       foregroundColor: AppColors.darkGreen,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 10,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Text(
                           'Mulai Setor',
                           style: TextStyle(
@@ -127,7 +134,11 @@ class CardBankSampah extends StatelessWidget {
                           ),
                         ),
                         SizedBox(width: 6),
-                        Icon(Icons.arrow_forward_rounded, size: 15, color: AppColors.darkGreen),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 15,
+                          color: AppColors.darkGreen,
+                        ),
                       ],
                     ),
                   ),

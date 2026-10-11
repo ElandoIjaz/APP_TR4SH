@@ -10,10 +10,14 @@ class KontenValidator {
   static final RegExp _regWatch = RegExp(r'[?&]v=([a-zA-Z0-9_\-]{11})');
 
   /// Regex pola YouTube Shorts (youtube.com/shorts/ID)
-  static final RegExp _regShorts = RegExp(r'youtube\.com\/shorts\/([a-zA-Z0-9_\-]{11})');
+  static final RegExp _regShorts = RegExp(
+    r'youtube\.com\/shorts\/([a-zA-Z0-9_\-]{11})',
+  );
 
   /// Regex pola YouTube Embed, Live, atau Video path (youtube.com/embed/ID, /live/ID, /v/ID)
-  static final RegExp _regEmbedOrLive = RegExp(r'youtube\.com\/(?:embed|live|v)\/([a-zA-Z0-9_\-]{11})');
+  static final RegExp _regEmbedOrLive = RegExp(
+    r'youtube\.com\/(?:embed|live|v)\/([a-zA-Z0-9_\-]{11})',
+  );
 
   /// Regex pola 11 digit ID video YouTube murni
   static final RegExp _regPureId = RegExp(r'^[a-zA-Z0-9_\-]{11}$');
@@ -67,7 +71,8 @@ class KontenValidator {
     if (ytId != null && ytId.isNotEmpty) {
       return 'https://img.youtube.com/vi/$ytId/hqdefault.jpg';
     }
-    if (rawUrl != null && (rawUrl.startsWith('http://') || rawUrl.startsWith('https://'))) {
+    if (rawUrl != null &&
+        (rawUrl.startsWith('http://') || rawUrl.startsWith('https://'))) {
       return rawUrl;
     }
     return null;

@@ -64,12 +64,15 @@ class _HalamanKontenState extends State<HalamanKonten> {
     }
   }
 
-  String? _getYoutubeThumbnail(String? url) => KontenValidator.getYoutubeThumbnail(url);
+  String? _getYoutubeThumbnail(String? url) =>
+      KontenValidator.getYoutubeThumbnail(url);
 
   List<dynamic> get _filteredEdukasi {
     if (_listEdukasiPublik.isEmpty) return [];
     return _listEdukasiPublik.where((item) {
-      final map = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+      final map = item is Map
+          ? Map<String, dynamic>.from(item)
+          : <String, dynamic>{};
       final title = (map['title'] ?? '').toString().toLowerCase();
       final desc = (map['description'] ?? '').toString().toLowerCase();
       final penulis = (map['penulis'] ?? '').toString().toLowerCase();
@@ -78,18 +81,30 @@ class _HalamanKontenState extends State<HalamanKonten> {
       // Search Query filter
       if (_searchQuery.isNotEmpty) {
         final q = _searchQuery.toLowerCase();
-        final matchSearch = title.contains(q) || desc.contains(q) || penulis.contains(q) || jenis.contains(q);
+        final matchSearch =
+            title.contains(q) ||
+            desc.contains(q) ||
+            penulis.contains(q) ||
+            jenis.contains(q);
         if (!matchSearch) return false;
       }
 
       // Category Tab filter
-      if (_selectedCategoryIndex == 1) { // Event
+      if (_selectedCategoryIndex == 1) {
+        // Event
         return jenis.contains('event');
-      } else if (_selectedCategoryIndex == 2) { // Profil
+      } else if (_selectedCategoryIndex == 2) {
+        // Profil
         return jenis.contains('profil');
-      } else if (_selectedCategoryIndex == 3) { // Kategori Daur Ulang
-        return jenis.contains('daur') || jenis.contains('plastik') || jenis.contains('reduce') || jenis.contains('reuse') || jenis.contains('recycle');
-      } else if (_selectedCategoryIndex == 4) { // Komunitas
+      } else if (_selectedCategoryIndex == 3) {
+        // Kategori Daur Ulang
+        return jenis.contains('daur') ||
+            jenis.contains('plastik') ||
+            jenis.contains('reduce') ||
+            jenis.contains('reuse') ||
+            jenis.contains('recycle');
+      } else if (_selectedCategoryIndex == 4) {
+        // Komunitas
         return jenis.contains('komunitas');
       }
 
@@ -105,19 +120,28 @@ class _HalamanKontenState extends State<HalamanKonten> {
 
   // ── 1. Video Player Modal ──
   void _showVideoPlayerModal([Map<String, dynamic>? item]) {
-    final currentItem = item ?? (_listEdukasiPublik.isNotEmpty && _listEdukasiPublik.first is Map ? Map<String, dynamic>.from(_listEdukasiPublik.first as Map) : null);
+    final currentItem =
+        item ??
+        (_listEdukasiPublik.isNotEmpty && _listEdukasiPublik.first is Map
+            ? Map<String, dynamic>.from(_listEdukasiPublik.first as Map)
+            : null);
     final title = currentItem?['title']?.toString() ?? 'Video Edukasi TR4SH';
-    final desc = currentItem?['description']?.toString() ?? 'Pelajari langkah bijak memilah dan mengolah sampah untuk lingkungan yang lebih asri.';
+    final desc =
+        currentItem?['description']?.toString() ??
+        'Pelajari langkah bijak memilah dan mengolah sampah untuk lingkungan yang lebih asri.';
     String author = 'Administrator';
     if (currentItem != null) {
-      if (currentItem['penulis'] != null && currentItem['penulis'].toString().isNotEmpty) {
+      if (currentItem['penulis'] != null &&
+          currentItem['penulis'].toString().isNotEmpty) {
         author = currentItem['penulis'].toString();
-      } else if (currentItem['user'] is Map && (currentItem['user'] as Map)['nama'] != null) {
+      } else if (currentItem['user'] is Map &&
+          (currentItem['user'] as Map)['nama'] != null) {
         author = (currentItem['user'] as Map)['nama'].toString();
       }
     }
     final mediaUrl = currentItem?['media_url']?.toString() ?? '';
-    final jenis = currentItem?['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan';
+    final jenis =
+        currentItem?['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan';
     final thumbUrl = _getYoutubeThumbnail(mediaUrl);
 
     showModalBottomSheet(
@@ -160,7 +184,11 @@ class _HalamanKontenState extends State<HalamanKonten> {
                         height: 200,
                         color: AppColors.darkGreen,
                         child: const Center(
-                          child: Icon(Icons.videocam_rounded, size: 60, color: Colors.white),
+                          child: Icon(
+                            Icons.videocam_rounded,
+                            size: 60,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     )
@@ -174,7 +202,11 @@ class _HalamanKontenState extends State<HalamanKonten> {
                         height: 200,
                         color: AppColors.darkGreen,
                         child: const Center(
-                          child: Icon(Icons.videocam_rounded, size: 60, color: Colors.white),
+                          child: Icon(
+                            Icons.videocam_rounded,
+                            size: 60,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -186,7 +218,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
                     top: 12,
                     left: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.darkGreen,
                         borderRadius: BorderRadius.circular(8),
@@ -194,7 +229,11 @@ class _HalamanKontenState extends State<HalamanKonten> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.verified_rounded, size: 12, color: AppColors.limeAccent),
+                          Icon(
+                            Icons.verified_rounded,
+                            size: 12,
+                            color: AppColors.limeAccent,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'DISETUJUI ADMIN • PUBLIK',
@@ -234,7 +273,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFD8F4E4),
                     borderRadius: BorderRadius.circular(8),
@@ -251,7 +293,11 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 const SizedBox(width: 8),
                 Text(
                   'Oleh: $author',
-                  style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: AppColors.textMuted,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const Spacer(),
                 if (mediaUrl.isNotEmpty)
@@ -267,7 +313,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF1F8F4),
                         borderRadius: BorderRadius.circular(8),
@@ -276,9 +325,20 @@ class _HalamanKontenState extends State<HalamanKonten> {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.link_rounded, size: 13, color: AppColors.darkGreen),
+                          Icon(
+                            Icons.link_rounded,
+                            size: 13,
+                            color: AppColors.darkGreen,
+                          ),
                           SizedBox(width: 4),
-                          Text('Salin Link', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                          Text(
+                            'Salin Link',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.darkGreen,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -297,7 +357,11 @@ class _HalamanKontenState extends State<HalamanKonten> {
             const SizedBox(height: 6),
             Text(
               desc,
-              style: const TextStyle(fontSize: 12.5, color: Color(0xFF465A50), height: 1.4),
+              style: const TextStyle(
+                fontSize: 12.5,
+                color: Color(0xFF465A50),
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -307,10 +371,15 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Tutup Pemutar', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Tutup Pemutar',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -355,27 +424,32 @@ class _HalamanKontenState extends State<HalamanKonten> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: [
-                'Semua',
-                'Tutorial Video',
-                'Artikel Daur Ulang',
-                'Komunitas',
-                'Organik',
-                'An-organik',
-                'DIY & Kerajinan',
-              ].map((label) {
-                return Chip(
-                  backgroundColor: label == 'Semua' ? AppColors.darkGreen : const Color(0xFFE8F5EE),
-                  label: Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: label == 'Semua' ? AppColors.limeAccent : AppColors.darkGreen,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                );
-              }).toList(),
+              children:
+                  [
+                    'Semua',
+                    'Tutorial Video',
+                    'Artikel Daur Ulang',
+                    'Komunitas',
+                    'Organik',
+                    'An-organik',
+                    'DIY & Kerajinan',
+                  ].map((label) {
+                    return Chip(
+                      backgroundColor: label == 'Semua'
+                          ? AppColors.darkGreen
+                          : const Color(0xFFE8F5EE),
+                      label: Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: label == 'Semua'
+                              ? AppColors.limeAccent
+                              : AppColors.darkGreen,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }).toList(),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -385,10 +459,15 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Terapkan Filter', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Terapkan Filter',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -442,7 +521,11 @@ class _HalamanKontenState extends State<HalamanKonten> {
                   const CircleAvatar(
                     radius: 16,
                     backgroundColor: Color(0xFFD6F5E1),
-                    child: Icon(Icons.article_rounded, color: AppColors.darkGreen, size: 18),
+                    child: Icon(
+                      Icons.article_rounded,
+                      color: AppColors.darkGreen,
+                      size: 18,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -450,7 +533,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
                       _listEdukasiPublik.isNotEmpty
                           ? 'Konten baru "${_listEdukasiPublik.first['title']}" baru saja diterbitkan!'
                           : 'Konten edukasi baru telah disetujui dan siap ditonton!',
-                      style: const TextStyle(fontSize: 12.5, color: AppColors.darkGreen),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                   ),
                 ],
@@ -501,11 +587,20 @@ class _HalamanKontenState extends State<HalamanKonten> {
             const SizedBox(height: 14),
             Expanded(
               child: ListView(
-                physics: const BouncingScrollPhysics(),
+                physics: const ClampingScrollPhysics(),
                 children: [
-                  _buildCommentItem('Farhan Rizky', 'Sangat inspiratif! Tutup botol HDPE juga bisa dijadikan tatakan cangkir teh yang estetik.'),
-                  _buildCommentItem('Siti Rahmawati', 'Langkah pemilahannya sangat detail dan gampang diikuti di rumah tangga.'),
-                  _buildCommentItem('Dewi Lestari', 'Terima kasih atas materi edukasinya, ilmunya sangat praktis untuk dipraktikkan!'),
+                  _buildCommentItem(
+                    'Farhan Rizky',
+                    'Sangat inspiratif! Tutup botol HDPE juga bisa dijadikan tatakan cangkir teh yang estetik.',
+                  ),
+                  _buildCommentItem(
+                    'Siti Rahmawati',
+                    'Langkah pemilahannya sangat detail dan gampang diikuti di rumah tangga.',
+                  ),
+                  _buildCommentItem(
+                    'Dewi Lestari',
+                    'Terima kasih atas materi edukasinya, ilmunya sangat praktis untuk dipraktikkan!',
+                  ),
                 ],
               ),
             ),
@@ -523,12 +618,19 @@ class _HalamanKontenState extends State<HalamanKonten> {
                       decoration: InputDecoration(
                         hintText: 'Tulis komentar Anda...',
                         border: InputBorder.none,
-                        hintStyle: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+                        hintStyle: TextStyle(
+                          fontSize: 12.5,
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.send_rounded, color: AppColors.darkGreen, size: 20),
+                    icon: const Icon(
+                      Icons.send_rounded,
+                      color: AppColors.darkGreen,
+                      size: 20,
+                    ),
                     onPressed: () {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -559,7 +661,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
             backgroundColor: AppColors.mintSoft,
             child: Text(
               author.substring(0, 1),
-              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.darkGreen,
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -569,12 +674,19 @@ class _HalamanKontenState extends State<HalamanKonten> {
               children: [
                 Text(
                   author,
-                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   comment,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF465A50)),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF465A50),
+                  ),
                 ),
               ],
             ),
@@ -622,7 +734,11 @@ class _HalamanKontenState extends State<HalamanKonten> {
                       color: const Color(0xFFD8F4E4),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: const Icon(Icons.new_releases_rounded, size: 16, color: Color(0xFF1B6B44)),
+                    child: const Icon(
+                      Icons.new_releases_rounded,
+                      size: 16,
+                      color: Color(0xFF1B6B44),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -637,7 +753,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
               ),
               if (list.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.limeAccent,
                     borderRadius: BorderRadius.circular(10),
@@ -666,7 +785,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 child: SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.darkGreen),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
               ),
             )
@@ -682,7 +804,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 child: const Center(
                   child: Text(
                     'Tidak ada video untuk filter atau pencarian ini.',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: AppColors.textMuted,
+                    ),
                   ),
                 ),
               )
@@ -696,11 +821,16 @@ class _HalamanKontenState extends State<HalamanKonten> {
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final item = list[index];
-                final itemMap = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+                final itemMap = item is Map
+                    ? Map<String, dynamic>.from(item)
+                    : <String, dynamic>{};
                 final title = itemMap['title']?.toString() ?? 'Video Edukasi';
                 final desc = itemMap['description']?.toString() ?? '';
-                final author = itemMap['penulis']?.toString() ?? 'Komunitas TR4SH';
-                final jenis = itemMap['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan';
+                final author =
+                    itemMap['penulis']?.toString() ?? 'Komunitas TR4SH';
+                final jenis =
+                    itemMap['jenis_edukasi']?.toString() ??
+                    'Edukasi Lingkungan';
                 final mediaUrl = itemMap['media_url']?.toString() ?? '';
                 final thumb = _getYoutubeThumbnail(mediaUrl);
 
@@ -735,42 +865,62 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                   width: 110,
                                   height: 76,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stack) => Container(
-                                    width: 110,
-                                    height: 76,
-                                    color: AppColors.darkGreen,
-                                    child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 28),
-                                  ),
+                                  errorBuilder: (context, error, stack) =>
+                                      Container(
+                                        width: 110,
+                                        height: 76,
+                                        color: AppColors.darkGreen,
+                                        child: const Icon(
+                                          Icons.videocam_rounded,
+                                          color: Colors.white,
+                                          size: 28,
+                                        ),
+                                      ),
                                 )
                               else
                                 Container(
                                   width: 110,
                                   height: 76,
                                   color: AppColors.darkGreen,
-                                  child: const Icon(Icons.videocam_rounded, color: Colors.white, size: 28),
+                                  child: const Icon(
+                                    Icons.videocam_rounded,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
                                 ),
                               Container(
                                 width: 110,
                                 height: 76,
                                 color: Colors.black.withValues(alpha: 0.25),
                               ),
-                              CircleAvatar(
+                              const CircleAvatar(
                                 radius: 16,
                                 backgroundColor: AppColors.limeAccent,
-                                child: const Icon(Icons.play_arrow_rounded, color: AppColors.darkGreen, size: 20),
+                                child: Icon(
+                                  Icons.play_arrow_rounded,
+                                  color: AppColors.darkGreen,
+                                  size: 20,
+                                ),
                               ),
                               Positioned(
                                 bottom: 4,
                                 right: 4,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 1,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.black.withValues(alpha: 0.7),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: const Text(
                                     'YouTube',
-                                    style: TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -788,13 +938,18 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFFD8F4E4),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: ConstrainedBox(
-                                      constraints: const BoxConstraints(maxWidth: 115),
+                                      constraints: const BoxConstraints(
+                                        maxWidth: 115,
+                                      ),
                                       child: Text(
                                         jenis,
                                         maxLines: 1,
@@ -808,19 +963,32 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                     ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 5,
+                                      vertical: 2,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: AppColors.limeAccent.withValues(alpha: 0.4),
+                                      color: AppColors.limeAccent.withValues(
+                                        alpha: 0.4,
+                                      ),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: const Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Icon(Icons.check_circle_rounded, size: 10, color: AppColors.darkGreen),
+                                        Icon(
+                                          Icons.check_circle_rounded,
+                                          size: 10,
+                                          color: AppColors.darkGreen,
+                                        ),
                                         SizedBox(width: 2),
                                         Text(
                                           'Disetujui',
-                                          style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.darkGreen,
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -843,14 +1011,21 @@ class _HalamanKontenState extends State<HalamanKonten> {
                               if (desc.isNotEmpty)
                                 Text(
                                   desc,
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textMuted,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               const SizedBox(height: 4),
                               Text(
                                 'by: $author',
-                                style: const TextStyle(fontSize: 10.5, color: Color(0xFF1E8850), fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  color: Color(0xFF1E8850),
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ],
                           ),
@@ -903,12 +1078,20 @@ class _HalamanKontenState extends State<HalamanKonten> {
             const SizedBox(height: 6),
             Text(
               author,
-              style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
               desc,
-              style: const TextStyle(fontSize: 13, color: Color(0xFF465A50), height: 1.45),
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF465A50),
+                height: 1.45,
+              ),
             ),
             const SizedBox(height: 20),
             SizedBox(
@@ -918,10 +1101,15 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Tutup', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Tutup',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -940,7 +1128,9 @@ class _HalamanKontenState extends State<HalamanKonten> {
           color: AppColors.darkGreen,
           backgroundColor: AppColors.limeAccent,
           child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: ClampingScrollPhysics(),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -955,7 +1145,9 @@ class _HalamanKontenState extends State<HalamanKonten> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          _isHeaderBookmarked ? 'Konten tersimpan ke bookmark' : 'Bookmark dihapus',
+                          _isHeaderBookmarked
+                              ? 'Konten tersimpan ke bookmark'
+                              : 'Bookmark dihapus',
                         ),
                         duration: const Duration(milliseconds: 900),
                         backgroundColor: AppColors.darkGreen,
@@ -997,10 +1189,17 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 Builder(
                   builder: (context) {
                     final featuredItem = _filteredEdukasi.isNotEmpty
-                        ? (_filteredEdukasi.first is Map ? Map<String, dynamic>.from(_filteredEdukasi.first as Map) : null)
-                        : (_listEdukasiPublik.isNotEmpty && _listEdukasiPublik.first is Map
-                            ? Map<String, dynamic>.from(_listEdukasiPublik.first as Map)
-                            : null);
+                        ? (_filteredEdukasi.first is Map
+                              ? Map<String, dynamic>.from(
+                                  _filteredEdukasi.first as Map,
+                                )
+                              : null)
+                        : (_listEdukasiPublik.isNotEmpty &&
+                                  _listEdukasiPublik.first is Map
+                              ? Map<String, dynamic>.from(
+                                  _listEdukasiPublik.first as Map,
+                                )
+                              : null);
 
                     return CardSorotanUtama(
                       item: featuredItem,
@@ -1009,7 +1208,9 @@ class _HalamanKontenState extends State<HalamanKonten> {
                       onShareTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Tautan video berhasil disalin ke clipboard!'),
+                            content: Text(
+                              'Tautan video berhasil disalin ke clipboard!',
+                            ),
                             duration: Duration(milliseconds: 900),
                             backgroundColor: AppColors.darkGreen,
                           ),
@@ -1056,9 +1257,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 const SizedBox(height: 20),
 
                 // ── 7. Contributor CTA Banner ──
-                BannerKontributorKonten(
-                  onBerbagiIdeTap: _showContributorModal,
-                ),
+                BannerKontributorKonten(onBerbagiIdeTap: _showContributorModal),
 
                 const SizedBox(height: 24),
               ],

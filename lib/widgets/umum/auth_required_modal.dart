@@ -53,11 +53,7 @@ class AuthRequiredModal {
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFFC0EAD3), width: 1.5),
               ),
-              child: Icon(
-                icon,
-                color: AppColors.darkGreen,
-                size: 34,
-              ),
+              child: Icon(icon, color: AppColors.darkGreen, size: 34),
             ),
             const SizedBox(height: 16),
 
@@ -101,11 +97,20 @@ class AuthRequiredModal {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildFeatureItem(Icons.recycling_rounded, 'Tracking\nSampah'),
+                  _buildFeatureItem(
+                    Icons.recycling_rounded,
+                    'Tracking\nSampah',
+                  ),
                   Container(width: 1, height: 28, color: Colors.grey.shade300),
-                  _buildFeatureItem(Icons.card_giftcard_rounded, 'Tukar\nPoin Hadiah'),
+                  _buildFeatureItem(
+                    Icons.card_giftcard_rounded,
+                    'Tukar\nPoin Hadiah',
+                  ),
                   Container(width: 1, height: 28, color: Colors.grey.shade300),
-                  _buildFeatureItem(Icons.video_collection_rounded, 'Upload\nKonten Edukasi'),
+                  _buildFeatureItem(
+                    Icons.video_collection_rounded,
+                    'Upload\nKonten Edukasi',
+                  ),
                 ],
               ),
             ),
@@ -120,12 +125,17 @@ class AuthRequiredModal {
                   backgroundColor: AppColors.darkGreen,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 icon: const Icon(Icons.login_rounded, size: 20),
                 label: Text(
                   confirmText,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 onPressed: () {
                   Navigator.pop(ctx);

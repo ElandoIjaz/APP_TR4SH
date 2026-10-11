@@ -4,10 +4,7 @@ import 'package:test23/core/app_colors.dart';
 class HeroBannerProduk extends StatelessWidget {
   final VoidCallback onJelajahiTap;
 
-  const HeroBannerProduk({
-    super.key,
-    required this.onJelajahiTap,
-  });
+  const HeroBannerProduk({super.key, required this.onJelajahiTap});
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +18,7 @@ class HeroBannerProduk extends StatelessWidget {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0F4733),
-              Color(0xFF083323),
-            ],
+            colors: [Color(0xFF0F4733), Color(0xFF083323)],
           ),
           boxShadow: [
             BoxShadow(
@@ -45,7 +39,10 @@ class HeroBannerProduk extends StatelessWidget {
                 children: [
                   // Impact Badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
@@ -53,9 +50,9 @@ class HeroBannerProduk extends StatelessWidget {
                         color: AppColors.limeAccent.withValues(alpha: 0.3),
                       ),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Icon(
                           Icons.eco_outlined,
                           size: 11,
@@ -108,14 +105,17 @@ class HeroBannerProduk extends StatelessWidget {
                   GestureDetector(
                     onTap: onJelajahiTap,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.limeAccent,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Row(
+                      child: const Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: const [
+                        children: [
                           Text(
                             'Jelajahi Sekarang',
                             style: TextStyle(
@@ -151,7 +151,10 @@ class HeroBannerProduk extends StatelessWidget {
                   width: 90,
                   height: 90,
                   color: AppColors.mintSoft,
-                  child: const Icon(Icons.yard_rounded, color: AppColors.darkGreen),
+                  child: const Icon(
+                    Icons.yard_rounded,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
               ),
             ),

@@ -51,7 +51,10 @@ class TrashBottomNav extends StatelessWidget {
       borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: isActive ? 12 : 8, vertical: 4),
+        padding: EdgeInsets.symmetric(
+          horizontal: isActive ? 12 : 8,
+          vertical: 4,
+        ),
         decoration: isActive
             ? BoxDecoration(
                 color: AppColors.limeAccent.withValues(alpha: 0.18),

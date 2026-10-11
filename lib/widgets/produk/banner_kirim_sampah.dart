@@ -4,10 +4,7 @@ import 'package:test23/core/app_colors.dart';
 class BannerKirimSampah extends StatelessWidget {
   final VoidCallback onSetorTap;
 
-  const BannerKirimSampah({
-    super.key,
-    required this.onSetorTap,
-  });
+  const BannerKirimSampah({super.key, required this.onSetorTap});
 
   @override
   Widget build(BuildContext context) {
@@ -42,11 +39,11 @@ class BannerKirimSampah extends StatelessWidget {
             const SizedBox(width: 12),
 
             // Middle Texts
-            Expanded(
+            const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   Text(
                     'Kirim Sampah Anda',
                     style: TextStyle(
@@ -79,17 +76,17 @@ class BannerKirimSampah extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               onPressed: onSetorTap,
               child: const Text(
                 'Setor Sekarang',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
               ),
             ),
           ],

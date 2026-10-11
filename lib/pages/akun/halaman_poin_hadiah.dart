@@ -17,12 +17,24 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          title: const Text('Poin Tidak Cukup', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-          content: Text('Anda membutuhkan ${reward.poinDibutuhkan} Pts untuk menukarkan hadiah ini. Saat ini poin Anda adalah $_points Pts.'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: const Text(
+            'Poin Tidak Cukup',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: AppColors.darkGreen,
+            ),
+          ),
+          content: Text(
+            'Anda membutuhkan ${reward.poinDibutuhkan} Pts untuk menukarkan hadiah ini. Saat ini poin Anda adalah $_points Pts.',
+          ),
           actions: [
             ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.darkGreen),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.darkGreen,
+              ),
               onPressed: () => Navigator.pop(context),
               child: const Text('OK', style: TextStyle(color: Colors.white)),
             ),
@@ -36,15 +48,28 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Konfirmasi Penukaran', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-        content: Text('Tukarkan ${reward.poinDibutuhkan} Pts untuk "${reward.judul}"?'),
+        title: const Text(
+          'Konfirmasi Penukaran',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: AppColors.darkGreen,
+          ),
+        ),
+        content: Text(
+          'Tukarkan ${reward.poinDibutuhkan} Pts untuk "${reward.judul}"?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal', style: TextStyle(color: AppColors.textMuted)),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: AppColors.textMuted),
+            ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.darkGreen),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.darkGreen,
+            ),
             onPressed: () {
               Navigator.pop(context);
               setState(() {
@@ -53,12 +78,20 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Selamat! Penukaran "${reward.judul}" berhasil!'),
+                  content: Text(
+                    'Selamat! Penukaran "${reward.judul}" berhasil!',
+                  ),
                   backgroundColor: AppColors.darkGreen,
                 ),
               );
             },
-            child: const Text('Tukarkan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Tukarkan',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -87,19 +120,27 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
                   color: const Color(0xFFD6F3DD),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.arrow_back_rounded, color: AppColors.darkGreen, size: 20),
+                child: const Icon(
+                  Icons.arrow_back_rounded,
+                  color: AppColors.darkGreen,
+                  size: 20,
+                ),
               ),
             ),
           ),
         ),
         title: const Text(
           'Poin & Hadiah',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: AppColors.darkGreen,
+          ),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         child: Column(
           children: [
             const SizedBox(height: 14),
@@ -139,14 +180,21 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3.5,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Text(
                             'Eco Guardian Tier 2',
-                            style: TextStyle(fontSize: 10, color: AppColors.limeAccent, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: AppColors.limeAccent,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -175,30 +223,39 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
+                      children: [
                         Expanded(
                           child: Text(
                             'Target Tier Berikutnya (Eco Hero)',
-                            style: TextStyle(fontSize: 10, color: Colors.white60),
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.white60,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         SizedBox(width: 8),
                         Text(
                           '250 Pts lagi',
-                          style: TextStyle(fontSize: 10, color: AppColors.limeAccent, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: AppColors.limeAccent,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 6),
                     ClipRRect(
                       borderRadius: BorderRadius.circular(3),
-                      child: LinearProgressIndicator(
+                      child: const LinearProgressIndicator(
                         value: 0.67,
                         backgroundColor: Colors.white24,
-                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.limeAccent),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.limeAccent,
+                        ),
                         minHeight: 5,
                       ),
                     ),
@@ -210,13 +267,17 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
             const SizedBox(height: 20),
 
             // Section Title
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20),
               child: Row(
-                children: const [
+                children: [
                   Text(
                     'Katalog Hadiah Sirkular',
-                    style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                    style: TextStyle(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkGreen,
+                    ),
                   ),
                 ],
               ),
@@ -260,7 +321,10 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3.5,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFD6F3DD),
                     borderRadius: BorderRadius.circular(8),
@@ -276,7 +340,11 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
                 ),
                 Row(
                   children: [
-                    const Icon(Icons.stars_rounded, size: 16, color: Color(0xFFF9A825)),
+                    const Icon(
+                      Icons.stars_rounded,
+                      size: 16,
+                      color: Color(0xFFF9A825),
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       '${reward.poinDibutuhkan} Pts',
@@ -293,12 +361,20 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
             const SizedBox(height: 8),
             Text(
               reward.judul,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: AppColors.darkGreen,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
               reward.deskripsi,
-              style: const TextStyle(fontSize: 11.5, color: Color(0xFF4C6656), height: 1.3),
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: Color(0xFF4C6656),
+                height: 1.3,
+              ),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -306,15 +382,26 @@ class _HalamanPoinHadiahState extends State<HalamanPoinHadiah> {
               height: 38,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: canRedeem ? AppColors.darkGreen : Colors.grey.shade300,
-                  foregroundColor: canRedeem ? Colors.white : Colors.grey.shade600,
+                  backgroundColor: canRedeem
+                      ? AppColors.darkGreen
+                      : Colors.grey.shade300,
+                  foregroundColor: canRedeem
+                      ? Colors.white
+                      : Colors.grey.shade600,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 onPressed: () => _redeemReward(reward),
                 child: Text(
-                  canRedeem ? 'Tukarkan Sekarang' : 'Poin Kurang (${reward.poinDibutuhkan - _points} Pts lagi)',
-                  style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                  canRedeem
+                      ? 'Tukarkan Sekarang'
+                      : 'Poin Kurang (${reward.poinDibutuhkan - _points} Pts lagi)',
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/produk_data.dart';
@@ -57,9 +56,9 @@ class _HalamanProdukState extends State<HalamanProduk> {
   // Fungsi Memanggil API Laravel via IP WiFi dengan fallback offline/mock
   Future<List<dynamic>> fetchProdukApi() async {
     try {
-      final response = await http.get(Uri.parse(ApiConfig.listPrakarya)).timeout(
-        const Duration(seconds: 4),
-      );
+      final response = await http
+          .get(Uri.parse(ApiConfig.listPrakarya))
+          .timeout(const Duration(seconds: 4));
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         final list = data['data'] as List?;
@@ -70,20 +69,24 @@ class _HalamanProdukState extends State<HalamanProduk> {
     } catch (_) {}
 
     // Fallback data lokal jika server offline / unit test
-    return ProdukData.listProduk.map((p) => {
-      'id': p.id,
-      'nama_product': p.title,
-      'nama_produk': p.title,
-      'title': p.title,
-      'harga': p.price,
-      'foto': p.image,
-      'gambar': p.image,
-      'kategori': p.category,
-      'deskripsi': p.materialTag,
-      'hemat_plastik': p.plasticSaved,
-      'terjual': p.soldCount,
-      'rating': p.rating,
-    }).toList();
+    return ProdukData.listProduk
+        .map(
+          (p) => {
+            'id': p.id,
+            'nama_product': p.title,
+            'nama_produk': p.title,
+            'title': p.title,
+            'harga': p.price,
+            'foto': p.image,
+            'gambar': p.image,
+            'kategori': p.category,
+            'deskripsi': p.materialTag,
+            'hemat_plastik': p.plasticSaved,
+            'terjual': p.soldCount,
+            'rating': p.rating,
+          },
+        )
+        .toList();
   }
 
   void _openFilterModal() {
@@ -123,7 +126,11 @@ class _HalamanProdukState extends State<HalamanProduk> {
               children: [
                 const Text(
                   'Notifikasi Marketplace',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded),
@@ -139,18 +146,25 @@ class _HalamanProdukState extends State<HalamanProduk> {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: AppColors.cardBorder),
               ),
-              child: Row(
-                children: const [
+              child: const Row(
+                children: [
                   CircleAvatar(
                     radius: 16,
                     backgroundColor: Color(0xFFD6F5E1),
-                    child: Icon(Icons.local_offer_rounded, color: AppColors.darkGreen, size: 18),
+                    child: Icon(
+                      Icons.local_offer_rounded,
+                      color: AppColors.darkGreen,
+                      size: 18,
+                    ),
                   ),
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       'Flash sale karya daur ulang diskon hingga 25% sedang berlangsung!',
-                      style: TextStyle(fontSize: 12.5, color: AppColors.darkGreen),
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.darkGreen,
+                      ),
                     ),
                   ),
                 ],
@@ -169,7 +183,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
       backgroundColor: AppColors.bgScreen,
       body: SafeArea(
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -207,12 +221,19 @@ class _HalamanProdukState extends State<HalamanProduk> {
                   padding: const EdgeInsets.only(left: 14, right: 6),
                   child: Row(
                     children: [
-                      const Icon(Icons.search_rounded, color: AppColors.textMuted, size: 22),
+                      const Icon(
+                        Icons.search_rounded,
+                        color: AppColors.textMuted,
+                        size: 22,
+                      ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: TextField(
                           controller: _searchController,
-                          style: const TextStyle(fontSize: 12.5, color: AppColors.darkGreen),
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            color: AppColors.darkGreen,
+                          ),
                           decoration: const InputDecoration(
                             hintText: 'Cari produk daur ulang & upcycle...',
                             hintStyle: TextStyle(
@@ -239,7 +260,11 @@ class _HalamanProdukState extends State<HalamanProduk> {
                               color: const Color(0xFFD6F3DD),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const Icon(Icons.tune_rounded, color: AppColors.darkGreen, size: 20),
+                            child: const Icon(
+                              Icons.tune_rounded,
+                              color: AppColors.darkGreen,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ),
@@ -256,9 +281,10 @@ class _HalamanProdukState extends State<HalamanProduk> {
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   itemCount: _categories.length,
-                  separatorBuilder: (context, index) => const SizedBox(width: 8),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(width: 8),
                   itemBuilder: (context, index) {
                     final bool isSelected = _selectedCategoryIndex == index;
                     return GestureDetector(
@@ -269,12 +295,19 @@ class _HalamanProdukState extends State<HalamanProduk> {
                       },
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppColors.darkGreen : Colors.white,
+                          color: isSelected
+                              ? AppColors.darkGreen
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isSelected ? AppColors.darkGreen : AppColors.cardBorder,
+                            color: isSelected
+                                ? AppColors.darkGreen
+                                : AppColors.cardBorder,
                           ),
                         ),
                         child: Row(
@@ -295,8 +328,12 @@ class _HalamanProdukState extends State<HalamanProduk> {
                               _categories[index],
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                                color: isSelected ? Colors.white : const Color(0xFF4C6656),
+                                fontWeight: isSelected
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF4C6656),
                               ),
                             ),
                           ],
@@ -319,8 +356,8 @@ class _HalamanProdukState extends State<HalamanProduk> {
               const SizedBox(height: 20),
 
               // ── 5. Section: Produk Pilihan ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -328,7 +365,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
                             'Produk Pilihan',
                             style: TextStyle(
@@ -364,7 +401,9 @@ class _HalamanProdukState extends State<HalamanProduk> {
                       return const Center(
                         child: Padding(
                           padding: EdgeInsets.all(40),
-                          child: CircularProgressIndicator(color: AppColors.darkGreen),
+                          child: CircularProgressIndicator(
+                            color: AppColors.darkGreen,
+                          ),
                         ),
                       );
                     } else if (snapshot.hasError) {
@@ -388,11 +427,15 @@ class _HalamanProdukState extends State<HalamanProduk> {
                     }
 
                     // Logika Filter Kategori Lokal
-                    final String selectedKategori = _categories[_selectedCategoryIndex];
+                    final String selectedKategori =
+                        _categories[_selectedCategoryIndex];
                     final listProdukApi = snapshot.data!.where((p) {
                       if (selectedKategori == 'Semua') return true;
-                      final String kategoriAPI = p['kategori'] ?? p['jenis'] ?? '';
-                      return kategoriAPI.toLowerCase().contains(selectedKategori.toLowerCase());
+                      final String kategoriAPI =
+                          p['kategori'] ?? p['jenis'] ?? '';
+                      return kategoriAPI.toLowerCase().contains(
+                        selectedKategori.toLowerCase(),
+                      );
                     }).toList();
 
                     if (listProdukApi.isEmpty) {
@@ -408,12 +451,13 @@ class _HalamanProdukState extends State<HalamanProduk> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: listProdukApi.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 14,
-                        childAspectRatio: 0.58,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 14,
+                            childAspectRatio: 0.58,
+                          ),
                       itemBuilder: (context, index) {
                         final item = listProdukApi[index];
                         return CardProdukGrid(
@@ -423,7 +467,9 @@ class _HalamanProdukState extends State<HalamanProduk> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => HalamanDetailProduk(product: ProdukData.listProduk.first),
+                                builder: (_) => HalamanDetailProduk(
+                                  product: ProdukData.listProduk.first,
+                                ),
                               ),
                             );
                           },
@@ -433,7 +479,9 @@ class _HalamanProdukState extends State<HalamanProduk> {
                             });
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('${item['nama_produk'] ?? 'Produk'} dimasukkan ke keranjang!'),
+                                content: Text(
+                                  '${item['nama_produk'] ?? 'Produk'} dimasukkan ke keranjang!',
+                                ),
                                 duration: const Duration(milliseconds: 900),
                                 backgroundColor: AppColors.darkGreen,
                               ),
