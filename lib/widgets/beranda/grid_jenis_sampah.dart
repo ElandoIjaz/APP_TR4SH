@@ -8,8 +8,7 @@ class GridJenisSampah extends StatelessWidget {
     String subtitle,
     String description,
     IconData icon,
-  )
-  onCategoryTap;
+  ) onCategoryTap;
 
   const GridJenisSampah({super.key, required this.onCategoryTap});
 
@@ -21,9 +20,9 @@ class GridJenisSampah extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Kenali Jenis Sampah',
+            'Pilih Jenis Sampah',
             style: TextStyle(
-              fontSize: 17,
+              fontSize: 16,
               fontWeight: FontWeight.w800,
               color: AppColors.darkGreen,
             ),
@@ -153,78 +152,82 @@ class _CategoryCardState extends State<CategoryCard> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOutCubic,
-        // Menggeser posisi kartu terangkat 6 pixel ke atas saat di-hover
-        transform: Matrix4.identity()
-          ..translate(0.0, _isHovered ? -6.0 : 0.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Row: Icon circle + Pill Badge
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: AppColors.mintSoft,
-                  child: Icon(icon, color: AppColors.darkGreen, size: 18),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.identity()
+            ..translate(0.0, _isHovered ? -6.0 : 0.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Row: Icon circle + Pill Badge
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: AppColors.mintSoft,
+                    child: Icon(widget.icon, color: AppColors.darkGreen, size: 18),
                   ),
-                  decoration: BoxDecoration(
-                    color: badgeBg,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    badge,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: badgeTextColor,
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: widget.badgeBg,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      widget.badge,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: widget.badgeTextColor,
+                      ),
                     ),
                   ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // Title
+              Text(
+                widget.title,
+                style: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.darkGreen,
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            // Title
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 14.5,
-                fontWeight: FontWeight.bold,
-                color: AppColors.darkGreen,
               ),
-            ),
 
-            const SizedBox(height: 2),
+              const SizedBox(height: 2),
 
-            // Subtitle
-            Text(
-              subtitle,
-              style: const TextStyle(
-                fontSize: 11.5,
-                color: AppColors.textMuted,
+              // Subtitle
+              Text(
+                widget.subtitle,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: AppColors.textMuted,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
