@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/pages/auth/auth_gate.dart';
+import 'package:test23/features/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +45,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.bgScreen,
       ),
       // Gerbang autentikasi: sebelum masuk ke aplikasi harus login atau daftar akun
-      home: initialHome ?? const AuthGate(),
+      home: const SplashScreen(), //panggil splashscreen
     );
   }
 }
+
