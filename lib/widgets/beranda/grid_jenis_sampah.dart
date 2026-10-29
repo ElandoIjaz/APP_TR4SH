@@ -146,12 +146,116 @@ class CategoryCard extends StatefulWidget {
 class _CategoryCardState extends State<CategoryCard> {
   bool _isHovered = false;
 
+
+// Widget Kartu Komponen Stateful khusus Animasi Pergerakan
+class CategoryCard extends StatefulWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String badge;
+  final Color badgeBg;
+  final Color badgeTextColor;
+  final VoidCallback onTap;
+
+  const CategoryCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.badge,
+    required this.badgeBg,
+    required this.badgeTextColor,
+    required this.onTap,
+  });
+
+  @override
+  State<CategoryCard> createState() => _CategoryCardState();
+}
+
+class _CategoryCardState extends State<CategoryCard> {
+  bool _isHovered = false;
+
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOutCubic,
+          transform: Matrix4.identity()
+            ..translate(0.0, _isHovered ? -6.0 : 0.0),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Row: Icon circle + Pill Badge
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: AppColors.mintSoft,
+                    child: Icon(widget.icon, color: AppColors.darkGreen, size: 18),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: widget.badgeBg,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      widget.badge,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: widget.badgeTextColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+
+              // Title
+              Text(
+                widget.title,
+                style: const TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.darkGreen,
+                ),
+              ),
+
+              const SizedBox(height: 2),
+
+              // Subtitle
+              Text(
+                widget.subtitle,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: AppColors.textMuted,
+                ),
+              ),
+            ],
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOutCubic,
