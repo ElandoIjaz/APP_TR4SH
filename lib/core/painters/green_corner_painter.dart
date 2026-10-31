@@ -11,9 +11,9 @@ class GreenCornerPainter extends CustomPainter {
     final paint = Paint()
       ..shader = LinearGradient(
         colors: [
-          const Color(0xFFA8E0B0).withOpacity(0.6),
-          const Color(0xFF4CAF50).withOpacity(0.3),
-          const Color(0xFF2E7D32).withOpacity(0.1),
+          const Color(0xFFA8E0B0).withValues(alpha: 0.6),
+          const Color(0xFF4CAF50).withValues(alpha: 0.3),
+          const Color(0xFF2E7D32).withValues(alpha: 0.1),
         ],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,

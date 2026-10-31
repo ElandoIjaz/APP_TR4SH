@@ -518,6 +518,8 @@ class ApiService {
 
   // ── 5. Katalog Produk Prakarya Daur Ulang ──
 
+    // ── 5. Katalog Produk Prakarya Daur Ulang ──
+
   /// Ambil daftar produk prakarya dari `/api/prakarya`
   static Future<ApiResponse> fetchProduk({String? search}) async {
     try {
@@ -542,6 +544,30 @@ class ApiService {
       return ApiResponse(
         success: false,
         message: 'Gagal memuat produk dari server: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  /// Ambil daftar bank sampah (beserta koordinat) dari `/api/bank-sampah`
+  static Future<ApiResponse> fetchBankSampah() async {
+    try {
+      final response = await http
+          .get(Uri.parse(ApiConfig.bankSampah), headers: await _getHeaders())
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      return ApiResponse(
+        success: response.statusCode == 200,
+        message: body['message'] ?? 'Daftar bank sampah berhasil dimuat.',
+        data: body['data'] ?? [],
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal memuat bank sampah dari server: $e',
         statusCode: 500,
       );
     }

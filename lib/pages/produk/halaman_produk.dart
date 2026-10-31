@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import 'dart:convert';
+
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
-import 'package:test23/data/produk_data.dart';
-import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/produk/halaman_detail_produk.dart';
@@ -18,6 +18,7 @@ import 'package:test23/widgets/produk/hero_banner_produk.dart';
 import 'package:test23/widgets/produk/modal_filter_produk.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/widgets/umum/bottom_nav_bar.dart';
+import 'package:test23/data/user_account_data.dart';
 
 class HalamanProduk extends StatefulWidget {
   const HalamanProduk({super.key});
@@ -65,28 +66,14 @@ class _HalamanProdukState extends State<HalamanProduk> {
         if (list != null && list.isNotEmpty) {
           return list;
         }
-      }
-    } catch (_) {}
-
-    // Fallback data lokal jika server offline / unit test
-    return ProdukData.listProduk
-        .map(
-          (p) => {
-            'id': p.id,
-            'nama_product': p.title,
-            'nama_produk': p.title,
-            'title': p.title,
-            'harga': p.price,
-            'foto': p.image,
-            'gambar': p.image,
-            'kategori': p.category,
-            'deskripsi': p.materialTag,
-            'hemat_plastik': p.plasticSaved,
-            'terjual': p.soldCount,
-            'rating': p.rating,
-          },
-        )
-        .toList();
+       }
+      // Baris baru: kalau status bukan 200, lempar error
+      throw Exception('Server error: ${response.statusCode}');
+    } catch (e) {
+      debugPrint("Error Koneksi API: $e");
+      // Lempar error ke FutureBuilder agar UI menampilkan pesan gagal merah
+      throw Exception('Gagal menghubungi server API.');
+    } 
   }
 
   void _openFilterModal() {
@@ -409,19 +396,60 @@ class _HalamanProdukState extends State<HalamanProduk> {
                     } else if (snapshot.hasError) {
                       return Center(
                         child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Text(
-                            'Gagal terhubung ke server.\nPastikan Laravel berjalan di ${ApiConfig.baseUrl}',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.red),
+                          padding: const EdgeInsets.all(30),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.wifi_off_rounded,
+                                size: 48,
+                                color: AppColors.textMuted,
+                              ),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'Ups, koneksi terputus!',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.darkGreen,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Periksa jaringanmu atau coba beberapa saat lagi ya.',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textMuted,
+                                  height: 1.4,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.darkGreen,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  // Memuat ulang data API saat tombol ditekan
+                                  setState(() {
+                                    _futureProduk = fetchProdukApi();
+                                  });
+                                },
+                                icon: const Icon(
+                                  Icons.refresh_rounded,
+                                  size: 16,
+                                ),
+                                label: const Text(
+                                  'Coba Lagi',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      );
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(20),
-                          child: Text('Belum ada produk prakarya tersedia.'),
                         ),
                       );
                     }
@@ -432,7 +460,8 @@ class _HalamanProdukState extends State<HalamanProduk> {
                     final listProdukApi = snapshot.data!.where((p) {
                       if (selectedKategori == 'Semua') return true;
                       final String kategoriAPI =
-                          p['kategori'] ?? p['jenis'] ?? '';
+                          (p['kategori'] ?? p['kategori_produk'] ?? '')
+                              .toString();
                       return kategoriAPI.toLowerCase().contains(
                         selectedKategori.toLowerCase(),
                       );
@@ -462,17 +491,67 @@ class _HalamanProdukState extends State<HalamanProduk> {
                         final item = listProdukApi[index];
                         return CardProdukGrid(
                           product: item,
-                          onTap: () {
-                            // Sementara lempar ke Halaman Detail dengan Dummy (agar tidak error)
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => HalamanDetailProduk(
-                                  product: ProdukData.listProduk.first,
+
+                          // --- INI BAGIAN YANG SAYA PERBAIKI ---
+                          onTap: () async {
+                            // Tampilkan loading berputar
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) => const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.darkGreen,
                                 ),
                               ),
                             );
+
+                            try {
+                              // Tarik data lengkap produk tersebut dari API
+                              // Asumsi teman Anda membuat variabel baseUrl di ApiConfig
+                              final response = await http.get(
+                                Uri.parse(
+                                  '${ApiConfig.baseUrl}/prakarya/${item['id_product']}',
+                                ),
+                              );
+
+                              // Tutup dialog loading
+                              if (context.mounted) Navigator.pop(context);
+
+                              if (response.statusCode == 200) {
+                                // Ekstrak JSON
+                                final Map<String, dynamic> detailData = json
+                                    .decode(response.body)['data'];
+
+                                // Pindah ke halaman detail dan lempar data API-nya ke parameter productData
+                                if (context.mounted) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => HalamanDetailProduk(
+                                        productData: detailData,
+                                      ),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                throw Exception('Gagal memuat detail');
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                Navigator.pop(context); // Tutup loading
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Gagal mengambil data detail produk dari server.',
+                                    ),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
+                            }
                           },
+                          // ------------------------------------
+
                           onAddToCart: () {
                             setState(() {
                               _cartItemCount++;
