@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,7 +8,6 @@ import 'package:test23/core/api_config.dart';
 import 'package:test23/data/user_account_data.dart';
 
 export 'models/api_response.dart';
-
 import 'models/api_response.dart';
 
 class ApiService {
@@ -17,16 +17,14 @@ class ApiService {
   static const String _keyUser = 'auth_user_json';
   static const Duration _timeoutDuration = Duration(seconds: 10);
 
-  // ── 1. Token & Session Management ──
-
   static Future<void> saveSession({
     required String token,
-    required Map<String, dynamic> user,
+    required Map user,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyToken, token);
     await prefs.setString(_keyUser, jsonEncode(user));
-    UserAccountData.updateFromUserData(user);
+    UserAccountData.updateFromUserData(Map<String, dynamic>.from(user));
   }
 
   static Future<String?> getToken() async {
@@ -34,13 +32,13 @@ class ApiService {
     return prefs.getString(_keyToken);
   }
 
-  static Future<Map<String, dynamic>?> getUserSession() async {
+  static Future getUserSession() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_keyUser);
     if (raw == null) return null;
     try {
-      final userMap = jsonDecode(raw) as Map<String, dynamic>;
-      UserAccountData.updateFromUserData(userMap);
+      final userMap = jsonDecode(raw) as Map;
+      UserAccountData.updateFromUserData(Map<String, dynamic>.from(userMap));
       return userMap;
     } catch (_) {
       return null;
@@ -54,10 +52,10 @@ class ApiService {
     UserAccountData.resetSession();
   }
 
-  static Future<Map<String, String>> _getHeaders({
+  static Future _getHeaders({
     bool requireAuth = false,
   }) async {
-    final headers = {
+    final headers = <String, String>{
       'Accept': 'application/json',
       'Content-Type': 'application/json',
     };
@@ -72,8 +70,6 @@ class ApiService {
     return headers;
   }
 
-  // ── 2. Health Check ──
-
   static Future<bool> checkConnection() async {
     try {
       final response = await http
@@ -81,31 +77,9 @@ class ApiService {
           .timeout(const Duration(seconds: 3));
       if (response.statusCode == 200) return true;
     } catch (_) {}
-
-    // Coba auto-deteksi host alternatif (misal emulator 10.0.2.2 atau IP WiFi baru)
-    final recovered = await ApiConfig.autoDetectWorkingHost();
-    if (recovered) {
-      try {
-        final retry = await http
-            .get(Uri.parse(ApiConfig.ping))
-            .timeout(const Duration(seconds: 3));
-        return retry.statusCode == 200;
-      } catch (_) {}
-    }
-
-    try {
-      final fallback = await http
-          .get(Uri.parse(ApiConfig.baseUrl))
-          .timeout(const Duration(seconds: 2));
-      return fallback.statusCode < 500;
-    } catch (_) {
-      return false;
-    }
+    return false;
   }
 
-  // ── 3. Autentikasi Pengguna Mobile (TR4SH Laravel) ──
-
-  /// Login menggunakan `username` (atau `email`) dan `password` ke endpoint `/api/auth/login`
   static Future<ApiResponse> login({
     String? username,
     String? email,
@@ -116,90 +90,50 @@ class ApiService {
         : (email ?? '');
 
     try {
-      return await _sendLoginRequest(userIdentifier, password);
-    } on TimeoutException {
-      if (await ApiConfig.autoDetectWorkingHost()) {
-        try {
-          return await _sendLoginRequest(userIdentifier, password);
-        } catch (_) {}
+      final response = await http
+          .post(
+            Uri.parse(ApiConfig.login),
+            headers: (await _getHeaders()).cast<String, String>(),
+            body: jsonEncode({'username': userIdentifier, 'password': password}),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      if (response.statusCode == 200 &&
+          (body['success'] == true || body['token'] != null)) {
+        final token = body['token']?.toString() ?? '';
+        final userData = body['data'] is Map
+            ? Map.from(body['data'])
+            : {'username': userIdentifier};
+
+        if (token.isNotEmpty) {
+          await saveSession(token: token, user: userData);
+        }
+
+        return ApiResponse(
+          success: true,
+          message: body['message'] ?? 'Login berhasil.',
+          data: userData,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse(
+          success: false,
+          message: body['message']?.toString() ?? 'Username atau kata sandi tidak valid.',
+          data: body,
+          statusCode: response.statusCode,
+        );
       }
-      return ApiResponse(
-        success: false,
-        message:
-            'Koneksi timeout ke ${ApiConfig.login}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan IP server sesuai.',
-        statusCode: 408,
-      );
     } catch (e) {
-      if (await ApiConfig.autoDetectWorkingHost()) {
-        try {
-          return await _sendLoginRequest(userIdentifier, password);
-        } catch (_) {}
-      }
       return ApiResponse(
         success: false,
-        message:
-            'Tidak dapat terhubung ke server Laravel (${ApiConfig.baseUrl}): $e',
+        message: 'Gagal terhubung ke server: $e',
         statusCode: 500,
       );
     }
   }
 
-  static Future<ApiResponse> _sendLoginRequest(
-    String userIdentifier,
-    String password,
-  ) async {
-    final response = await http
-        .post(
-          Uri.parse(ApiConfig.login),
-          headers: await _getHeaders(),
-          body: jsonEncode({'username': userIdentifier, 'password': password}),
-        )
-        .timeout(_timeoutDuration);
-
-    final Map<String, dynamic> body = _parseJson(response.body);
-
-    if (response.statusCode == 200 &&
-        (body['success'] == true || body['token'] != null)) {
-      final token = body['token']?.toString() ?? '';
-      final userData = body['data'] is Map<String, dynamic>
-          ? Map<String, dynamic>.from(body['data'])
-          : <String, dynamic>{'username': userIdentifier};
-
-      if (token.isNotEmpty) {
-        await saveSession(token: token, user: userData);
-      }
-
-      return ApiResponse(
-        success: true,
-        message: body['message'] ?? 'Login berhasil.',
-        data: userData,
-        statusCode: response.statusCode,
-      );
-    } else {
-      String errorMsg =
-          (body['message'] != null &&
-              body['message'].toString().trim().isNotEmpty)
-          ? body['message'].toString()
-          : 'Username atau kata sandi tidak valid.';
-      if (body['errors'] is Map) {
-        final errors = body['errors'] as Map;
-        if (errors.isNotEmpty) {
-          errorMsg = errors.values.first is List
-              ? errors.values.first[0].toString()
-              : errors.values.first.toString();
-        }
-      }
-
-      return ApiResponse(
-        success: false,
-        message: errorMsg,
-        data: body,
-        statusCode: response.statusCode,
-      );
-    }
-  }
-
-  /// Register akun baru ke endpoint `/api/auth/register`
   static Future<ApiResponse> register({
     required String username,
     required String password,
@@ -214,98 +148,56 @@ class ApiService {
     };
 
     try {
-      return await _sendRegisterRequest(payload, username, namaLengkap);
-    } on TimeoutException {
-      if (await ApiConfig.autoDetectWorkingHost()) {
-        try {
-          return await _sendRegisterRequest(payload, username, namaLengkap);
-        } catch (_) {}
+      final response = await http
+          .post(
+            Uri.parse(ApiConfig.register),
+            headers: (await _getHeaders()).cast<String, String>(),
+            body: jsonEncode(payload),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final token = body['token']?.toString() ?? '';
+        final userData = body['data'] is Map
+            ? Map.from(body['data'])
+            : {'username': username, 'nama_lengkap': namaLengkap};
+
+        if (token.isNotEmpty) {
+          await saveSession(token: token, user: userData);
+        }
+
+        return ApiResponse(
+          success: true,
+          message: body['message'] ?? 'Pendaftaran akun berhasil.',
+          data: userData,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse(
+          success: false,
+          message: body['message']?.toString() ?? 'Pendaftaran gagal.',
+          data: body,
+          statusCode: response.statusCode,
+        );
       }
-      return ApiResponse(
-        success: false,
-        message:
-            'Koneksi timeout ke ${ApiConfig.register}. Pastikan Laravel backend berjalan (--host=0.0.0.0) dan IP server sesuai.',
-        statusCode: 408,
-      );
     } catch (e) {
-      if (await ApiConfig.autoDetectWorkingHost()) {
-        try {
-          return await _sendRegisterRequest(payload, username, namaLengkap);
-        } catch (_) {}
-      }
       return ApiResponse(
         success: false,
-        message: 'Gagal mendaftar ke server (${ApiConfig.baseUrl}): $e',
+        message: 'Gagal mendaftar: $e',
         statusCode: 500,
       );
     }
   }
 
-  static Future<ApiResponse> _sendRegisterRequest(
-    Map<String, dynamic> payload,
-    String username,
-    String namaLengkap,
-  ) async {
-    final response = await http
-        .post(
-          Uri.parse(ApiConfig.register),
-          headers: await _getHeaders(),
-          body: jsonEncode(payload),
-        )
-        .timeout(_timeoutDuration);
-
-    final Map<String, dynamic> body = _parseJson(response.body);
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final token = body['token']?.toString() ?? '';
-      final userData = body['data'] is Map<String, dynamic>
-          ? Map<String, dynamic>.from(body['data'])
-          : <String, dynamic>{
-              'username': username,
-              'nama_lengkap': namaLengkap,
-            };
-
-      if (token.isNotEmpty) {
-        await saveSession(token: token, user: userData);
-      }
-
-      return ApiResponse(
-        success: true,
-        message: body['message'] ?? 'Pendaftaran akun berhasil.',
-        data: userData,
-        statusCode: response.statusCode,
-      );
-    } else {
-      String errorMsg =
-          (body['message'] != null &&
-              body['message'].toString().trim().isNotEmpty)
-          ? body['message'].toString()
-          : 'Pendaftaran akun gagal.';
-      if (body['errors'] is Map) {
-        final errors = body['errors'] as Map;
-        if (errors.isNotEmpty) {
-          errorMsg = errors.values.first is List
-              ? errors.values.first[0].toString()
-              : errors.values.first.toString();
-        }
-      }
-
-      return ApiResponse(
-        success: false,
-        message: errorMsg,
-        data: body,
-        statusCode: response.statusCode,
-      );
-    }
-  }
-
-  /// Logout akun
   static Future<ApiResponse> logout() async {
     try {
+      final headers = await _getHeaders(requireAuth: true);
       await http
           .post(
             Uri.parse(ApiConfig.logout),
-            headers: await _getHeaders(requireAuth: true),
+            headers: headers.cast<String, String>(),
           )
           .timeout(const Duration(seconds: 4));
     } catch (_) {}
@@ -318,9 +210,6 @@ class ApiService {
     );
   }
 
-  // ── 4. Setor Sampah & Riwayat (TR4SH Laravel) ──
-
-  /// Kirim data setor sampah baru ke `/api/sampah/setor`
   static Future<ApiResponse> kirimSetorSampah({
     int? idUser,
     int? idKategori,
@@ -328,33 +217,12 @@ class ApiService {
     double? jumlah,
     String satuan = 'kg',
     String? keterangan,
-    // Parameter kompatibilitas / legacy:
-    String? kategori,
-    int? jumlahItem,
-    double? beratKg,
-    double? latitude,
-    double? longitude,
-    String? alamatJemput,
-    String? patokan,
   }) async {
     try {
       final effectiveUserId = idUser ?? UserAccountData.currentUserId ?? 1;
       final effectiveKategoriId = idKategori ?? 1;
-      final effectiveJenis = (jenisSampah != null && jenisSampah.isNotEmpty)
-          ? jenisSampah
-          : (kategori ?? 'Sampah Anorganik');
-      final effectiveJumlah =
-          jumlah ??
-          beratKg ??
-          (jumlahItem != null ? jumlahItem.toDouble() : 1.0);
-
-      String effectiveKet = keterangan ?? '';
-      if (effectiveKet.isEmpty && alamatJemput != null) {
-        effectiveKet = alamatJemput;
-        if (patokan != null && patokan.isNotEmpty) {
-          effectiveKet += ' (Patokan: $patokan)';
-        }
-      }
+      final effectiveJenis = jenisSampah ?? 'Sampah Anorganik';
+      final effectiveJumlah = jumlah ?? 1.0;
 
       final payload = <String, dynamic>{
         'id_user': effectiveUserId,
@@ -362,13 +230,13 @@ class ApiService {
         'jenis_sampah': effectiveJenis,
         'jumlah': effectiveJumlah,
         'satuan': satuan,
-        if (effectiveKet.isNotEmpty) 'keterangan': effectiveKet,
+        if (keterangan != null && keterangan.isNotEmpty) 'keterangan': keterangan,
       };
 
       final response = await http
           .post(
             Uri.parse(ApiConfig.setorSampah),
-            headers: await _getHeaders(),
+            headers: (await _getHeaders()).cast<String, String>(),
             body: jsonEncode(payload),
           )
           .timeout(_timeoutDuration);
@@ -377,20 +245,97 @@ class ApiService {
 
       return ApiResponse(
         success: response.statusCode == 200 || response.statusCode == 201,
-        message: body['message'] ?? 'Setoran sampah berhasil dikirim!',
+        message: body['message'] ?? 'Setoran berhasil dikirim!',
         data: body['data'] ?? body,
         statusCode: response.statusCode,
       );
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal mengirim setoran sampah: $e',
+        message: 'Gagal mengirim setoran: $e',
         statusCode: 500,
       );
     }
   }
 
-  /// Ambil riwayat setoran sampah dari `/api/sampah/riwayat`
+  static Future<ApiResponse> kirimSetorSampahMultipart({
+    required int idUser,
+    List<dynamic>? items,
+    int? idKategori,
+    String? jenisSampah,
+    double? jumlah,
+    String satuan = 'kg',
+    String? sumber,
+    String? keterangan,
+    dynamic fotoFile,
+  }) async {
+    try {
+      var uri = Uri.parse(ApiConfig.setorSampah);
+      var request = http.MultipartRequest('POST', uri);
+
+      final token = await getToken();
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.headers['Accept'] = 'application/json';
+
+      request.fields['id_user'] = idUser.toString();
+      if (sumber != null && sumber.isNotEmpty) request.fields['sumber'] = sumber;
+      if (keterangan != null && keterangan.isNotEmpty) request.fields['keterangan'] = keterangan;
+
+      if (items != null && items.isNotEmpty) {
+        request.fields['items'] = jsonEncode(items);
+      } else {
+        request.fields['id_kategori'] = (idKategori ?? 1).toString();
+        request.fields['jenis_sampah'] = jenisSampah ?? 'Sampah';
+        request.fields['jumlah'] = (jumlah ?? 1.0).toString();
+        request.fields['satuan'] = satuan;
+      }
+
+      if (fotoFile != null) {
+        final bytes = await fotoFile.readAsBytes();
+        final originalName = fotoFile.name ?? '';
+        final filename = originalName.isNotEmpty && originalName.contains('.')
+            ? originalName
+            : 'sampah_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'foto',
+            bytes,
+            filename: filename,
+          ),
+        );
+      }
+
+      var streamedResponse = await request.send().timeout(_timeoutDuration);
+      var response = await http.Response.fromStream(streamedResponse);
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse(
+          success: true,
+          message: body['message'] ?? 'Permintaan jual berhasil dikirim!',
+          data: body['data'] ?? body,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse(
+          success: false,
+          message: body['message'] ?? 'Gagal mengirim permintaan jual.',
+          data: body,
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Koneksi error saat upload foto: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
   static Future<ApiResponse> fetchRiwayatSetor({int? idUser}) async {
     try {
       final effectiveUserId = idUser ?? UserAccountData.currentUserId;
@@ -400,75 +345,38 @@ class ApiService {
       }
 
       final response = await http
-          .get(Uri.parse(url), headers: await _getHeaders())
+          .get(Uri.parse(url), headers: (await _getHeaders()).cast<String, String>())
           .timeout(_timeoutDuration);
 
       final Map<String, dynamic> body = _parseJson(response.body);
-
       final listRaw = body['data'] is List ? (body['data'] as List) : [];
       final double totalKg = (body['total_kg'] != null)
           ? (double.tryParse(body['total_kg'].toString()) ?? 0.0)
-          : (listRaw.fold(
-              0.0,
-              (sum, item) =>
-                  sum +
-                  (double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0),
-            ));
+          : 0.0;
       final int totalCount = (body['total'] != null)
           ? (int.tryParse(body['total'].toString()) ?? listRaw.length)
           : listRaw.length;
 
-      // Sinkronisasi data ke UserAccountData
       UserAccountData.totalSampahKg = totalKg;
       UserAccountData.totalSetoran = totalCount;
 
-      if (listRaw.isEmpty) {
-        UserAccountData.listRiwayatSetor = [];
-      } else {
+      if (listRaw.isNotEmpty) {
         UserAccountData.listRiwayatSetor = listRaw.map((item) {
           final idSampah = item['id_sampah']?.toString() ?? '0';
-          final kategori =
-              item['nama_kategori']?.toString() ??
-              (item['jenis_sampah']?.toString() ?? 'Sampah');
-          final berat =
-              double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
+          final kategori = item['nama_kategori']?.toString() ?? 'Sampah';
+          final berat = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
           final tanggalRaw = item['created_at']?.toString() ?? '';
-
-          String tanggalFmt = tanggalRaw;
-          try {
-            if (tanggalRaw.isNotEmpty) {
-              final dt = DateTime.parse(tanggalRaw).toLocal();
-              const months = [
-                'Jan',
-                'Feb',
-                'Mar',
-                'Apr',
-                'Mei',
-                'Jun',
-                'Jul',
-                'Agu',
-                'Sep',
-                'Okt',
-                'Nov',
-                'Des',
-              ];
-              tanggalFmt =
-                  '${dt.day} ${months[dt.month - 1]} ${dt.year}, ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-            }
-          } catch (_) {}
 
           return RiwayatSetorModel(
             id: 'SET-$idSampah',
-            tanggal: tanggalFmt.isNotEmpty ? tanggalFmt : 'Hari Ini',
+            tanggal: tanggalRaw.isNotEmpty ? tanggalRaw : 'Hari Ini',
             kategori: kategori,
             beratKg: berat,
             poin: (berat * 15).round(),
-            lokasiBankSampah:
-                (item['keterangan'] != null &&
-                    item['keterangan'].toString().isNotEmpty)
-                ? item['keterangan'].toString()
-                : 'TR4SH Drop Point & Eco Hub',
-            status: 'Selesai',
+            lokasiBankSampah: item['keterangan']?.toString() ?? 'TR4SH Drop Point',
+            status: item['status_verifikasi'] == 'accepted' 
+                ? 'Disetujui' 
+                : (item['status_verifikasi'] == 'denied' ? 'Ditolak' : 'Pending'),
             estimasiCo2: '${(berat * 1.5).toStringAsFixed(1)} kg CO2e',
           );
         }).toList();
@@ -476,7 +384,7 @@ class ApiService {
 
       return ApiResponse(
         success: response.statusCode == 200,
-        message: body['message'] ?? 'Riwayat sampah berhasil dimuat.',
+        message: body['message'] ?? 'Riwayat berhasil dimuat.',
         data: {'items': listRaw, 'total_kg': totalKg, 'total': totalCount},
         statusCode: response.statusCode,
       );
@@ -489,36 +397,30 @@ class ApiService {
     }
   }
 
-  /// Ambil daftar kategori sampah dari `/api/sampah/kategori`
   static Future<ApiResponse> fetchKategoriSampah() async {
     try {
       final response = await http
-          .get(
-            Uri.parse(ApiConfig.kategoriSampah),
-            headers: await _getHeaders(),
-          )
+          .get(Uri.parse(ApiConfig.kategoriSampah), headers: (await _getHeaders()).cast<String, String>())
           .timeout(_timeoutDuration);
 
       final Map<String, dynamic> body = _parseJson(response.body);
 
       return ApiResponse(
         success: response.statusCode == 200,
-        message: 'Kategori sampah berhasil dimuat.',
+        message: 'Kategori berhasil dimuat.',
         data: body['data'] ?? [],
         statusCode: response.statusCode,
       );
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat kategori sampah: $e',
+        message: 'Gagal memuat kategori: $e',
         statusCode: 500,
       );
     }
   }
 
   // ── 5. Katalog Produk Prakarya Daur Ulang ──
-
-    // ── 5. Katalog Produk Prakarya Daur Ulang ──
 
   /// Ambil daftar produk prakarya dari `/api/prakarya`
   static Future<ApiResponse> fetchProduk({String? search}) async {
@@ -529,21 +431,21 @@ class ApiService {
       }
 
       final response = await http
-          .get(Uri.parse(url), headers: await _getHeaders())
+          .get(Uri.parse(url), headers: (await _getHeaders()).cast<String, String>())
           .timeout(_timeoutDuration);
 
       final Map<String, dynamic> body = _parseJson(response.body);
 
       return ApiResponse(
         success: response.statusCode == 200,
-        message: body['message'] ?? 'Daftar produk prakarya berhasil dimuat.',
+        message: body['message'] ?? 'Produk berhasil dimuat.',
         data: body['data'] ?? [],
         statusCode: response.statusCode,
       );
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat produk dari server: $e',
+        message: 'Gagal memuat produk: $e',
         statusCode: 500,
       );
     }
@@ -553,7 +455,7 @@ class ApiService {
   static Future<ApiResponse> fetchBankSampah() async {
     try {
       final response = await http
-          .get(Uri.parse(ApiConfig.bankSampah), headers: await _getHeaders())
+          .get(Uri.parse(ApiConfig.bankSampah), headers: (await _getHeaders()).cast<String, String>())
           .timeout(_timeoutDuration);
 
       final Map<String, dynamic> body = _parseJson(response.body);
@@ -582,35 +484,32 @@ class ApiService {
   }) async {
     try {
       final queryParams = <String, String>{};
-      if (kategori != null && kategori.isNotEmpty) {
-        queryParams['kategori'] = kategori;
-      }
+      if (kategori != null && kategori.isNotEmpty) queryParams['kategori'] = kategori;
       if (search != null && search.isNotEmpty) queryParams['search'] = search;
 
       final uri = Uri.parse(ApiConfig.listEdukasi)
           .replace(queryParameters: queryParams.isEmpty ? null : queryParams);
       final response = await http
-          .get(uri, headers: await _getHeaders())
+          .get(uri, headers: (await _getHeaders()).cast<String, String>())
           .timeout(_timeoutDuration);
 
       final Map<String, dynamic> body = _parseJson(response.body);
 
       return ApiResponse(
         success: response.statusCode == 200,
-        message: body['message'] ?? 'Konten edukasi berhasil dimuat.',
+        message: body['message'] ?? 'Edukasi berhasil dimuat.',
         data: body['data'] ?? [],
         statusCode: response.statusCode,
       );
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat edukasi dari server: $e',
+        message: 'Gagal memuat edukasi: $e',
         statusCode: 500,
       );
     }
   }
 
-  /// Unggah konten video YouTube baru ke `/api/edukasi/upload`
   static Future<ApiResponse> uploadKonten({
     int? idUser,
     required String title,
@@ -621,7 +520,6 @@ class ApiService {
   }) async {
     try {
       final effectiveUserId = idUser ?? UserAccountData.currentUserId ?? 1;
-
       final payload = <String, dynamic>{
         'id_user': effectiveUserId,
         'title': title,
@@ -634,48 +532,18 @@ class ApiService {
       final response = await http
           .post(
             Uri.parse(ApiConfig.uploadEdukasi),
-            headers: await _getHeaders(),
+            headers: (await _getHeaders()).cast<String, String>(),
             body: jsonEncode(payload),
           )
           .timeout(_timeoutDuration);
 
       final Map<String, dynamic> body = _parseJson(response.body);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return ApiResponse(
-          success: true,
-          message:
-              body['message'] ??
-              'Konten berhasil dikirim! Menunggu konfirmasi admin.',
-          data: body['data'] ?? body,
-          statusCode: response.statusCode,
-        );
-      } else {
-        String errorMsg =
-            (body['message'] != null &&
-                body['message'].toString().trim().isNotEmpty)
-            ? body['message'].toString()
-            : 'Gagal mengunggah konten.';
-        if (body['errors'] is Map) {
-          final errors = body['errors'] as Map;
-          if (errors.isNotEmpty) {
-            errorMsg = errors.values.first is List
-                ? errors.values.first[0].toString()
-                : errors.values.first.toString();
-          }
-        }
-        return ApiResponse(
-          success: false,
-          message: errorMsg,
-          data: body,
-          statusCode: response.statusCode,
-        );
-      }
-    } on TimeoutException {
-      return const ApiResponse(
-        success: false,
-        message: 'Koneksi timeout. Pastikan server Laravel `php artisan serve` aktif.',
-        statusCode: 408,
+      return ApiResponse(
+        success: response.statusCode == 200 || response.statusCode == 201,
+        message: body['message'] ?? 'Konten berhasil dikirim!',
+        data: body['data'] ?? body,
+        statusCode: response.statusCode,
       );
     } catch (e) {
       return ApiResponse(
@@ -686,115 +554,93 @@ class ApiService {
     }
   }
 
-  /// Ambil riwayat konten yang diunggah oleh user dari `/api/edukasi/user/{id_user}`
   static Future<ApiResponse> fetchKontenSaya({int? idUser}) async {
     try {
       final effectiveUserId = idUser ?? UserAccountData.currentUserId ?? 1;
       final url = ApiConfig.userKonten(effectiveUserId);
 
       final response = await http
-          .get(Uri.parse(url), headers: await _getHeaders())
+          .get(Uri.parse(url), headers: (await _getHeaders()).cast<String, String>())
           .timeout(_timeoutDuration);
 
       final Map<String, dynamic> body = _parseJson(response.body);
 
       return ApiResponse(
         success: response.statusCode == 200,
-        message: body['message'] ?? 'Daftar konten berhasil dimuat.',
+        message: body['message'] ?? 'Konten saya berhasil dimuat.',
         data: body['data'] ?? [],
         statusCode: response.statusCode,
       );
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat riwayat konten: $e',
+        message: 'Gagal memuat konten saya: $e',
         statusCode: 500,
       );
     }
   }
 
-  /// Periksa status keaktifan akun user secara langsung ke server TR4SH
   static Future<ApiResponse> checkUserStatus(dynamic userId) async {
     try {
       if (userId == null) {
-        return const ApiResponse(
-          success: false,
-          message: 'ID pengguna tidak valid',
-          statusCode: 400,
-        );
+        return const ApiResponse(success: false, message: 'ID tidak valid', statusCode: 400);
       }
       final url = '${ApiConfig.baseUrl}/auth/check-status/$userId';
       final response = await http
-          .get(Uri.parse(url), headers: await _getHeaders())
+          .get(Uri.parse(url), headers: (await _getHeaders()).cast<String, String>())
           .timeout(const Duration(seconds: 4));
 
       final Map<String, dynamic> body = _parseJson(response.body);
-      final bool isBlocked =
-          (response.statusCode == 403 ||
-          body['is_blocked'] == true ||
-          body['status_akun'] == 'diblokir');
+      final bool isBlocked = (response.statusCode == 403 || body['is_blocked'] == true);
 
-      if (isBlocked) {
-        await clearSession();
-      }
+      if (isBlocked) await clearSession();
 
       return ApiResponse(
         success: !isBlocked && response.statusCode == 200,
-        message:
-            body['message'] ??
-            (isBlocked
-                ? 'Akun Anda sedang diblokir oleh Admin.'
-                : 'Akun aktif.'),
+        message: body['message'] ?? 'Status aktif.',
         data: body,
         statusCode: response.statusCode,
       );
     } catch (e) {
-      return ApiResponse(
-        success: false,
-        message: 'Gagal memeriksa status: $e',
-        statusCode: 500,
-      );
+      return ApiResponse(success: false, message: 'Gagal cek status: $e', statusCode: 500);
     }
   }
 
-  // ── 7. Beranda Agregat Single Fetch ──
-
-  /// Ambil seluruh data beranda dari `/api/beranda?id_user={id}`
   static Future<ApiResponse> fetchBeranda({int? userId}) async {
     try {
       final effectiveUserId = userId ?? UserAccountData.currentUserId;
       final url = ApiConfig.beranda(userId: effectiveUserId);
 
       final response = await http
-          .get(Uri.parse(url), headers: await _getHeaders())
+          .get(Uri.parse(url), headers: (await _getHeaders()).cast<String, String>())
           .timeout(_timeoutDuration);
 
       final Map<String, dynamic> body = _parseJson(response.body);
 
       return ApiResponse(
         success: response.statusCode == 200,
-        message: 'Data beranda berhasil dimuat.',
+        message: 'Beranda berhasil dimuat.',
         data: body['data'] ?? {},
         statusCode: response.statusCode,
       );
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat data beranda: $e',
+        message: 'Gagal memuat beranda: $e',
         statusCode: 500,
       );
     }
   }
 
-  // Helper untuk parsing JSON secara aman
   static Map<String, dynamic> _parseJson(String source) {
     if (source.trim().isEmpty) {
-      return {'message': 'Gagal memproses respons dari server.'};
+      return {'message': 'Gagal memproses respons server.'};
     }
     try {
       final decoded = jsonDecode(source);
-      if (decoded is Map<String, dynamic>) return decoded;
-      if (decoded is Map) return Map<String, dynamic>.from(decoded);
+      if (decoded is Map) {
+        return Map<String, dynamic>.from(decoded);
+      }
       return {'data': decoded};
     } catch (_) {
       return {'message': source};

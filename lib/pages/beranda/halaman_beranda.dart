@@ -1,4 +1,3 @@
-import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
@@ -7,8 +6,9 @@ import 'package:test23/data/api_service.dart';
 import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
-import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/akun/halaman_pilih_lokasi_akurat.dart';
+import 'package:test23/pages/auth/halaman_login.dart';
+import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/produk/halaman_produk.dart';
 import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:test23/widgets/beranda/card_bank_sampah.dart';
@@ -222,7 +222,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               icon: Icons.check_circle_rounded,
               iconColor: Colors.green,
               title: 'Penyetoran Sampah Berhasil!',
-              desc: 'Setoran 4.2 kg botol plastik telah diverifikasi (+630 poin).',
+              desc: 'Setoran 4.2 kg botol plastik telah diverifikasi (+Rp 14.700).',
               time: '10 menit yang lalu',
             ),
             _buildNotificationItem(
@@ -296,212 +296,18 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     );
   }
 
-  void _showSetorSampahModal() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            const Text(
-              'Setor Sampah Mandiri',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.darkGreen,
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Pilih jenis sampah yang ingin kamu tukarkan menjadi poin.',
-              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
-            ),
-            const SizedBox(height: 14),
-            _buildSetorItem(
-              Icons.water_drop_outlined,
-              'Plastik (PET/HDPE)',
-              'Rp 3.500 / kg (+150 Poin)',
-            ),
-            _buildSetorItem(
-              Icons.inventory_2_outlined,
-              'Kertas & Karton',
-              'Rp 2.200 / kg (+100 Poin)',
-            ),
-            _buildSetorItem(
-              Icons.delete_outline_rounded,
-              'Logam & Kaleng',
-              'Rp 9.000 / kg (+300 Poin)',
-            ),
-            _buildSetorItem(
-              Icons.wine_bar_rounded,
-              'Kaca & Beling',
-              'Rp 1.000 / kg (+50 Poin)',
-            ),
-            const SizedBox(height: 10),
-
-            // Live Auto-Tracked GPS Pickup Location (Compact)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF1F8F4),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFDCEFE3)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(
-                    Icons.my_location_rounded,
-                    size: 14,
-                    color: Color(0xFF00C853),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      'Auto-Track GPS: ${LokasiTrackingService.currentAddress} (${LokasiTrackingService.currentAccuracy})',
-                      style: const TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.darkGreen,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const HalamanPilihLokasiAkurat(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      'GMaps >',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.darkGreen,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              height: 46,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.limeAccent,
-                  foregroundColor: AppColors.darkGreen,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Jadwal penjemputan sampah berhasil dibuat ke ${LokasiTrackingService.currentAddress}!',
-                      ),
-                      backgroundColor: AppColors.darkGreen,
-                    ),
-                  );
-                  ApiService.kirimSetorSampah(
-                    idUser: UserAccountData.currentUserId ?? 1,
-                    idKategori: 1,
-                    jenisSampah: 'Plastik (PET/HDPE)',
-                    jumlah: 1.0,
-                    satuan: 'kg',
-                    keterangan:
-                        'Jadwal jemput ke ${LokasiTrackingService.currentAddress}',
-                  ).then((_) {
-                    _loadBerandaEdukasi();
-                    _loadRiwayatSampah();
-                  });
-                },
-                child: const Text(
-                  'Buat Jadwal Penjemputan',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSetorItem(IconData icon, String title, String price) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppColors.bgScreen,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFDCECE2)),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: AppColors.mintSoft,
-            child: Icon(icon, color: AppColors.darkGreen, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: AppColors.darkGreen,
-                  ),
-                ),
-                Text(
-                  price,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textMuted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const Icon(
-            Icons.arrow_forward_ios_rounded,
-            size: 14,
-            color: AppColors.textMuted,
-          ),
-        ],
-      ),
+  void _navigateToTracking() {
+    if (UserAccountData.isGuest) {
+      AuthRequiredModal.show(
+        context,
+        title: 'Fitur Setor Sampah Memerlukan Akun',
+        message: 'Silakan masuk atau daftar akun terlebih dahulu untuk menyetor sampah daur ulang dan mengelola saldo uang Anda.',
+        icon: Icons.recycling_rounded,
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HalamanTracking()),
     );
   }
 
@@ -548,7 +354,6 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Video Screen Preview Box
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Stack(
@@ -1286,7 +1091,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 HeaderBeranda(
                   userName: UserAccountData.currentNama.isNotEmpty
                       ? UserAccountData.currentNama.split(' ').first
-                      : 'Bintang',
+                      : 'Harin',
                   onNotificationTap: _showNotificationSheet,
                   onProfileTap: () {
                     Navigator.of(context).push(
@@ -1297,20 +1102,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
                 const SizedBox(height: 16),
 
-                // ── 2. Hero Card: "Bank Sampah Digital" ──
+                // ── 2. Hero Card: "Bank Sampah Digital" (Tanpa Poin, Langsung ke Halaman Tracking) ──
                 CardBankSampah(
-                  onMulaiSetorTap: () {
-                    if (UserAccountData.isGuest) {
-                      AuthRequiredModal.show(
-                        context,
-                        title: 'Fitur Setor Sampah Memerlukan Akun',
-                        message: 'Silakan masuk atau daftar akun terlebih dahulu untuk menyetor sampah daur ulang dan mengumpulkan poin hadiah.',
-                        icon: Icons.recycling_rounded,
-                      );
-                      return;
-                    }
-                    _showSetorSampahModal();
-                  },
+                  onMulaiSetorTap: _navigateToTracking,
                 ),
 
                 const SizedBox(height: 16),
@@ -1408,7 +1202,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               AuthRequiredModal.show(
                 context,
                 title: 'Fitur Tracking Sampah Memerlukan Akun',
-                message: 'Pelacakan sampah daur ulang, grafik analitik, dan perolehan poin hanya dapat digunakan setelah Anda masuk atau membuat akun.',
+                message: 'Pelacakan sampah daur ulang, grafik analitik, dan perolehan saldo uang hanya dapat digunakan setelah Anda masuk atau membuat akun.',
                 icon: Icons.query_stats_rounded,
               );
               return;

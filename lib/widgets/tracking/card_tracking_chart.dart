@@ -29,13 +29,12 @@ class CardTrackingChart extends StatefulWidget {
 class _CardTrackingChartState extends State<CardTrackingChart>
     with SingleTickerProviderStateMixin {
   TrackingPeriodMode _periodMode = TrackingPeriodMode.mingguan;
-  int _selectedFilterIndex = -1; // -1 = Semua Kategori
+  String? _selectedCategory; // Kategori dinamis terpilih
   int? _inspectedIndex;
 
   late AnimationController _animController;
   late Animation<double> _animation;
 
-  // Data bobot untuk transisi animasi (Total Seluruh Sampah)
   List<double> _prevWeights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
   List<double> _currentWeights = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
 
@@ -64,33 +63,6 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     'Minggu 2 (Tgl 8-14)',
     'Minggu 3 (Tgl 15-21)',
     'Minggu 4 (Tgl 22+)',
-  ];
-
-  final List<Map<String, dynamic>> _filters = [
-    {
-      'name': 'Botol Plastik',
-      'icon': Icons.recycling_rounded,
-      'color': const Color(0xFF0D4330),
-      'fallbackWeight': 4.2,
-    },
-    {
-      'name': 'Kertas Bekas',
-      'icon': Icons.description_outlined,
-      'color': const Color(0xFF2E8055),
-      'fallbackWeight': 5.1,
-    },
-    {
-      'name': 'Baterai (B3)',
-      'icon': Icons.battery_charging_full_rounded,
-      'color': const Color(0xFFE53935),
-      'fallbackWeight': 1.0,
-    },
-    {
-      'name': 'Bungkus Kaleng',
-      'icon': Icons.takeout_dining_outlined,
-      'color': const Color(0xFF5AB67B),
-      'fallbackWeight': 4.15,
-    },
   ];
 
   @override
@@ -140,78 +112,21 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     }
   }
 
-  /// Menghitung bobot untuk setiap kategori limbah
-  Map<String, double> _computeCategoryWeights() {
+  /// Menghitung akumulasi berat secara dinamis berdasarkan kategori yang ada di rawData
+  Map<String, double> _computeDynamicCategoryWeights() {
     final records = widget.rawData;
-    final bool isZeroState =
-        UserAccountData.isNewAccount ||
-        UserAccountData.isGuest ||
-        widget.totalDisetor.startsWith('0.0') ||
-        widget.totalDisetor.startsWith('0 kg');
+    if (records == null || records.isEmpty) return {};
 
-    if (isZeroState || records == null || records.isEmpty) {
-      if (isZeroState) {
-        return {
-          'Botol Plastik': 0.0,
-          'Kertas Bekas': 0.0,
-          'Baterai (B3)': 0.0,
-          'Bungkus Kaleng': 0.0,
-        };
-      }
-      return {
-        'Botol Plastik': 4.2,
-        'Kertas Bekas': 5.1,
-        'Baterai (B3)': 1.0,
-        'Bungkus Kaleng': 4.15,
-      };
-    }
-
-    final Map<String, double> catMap = {
-      'Botol Plastik': 0.0,
-      'Kertas Bekas': 0.0,
-      'Baterai (B3)': 0.0,
-      'Bungkus Kaleng': 0.0,
-    };
+    final Map<String, double> catMap = {};
 
     for (final item in records) {
       if (item is! Map) continue;
       final weight = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
-      final cat = (item['nama_kategori'] ?? '').toString().toLowerCase();
-      final jenis = (item['jenis_sampah'] ?? '').toString().toLowerCase();
+      final cat = (item['nama_kategori'] ?? 'Lainnya').toString().trim();
 
-      if (cat.contains('plastik') ||
-          jenis.contains('plastik') ||
-          jenis.contains('botol')) {
-        catMap['Botol Plastik'] = (catMap['Botol Plastik'] ?? 0.0) + weight;
-      } else if (cat.contains('kertas') ||
-          jenis.contains('kertas') ||
-          jenis.contains('karton') ||
-          jenis.contains('dus')) {
-        catMap['Kertas Bekas'] = (catMap['Kertas Bekas'] ?? 0.0) + weight;
-      } else if (cat.contains('baterai') ||
-          cat.contains('b3') ||
-          cat.contains('kaca') ||
-          jenis.contains('baterai') ||
-          jenis.contains('kaca')) {
-        catMap['Baterai (B3)'] = (catMap['Baterai (B3)'] ?? 0.0) + weight;
-      } else if (cat.contains('logam') ||
-          cat.contains('kaleng') ||
-          jenis.contains('kaleng') ||
-          jenis.contains('logam')) {
-        catMap['Bungkus Kaleng'] = (catMap['Bungkus Kaleng'] ?? 0.0) + weight;
-      } else {
-        catMap['Botol Plastik'] = (catMap['Botol Plastik'] ?? 0.0) + weight;
+      if (cat.isNotEmpty) {
+        catMap[cat] = (catMap[cat] ?? 0.0) + weight;
       }
-    }
-
-    final total = catMap.values.fold(0.0, (a, b) => a + b);
-    if (total == 0.0) {
-      return {
-        'Botol Plastik': 0.0,
-        'Kertas Bekas': 0.0,
-        'Baterai (B3)': 0.0,
-        'Bungkus Kaleng': 0.0,
-      };
     }
 
     return catMap.map(
@@ -219,7 +134,12 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     );
   }
 
-  /// Menghitung TOTAL SELURUH SAMPAH untuk Minggu Ini dan Bulan Ini
+  /// Menghitung estimasi Uang Hasil Jual (Rupiah) dari data transaksi (asumsi Rp 3.000/kg)
+  double _calculateTotalIncome(double totalKg) {
+    return totalKg * 3000;
+  }
+
+  /// Menghitung Ringkasan Data (Minggu ini & Bulan ini)
   Map<String, dynamic> _computeSummaryMetrics() {
     final records = widget.rawData;
     final bool isZeroState =
@@ -229,26 +149,16 @@ class _CardTrackingChartState extends State<CardTrackingChart>
         widget.totalDisetor.startsWith('0 kg');
 
     if (isZeroState || records == null || records.isEmpty) {
-      if (isZeroState) {
-        return {
-          'weeklyKg': 0.0,
-          'weeklyCount': 0,
-          'monthlyKg': 0.0,
-          'monthlyCount': 0,
-          'hasData': true,
-        };
-      }
       return {
-        'weeklyKg': 14.8,
-        'weeklyCount': 5,
-        'monthlyKg': 48.2,
-        'monthlyCount': 16,
+        'weeklyKg': 0.0,
+        'weeklyCount': 0,
+        'monthlyKg': 0.0,
+        'monthlyCount': 0,
         'hasData': false,
       };
     }
 
     final now = DateTime.now();
-    // Awal minggu (Senin 00:00:00)
     final monday = DateTime(
       now.year,
       now.month,
@@ -263,7 +173,13 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
     for (final item in records) {
       if (item is! Map) continue;
-      // Hitung total seluruh sampah tanpa memfilter kategori
+
+      // Filter jika kategori tertentu sedang dipilih
+      if (_selectedCategory != null && _selectedCategory != 'Semua') {
+        final cat = (item['nama_kategori'] ?? '').toString().trim();
+        if (cat != _selectedCategory) continue;
+      }
+
       final weight = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
       DateTime dt = now;
       if (item['created_at'] != null) {
@@ -278,7 +194,6 @@ class _CardTrackingChartState extends State<CardTrackingChart>
         weeklyKg += weight;
         weeklyCount++;
       } else {
-        // Fallback hitung tetap
         weeklyKg += weight;
         weeklyCount++;
       }
@@ -302,7 +217,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     };
   }
 
-  /// Menghitung bobot TOTAL SELURUH SAMPAH untuk setiap titik grafik
+  /// Menghitung bobot untuk titik grafik
   List<double> _calculateChartWeights() {
     final records = widget.rawData;
     final bool isZeroState =
@@ -312,29 +227,24 @@ class _CardTrackingChartState extends State<CardTrackingChart>
         widget.totalDisetor.startsWith('0 kg');
 
     if (isZeroState || records == null || records.isEmpty) {
-      if (isZeroState) {
-        if (_periodMode == TrackingPeriodMode.mingguan) {
-          return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-        } else {
-          return [0.0, 0.0, 0.0, 0.0];
-        }
-      }
-      if (_periodMode == TrackingPeriodMode.mingguan) {
-        return [1.2, 1.8, 2.5, 2.0, 4.2, 2.1, 1.0];
-      } else {
-        return [11.5, 12.8, 14.8, 9.1];
-      }
+      return _periodMode == TrackingPeriodMode.mingguan
+          ? [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+          : [0.0, 0.0, 0.0, 0.0];
     }
 
     final now = DateTime.now();
     if (_periodMode == TrackingPeriodMode.mingguan) {
-      // 7 Hari Terpisah: Sen(0), Sel(1), Rab(2), Kam(3), Jum(4), Sab(5), Min(6)
       final List<double> dayWeights = List.filled(7, 0.0);
 
       for (final item in records) {
         if (item is! Map) continue;
-        final weight =
-            double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
+
+        if (_selectedCategory != null && _selectedCategory != 'Semua') {
+          final cat = (item['nama_kategori'] ?? '').toString().trim();
+          if (cat != _selectedCategory) continue;
+        }
+
+        final weight = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
         DateTime dt = now;
         if (item['created_at'] != null) {
           try {
@@ -346,22 +256,19 @@ class _CardTrackingChartState extends State<CardTrackingChart>
         dayWeights[idx] += weight;
       }
 
-      final sum = dayWeights.fold(0.0, (a, b) => a + b);
-      if (sum == 0.0) {
-        if (isZeroState) {
-          return [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-        }
-        return [1.2, 1.8, 2.5, 2.0, 4.2, 2.1, 1.0];
-      }
       return dayWeights.map((w) => double.parse(w.toStringAsFixed(1))).toList();
     } else {
-      // 4 Minggu dalam Bulan Ini: Mg 1, Mg 2, Mg 3, Mg 4
       final List<double> weekWeights = List.filled(4, 0.0);
 
       for (final item in records) {
         if (item is! Map) continue;
-        final weight =
-            double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
+
+        if (_selectedCategory != null && _selectedCategory != 'Semua') {
+          final cat = (item['nama_kategori'] ?? '').toString().trim();
+          if (cat != _selectedCategory) continue;
+        }
+
+        final weight = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
         DateTime dt = now;
         if (item['created_at'] != null) {
           try {
@@ -370,29 +277,11 @@ class _CardTrackingChartState extends State<CardTrackingChart>
         }
 
         final day = dt.day;
-        int weekIdx = 0;
-        if (day <= 7) {
-          weekIdx = 0;
-        } else if (day <= 14) {
-          weekIdx = 1;
-        } else if (day <= 21) {
-          weekIdx = 2;
-        } else {
-          weekIdx = 3;
-        }
+        int weekIdx = day <= 7 ? 0 : (day <= 14 ? 1 : (day <= 21 ? 2 : 3));
         weekWeights[weekIdx] += weight;
       }
 
-      final sum = weekWeights.fold(0.0, (a, b) => a + b);
-      if (sum == 0.0) {
-        if (isZeroState) {
-          return [0.0, 0.0, 0.0, 0.0];
-        }
-        return [11.5, 12.8, 14.8, 9.1];
-      }
-      return weekWeights
-          .map((w) => double.parse(w.toStringAsFixed(1)))
-          .toList();
+      return weekWeights.map((w) => double.parse(w.toStringAsFixed(1))).toList();
     }
   }
 
@@ -416,6 +305,18 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     return maxIdx;
   }
 
+  Color _getCategoryColor(int index) {
+    const colors = [
+      Color(0xFF0D4330),
+      Color(0xFF2E8055),
+      Color(0xFFE65100),
+      Color(0xFF0D47A1),
+      Color(0xFF7B1FA2),
+      Color(0xFF5AB67B),
+    ];
+    return colors[index % colors.length];
+  }
+
   @override
   Widget build(BuildContext context) {
     final summary = _computeSummaryMetrics();
@@ -430,21 +331,14 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
     final double currentPeriodKg = isWeekly ? weeklyKg : monthlyKg;
     final int currentPeriodCount = isWeekly ? weeklyCount : monthlyCount;
+    final double estimatedIncome = _calculateTotalIncome(currentPeriodKg);
 
-    // Pisahkan bobot numerik dan satuan agar kompatibel dengan expect find.text('14.8')
     String mainWeightNumber = currentPeriodKg.toStringAsFixed(1);
-    if (!summary['hasData'] && widget.totalDisetor.isNotEmpty) {
-      final parts = widget.totalDisetor.trim().split(' ');
-      if (parts.isNotEmpty && parts[0].isNotEmpty) {
-        mainWeightNumber = parts[0];
-      }
-    }
-
     final String trendBadgeText = summary['hasData']
         ? '+$currentPeriodCount setoran'
         : widget.trendPercent;
 
-    final categoryWeights = _computeCategoryWeights();
+    final dynamicCategoryWeights = _computeDynamicCategoryWeights();
 
     final peakIdx = _findPeakIndex(_currentWeights);
     final activeIndex = (_inspectedIndex ?? peakIdx).clamp(
@@ -454,7 +348,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -470,7 +364,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header Row: Title & Period Switcher ──
+          // ── Header Row ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -479,50 +373,28 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (widget.isBeranda) ...[
-                      const Text(
-                        'RIWAYAT SETOR SAMPAH',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF334A3E),
-                          letterSpacing: 0.8,
-                        ),
+                    Text(
+                      widget.isBeranda ? 'RIWAYAT SETOR SAMPAH' : 'Riwayat Setor Sampah',
+                      style: TextStyle(
+                        fontSize: widget.isBeranda ? 11 : 15,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGreen,
+                        letterSpacing: widget.isBeranda ? 0.8 : 0,
                       ),
-                      const SizedBox(height: 1),
-                      Text(
-                        isWeekly
-                            ? 'Aktivitas Minggu Ini'
-                            : 'Aktivitas Bulan Ini',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textMuted,
-                        ),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      _selectedCategory != null
+                          ? 'Kategori: $_selectedCategory'
+                          : 'Tren setoran limbah daur ulangmu',
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        color: AppColors.textMuted,
                       ),
-                    ] else ...[
-                      const Text(
-                        'Riwayat Setor Sampah',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.darkGreen,
-                        ),
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        _selectedFilterIndex >= 0
-                            ? 'Kategori: ${_filters[_selectedFilterIndex]['name']} (${categoryWeights[_filters[_selectedFilterIndex]['name']]?.toStringAsFixed(1) ?? '0.0'} kg)'
-                            : 'Tren setoran limbah daur ulangmu',
-                        style: const TextStyle(
-                          fontSize: 10.5,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                    ],
+                    ),
                   ],
                 ),
               ),
-              // Segmented Toggle: Per Minggu / Per Bulan
               Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F6F3),
@@ -564,9 +436,9 @@ class _CardTrackingChartState extends State<CardTrackingChart>
             ],
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
-          // ── Dual Summary Cards: Total Seluruh Sampah Per Minggu & Per Bulan ──
+          // ── Summary Cards ──
           Row(
             children: [
               Expanded(
@@ -609,9 +481,9 @@ class _CardTrackingChartState extends State<CardTrackingChart>
             ],
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
-          // ── Main Total Display (Total Seluruh Sampah) + Target / Trend Badge ──
+          // ── Uang Hasil Jual & Trend Badge ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -621,9 +493,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isWeekly
-                          ? 'Total Seluruh Sampah (Minggu Ini):'
-                          : 'Total Seluruh Sampah (Bulan Ini):',
+                      isWeekly ? 'Total Seluruh Sampah (Minggu Ini):' : 'Total Seluruh Sampah (Bulan Ini):',
                       style: const TextStyle(
                         fontSize: 10.5,
                         color: AppColors.textMuted,
@@ -638,7 +508,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                         Text(
                           mainWeightNumber,
                           style: const TextStyle(
-                            fontSize: 26,
+                            fontSize: 24,
                             fontWeight: FontWeight.w900,
                             color: AppColors.darkGreen,
                             letterSpacing: -0.5,
@@ -648,7 +518,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                         const Text(
                           'kg',
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF2E6B4E),
                           ),
@@ -658,38 +528,37 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  if (widget.targetWeight != null || widget.isBeranda) ...[
-                    Text(
-                      widget.targetWeight ?? 'Target: 20 kg',
+                  // Badges Uang Hasil Jual (Rupiah)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE8F5E9),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFC8E6C9)),
+                    ),
+                    child: Text(
+                      'Estimasi: Rp ${estimatedIncome.toStringAsFixed(0)}',
                       style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2E7D32),
                       ),
                     ),
-                    const SizedBox(height: 3),
-                  ],
+                  ),
+                  const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 9,
-                      vertical: 3.5,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: AppColors.mintSoft,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
-                          Icons.trending_up_rounded,
-                          size: 13,
-                          color: Color(0xFF1E8850),
-                        ),
+                        const Icon(Icons.trending_up_rounded, size: 12, color: Color(0xFF1E8850)),
                         const SizedBox(width: 4),
                         Text(
                           trendBadgeText,
@@ -709,7 +578,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
           const SizedBox(height: 8),
 
-          // ── Interactive Curved Line Chart (7 Hari Pisah / 4 Minggu) ──
+          // ── Curved Line Chart ──
           GestureDetector(
             onTapUp: (details) {
               final box = context.findRenderObject() as RenderBox?;
@@ -733,7 +602,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
               });
             },
             child: SizedBox(
-              height: 105,
+              height: 100,
               width: double.infinity,
               child: AnimatedBuilder(
                 animation: _animation,
@@ -755,7 +624,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
           const SizedBox(height: 3),
 
-          // ── X-Axis Labels (Hari Terpisah: Sen, Sel, Rab, Kam, Jum, Sab, Min) ──
+          // ── Label X-Axis ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: List.generate(activeLabels.length, (i) {
@@ -763,24 +632,74 @@ class _CardTrackingChartState extends State<CardTrackingChart>
             }),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
-          // ── Category Breakdown Chips 2x2 with Weights ──
-          Row(
-            children: [
-              _buildFilterChip(0, categoryWeights['Botol Plastik'] ?? 4.2),
-              const SizedBox(width: 6),
-              _buildFilterChip(1, categoryWeights['Kertas Bekas'] ?? 5.1),
-            ],
+          // ── Kategori Dinamis berdasarkan Transaksi Asli Database ──
+          const Text(
+            'Kategori Disetorkan:',
+            style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
           ),
-          const SizedBox(height: 5),
-          Row(
-            children: [
-              _buildFilterChip(2, categoryWeights['Baterai (B3)'] ?? 1.0),
-              const SizedBox(width: 6),
-              _buildFilterChip(3, categoryWeights['Bungkus Kaleng'] ?? 4.15),
-            ],
-          ),
+          const SizedBox(height: 6),
+          dynamicCategoryWeights.isEmpty
+              ? Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgScreen,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Belum ada kategori sampah disetorkan',
+                      style: TextStyle(fontSize: 10.5, color: AppColors.textMuted),
+                    ),
+                  ),
+                )
+              : Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    // Chip untuk Tampilkan Semua
+                    _buildDynamicChip(
+                      label: 'Semua',
+                      weight: null,
+                      color: AppColors.darkGreen,
+                      isSelected: _selectedCategory == null || _selectedCategory == 'Semua',
+                      onTap: () {
+                        setState(() {
+                          _selectedCategory = 'Semua';
+                          _updateWeights();
+                        });
+                        if (widget.onCategoryFilterChanged != null) {
+                          widget.onCategoryFilterChanged!('Semua');
+                        }
+                      },
+                    ),
+                    ...dynamicCategoryWeights.entries.toList().asMap().entries.map((entry) {
+                      final idx = entry.key;
+                      final catName = entry.value.key;
+                      final catWeight = entry.value.value;
+                      final catColor = _getCategoryColor(idx);
+                      final isSelected = _selectedCategory == catName;
+
+                      return _buildDynamicChip(
+                        label: catName,
+                        weight: catWeight,
+                        color: catColor,
+                        isSelected: isSelected,
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = isSelected ? 'Semua' : catName;
+                            _updateWeights();
+                          });
+                          if (widget.onCategoryFilterChanged != null) {
+                            widget.onCategoryFilterChanged!(_selectedCategory!);
+                          }
+                        },
+                      );
+                    }),
+                  ],
+                ),
         ],
       ),
     );
@@ -862,11 +781,9 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                 Text(
                   '${weightKg.toStringAsFixed(1)} kg',
                   style: TextStyle(
-                    fontSize: 14.5,
+                    fontSize: 14,
                     fontWeight: FontWeight.w900,
-                    color: isActive
-                        ? AppColors.darkGreen
-                        : const Color(0xFF2C4A3B),
+                    color: isActive ? AppColors.darkGreen : const Color(0xFF2C4A3B),
                   ),
                 ),
                 Text(
@@ -911,78 +828,55 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     );
   }
 
-  Widget _buildFilterChip(int index, double weight) {
-    final item = _filters[index];
-    final bool isSelected = _selectedFilterIndex == index;
-    final Color chipColor = item['color'] as Color;
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            if (_selectedFilterIndex == index) {
-              _selectedFilterIndex = -1; // Toggle off
-            } else {
-              _selectedFilterIndex = index;
-            }
-            _inspectedIndex = null;
-          });
-          if (widget.onCategoryFilterChanged != null) {
-            widget.onCategoryFilterChanged!(
-              _selectedFilterIndex >= 0 ? item['name'] as String : 'Semua',
-            );
-          }
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? const Color(0xFFE8F6ED)
-                : const Color(0xFFF9FCFA),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? AppColors.darkGreen : const Color(0xFFE2EFE7),
-              width: isSelected ? 1.4 : 1.0,
-            ),
+  Widget _buildDynamicChip({
+    required String label,
+    required double? weight,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFE8F6ED) : const Color(0xFFF9FCFA),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? AppColors.darkGreen : const Color(0xFFE2EFE7),
+            width: isSelected ? 1.2 : 1.0,
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 7,
-                height: 7,
-                decoration: BoxDecoration(
-                  color: chipColor,
-                  shape: BoxShape.circle,
-                ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                color: isSelected ? AppColors.darkGreen : const Color(0xFF334A3E),
               ),
-              const SizedBox(width: 5),
-              Expanded(
-                child: Text(
-                  item['name'] as String,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                    color: isSelected
-                        ? AppColors.darkGreen
-                        : const Color(0xFF334A3E),
-                  ),
-                ),
-              ),
+            ),
+            if (weight != null) ...[
               const SizedBox(width: 4),
               Text(
-                '${weight.toStringAsFixed(1)} kg',
+                '${weight.toStringAsFixed(1)}kg',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
-                  color: isSelected
-                      ? AppColors.darkGreen
-                      : const Color(0xFF2C4A3B),
+                  color: isSelected ? AppColors.darkGreen : const Color(0xFF2C4A3B),
                 ),
               ),
             ],
-          ),
+          ],
         ),
       ),
     );
@@ -1013,10 +907,9 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
     final int n = weights.length;
     if (n < 2) return;
 
-    // Responsive padding
     final double padding = n == 7 ? 12.0 : 22.0;
-    const double topMargin = 26.0;
-    const double bottomMargin = 12.0;
+    const double topMargin = 22.0;
+    const double bottomMargin = 10.0;
     final double chartHeight = h - topMargin - bottomMargin;
 
     double maxWeight = 0.1;
@@ -1030,7 +923,6 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
     }
     maxWeight = (maxWeight * 1.25).clamp(2.0, 100.0);
 
-    // Hitung posisi titik koordinat
     final List<Offset> points = [];
     final double stepX = (w - 2 * padding) / (n - 1);
 
@@ -1048,7 +940,7 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
       points.add(Offset(x, y));
     }
 
-    // 1. Grid horizontal lines
+    // Grid Horizontal
     final gridPaint = Paint()
       ..color = const Color(0xFFEAF2ED)
       ..strokeWidth = 1.0
@@ -1059,7 +951,7 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
       canvas.drawLine(Offset(padding, gy), Offset(w - padding, gy), gridPaint);
     }
 
-    // 2. Area Gradient di Bawah Garis Kurva
+    // Gradient Area
     final areaPath = Path()..moveTo(points.first.dx, points.first.dy);
     for (int i = 0; i < points.length - 1; i++) {
       final p0 = points[i];
@@ -1089,7 +981,7 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawPath(areaPath, areaPaint);
 
-    // 3. Garis Kurva Cubic Bezier
+    // Garis Kurva
     final linePath = Path()..moveTo(points.first.dx, points.first.dy);
     for (int i = 0; i < points.length - 1; i++) {
       final p0 = points[i];
@@ -1100,17 +992,17 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
 
     final linePaint = Paint()
       ..color = AppColors.darkGreen
-      ..strokeWidth = 3.0
+      ..strokeWidth = 2.8
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
     canvas.drawPath(linePath, linePaint);
 
-    // 4. Lingkaran Titik Node
+    // Titik Node
     final outerPointPaint = Paint()
       ..color = AppColors.darkGreen
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.4;
+      ..strokeWidth = 2.2;
 
     final innerFillPaint = Paint()
       ..color = Colors.white
@@ -1128,25 +1020,22 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
         final glowPaint = Paint()
           ..color = AppColors.limeAccent.withValues(alpha: 0.45)
           ..style = PaintingStyle.fill;
-        canvas.drawCircle(pt, 9.0, glowPaint);
+        canvas.drawCircle(pt, 8.5, glowPaint);
 
-        canvas.drawCircle(pt, 5.5, activePointFill);
-        canvas.drawCircle(pt, 5.5, outerPointPaint);
+        canvas.drawCircle(pt, 5.0, activePointFill);
+        canvas.drawCircle(pt, 5.0, outerPointPaint);
       } else {
-        canvas.drawCircle(pt, 3.8, innerFillPaint);
-        canvas.drawCircle(pt, 3.8, outerPointPaint);
+        canvas.drawCircle(pt, 3.5, innerFillPaint);
+        canvas.drawCircle(pt, 3.5, outerPointPaint);
       }
     }
 
-    // 5. Tooltip Aktif
+    // Tooltip
     if (activeIndex >= 0 && activeIndex < points.length) {
       final activePt = points[activeIndex];
       final activeWeight = weights[activeIndex];
-      final String labelName = activeIndex < pointLabels.length
-          ? pointLabels[activeIndex]
-          : '';
-      final String tooltipText =
-          '$labelName: ${activeWeight.toStringAsFixed(1)} kg';
+      final String labelName = activeIndex < pointLabels.length ? pointLabels[activeIndex] : '';
+      final String tooltipText = '$labelName: ${activeWeight.toStringAsFixed(1)} kg';
 
       final tp = TextPainter(
         text: TextSpan(
@@ -1160,29 +1049,23 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
         textDirection: TextDirection.ltr,
       )..layout();
 
-      const double bubblePadH = 7.0;
+      const double bubblePadH = 6.0;
       const double bubblePadV = 3.0;
       final double bw = tp.width + (bubblePadH * 2);
       final double bh = tp.height + (bubblePadV * 2);
 
       double bx = activePt.dx - (bw / 2);
       bx = bx.clamp(4.0, w - bw - 4.0);
-      final double by = (activePt.dy - bh - 8.0).clamp(2.0, h - bh);
+      final double by = (activePt.dy - bh - 6.0).clamp(2.0, h - bh);
 
       final rrect = RRect.fromRectAndRadius(
         Rect.fromLTWH(bx, by, bw, bh),
-        const Radius.circular(7),
+        const Radius.circular(6),
       );
 
       final bubblePaint = Paint()
         ..color = AppColors.darkGreen
         ..style = PaintingStyle.fill;
-      canvas.drawRRect(rrect, bubblePaint);
-
-      final shadowPaint = Paint()
-        ..color = Colors.black.withValues(alpha: 0.12)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
-      canvas.drawRRect(rrect.shift(const Offset(0, 1.5)), shadowPaint);
       canvas.drawRRect(rrect, bubblePaint);
 
       tp.paint(canvas, Offset(bx + bubblePadH, by + bubblePadV));
