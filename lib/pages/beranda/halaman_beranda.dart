@@ -6,7 +6,7 @@ import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
-import 'package:test23/pages/beranda/halaman_peta_cabang.dart'; // <-- Import halaman peta
+import 'package:test23/pages/beranda/halaman_peta_cabang.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/produk/halaman_produk.dart';
 import 'package:test23/pages/tracking/halaman_tracking.dart';
@@ -27,7 +27,6 @@ class HalamanBeranda extends StatefulWidget {
 
 class _HalamanBerandaState extends State<HalamanBeranda> {
   int _currentNavIndex = 0;
-  bool _isBookmarked = false;
   List<dynamic> _listEdukasi = [];
   bool _isLoadingEdukasi = true;
   List<dynamic> _listSampah = [];
@@ -251,12 +250,10 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HalamanTracking()));
   }
 
-  // Navigasi ke halaman peta cabang
   void _navigateToMap() {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HalamanPetaCabang()));
   }
 
-  // Hero Card Bank Sampah Digital (Bersih dari poin, langsung ke Halaman Tracking, + Tombol Peta)
   Widget _buildCustomCardBankSampah() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -289,7 +286,6 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   ],
                 ),
               ),
-              // Tombol Pintasan ke Halaman Peta Cabang
               InkWell(
                 onTap: _navigateToMap,
                 child: Container(
@@ -343,9 +339,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     final isDynamic = item != null;
     final title = isDynamic ? (item['title']?.toString() ?? 'Panduan Pilah Sampah Rumah Tangga') : 'Panduan Pilah Sampah Rumah Tangga';
     final desc = isDynamic ? (item['description']?.toString() ?? 'Pelajari cara memilah sampah organik dan anorganik.') : 'Pelajari cara memilah sampah organik dan anorganik.';
-    final author = isDynamic ? (item['penulis']?.toString() ?? 'Komunitas TR4SH') : 'Admin TR4SH';
-    final mediaUrl = isDynamic ? (item['media_url']?.toString() ?? '') : '';
-    final thumbUrl = _getYoutubeThumbnail(mediaUrl);
+    final thumbUrl = _getYoutubeThumbnail(isDynamic ? item['media_url']?.toString() : null);
 
     showModalBottomSheet(
       context: context,
@@ -575,10 +569,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   onProfileTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HalamanAkun())),
                 ),
                 const SizedBox(height: 16),
-
-                // Hero Card Bank Sampah Digital (Bersih dari Poin + Tombol "Cari Cabang" untuk Peta)
                 _buildCustomCardBankSampah(),
-
                 const SizedBox(height: 16),
                 CardRiwayatSampah(
                   rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount) ? const [] : _listSampah,
