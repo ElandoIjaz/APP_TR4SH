@@ -16,7 +16,6 @@ import 'package:test23/widgets/beranda/card_workshop.dart';
 import 'package:test23/widgets/beranda/grid_jenis_sampah.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/widgets/umum/bottom_nav_bar.dart';
-import 'package:test23/widgets/umum/header_beranda.dart';
 
 class HalamanBeranda extends StatefulWidget {
   const HalamanBeranda({super.key});
@@ -335,11 +334,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   }
 
   void _showVideoPlayerModal([Map<String, dynamic>? item]) {
-    bool isPlaying = true;
     final isDynamic = item != null;
     final title = isDynamic ? (item['title']?.toString() ?? 'Panduan Pilah Sampah Rumah Tangga') : 'Panduan Pilah Sampah Rumah Tangga';
     final desc = isDynamic ? (item['description']?.toString() ?? 'Pelajari cara memilah sampah organik dan anorganik.') : 'Pelajari cara memilah sampah organik dan anorganik.';
-    final thumbUrl = _getYoutubeThumbnail(isDynamic ? item['media_url']?.toString() : null);
 
     showModalBottomSheet(
       context: context,
@@ -528,7 +525,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           children: [
             Text('Kreasi Lilin dari Limbah Minyak', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.darkGreen)),
             SizedBox(height: 8),
-            Text('📅 Tanggal: Minggu, 27 September 2026\n⏰ Waktu: 09:00 - 12:00 WIB\n📍 Lokasi: Rumah Komunitas TR4SH!, Jakarta\n🎟 Kuota: Tersisa 8 Kursi', style: TextStyle(fontSize: 13, height: 1.5)),
+            Text('• Tanggal: Minggu, 27 September 2026\n• Waktu: 09:00 - 12:00 WIB\n• Lokasi: Rumah Komunitas TR4SH!, Jakarta\n• Kuota: Tersisa 8 Kursi', style: TextStyle(fontSize: 13, height: 1.5)),
           ],
         ),
         actions: [
@@ -563,11 +560,118 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 14),
-                HeaderBeranda(
-                  userName: UserAccountData.currentNama.isNotEmpty ? UserAccountData.currentNama.split(' ').first : 'Harin',
-                  onNotificationTap: _showNotificationSheet,
-                  onProfileTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HalamanAkun())),
+
+                // ========================================================
+                // HEADER BARU: TR4SH! HOME (TANPA KERANJANG BELANJA)
+                // ========================================================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Logo & Judul TR4SH! HOME
+                      Row(
+                        children: [
+                          Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: AppColors.darkGreen,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.eco_rounded,
+                                color: AppColors.limeAccent,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'TR4SH!',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.darkGreen,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              Text(
+                                'HOME',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textMuted,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      // Ikon Aksi Kanan (Notifikasi & Profil Saja)
+                      Row(
+                        children: [
+                          // Tombol Notifikasi
+                          Stack(
+                            children: [
+                              IconButton(
+                                onPressed: _showNotificationSheet,
+                                icon: const Icon(
+                                  Icons.notifications_outlined,
+                                  color: AppColors.darkGreen,
+                                  size: 24,
+                                ),
+                              ),
+                              Positioned(
+                                right: 10,
+                                top: 10,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.amber,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 8),
+
+                          // Tombol Akun / Profil
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => const HalamanAkun()),
+                              );
+                            },
+                            child: Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD6F3DD),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.cardBorder),
+                              ),
+                              child: const Icon(
+                                Icons.person_rounded,
+                                color: AppColors.darkGreen,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
+
                 const SizedBox(height: 16),
                 _buildCustomCardBankSampah(),
                 const SizedBox(height: 16),

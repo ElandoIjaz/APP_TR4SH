@@ -4,20 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/api_service.dart';
-import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
+import 'package:test23/pages/beranda/halaman_peta_cabang.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/produk/halaman_produk.dart';
-import 'package:test23/widgets/tracking/card_auto_track_lokasi.dart';
 import 'package:test23/widgets/tracking/card_estimasi_berat.dart';
 import 'package:test23/widgets/tracking/card_tracking_chart.dart';
 import 'package:test23/widgets/tracking/grid_kategori_setor.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/widgets/umum/bottom_nav_bar.dart';
-import 'package:test23/widgets/umum/header_beranda.dart';
 
 class HalamanTracking extends StatefulWidget {
   const HalamanTracking({super.key});
@@ -34,8 +32,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
   double _hargaPerKg = 3500.0;
 
   bool _isLoading = true;
-  var _listSampah = [];
-  double _totalKg = 0.0;
+  List _listSampah = [];
   int _totalCount = 0;
   
   String _selectedTabStatus = 'semua';
@@ -45,8 +42,8 @@ class _HalamanTrackingState extends State<HalamanTracking> {
   final TextEditingController _customSampahController = TextEditingController();
   final TextEditingController _beratController = TextEditingController(text: '1.0');
 
-  var _keranjangSetor = [];
-  List<dynamic> _daftarKategoriDatabase = [];
+  List _keranjangSetor = [];
+  List _daftarKategoriDatabase = [];
 
   @override
   void initState() {
@@ -78,7 +75,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _totalKg = 0.0;
           _totalCount = 0;
           _listSampah = [];
         });
@@ -91,12 +87,10 @@ class _HalamanTrackingState extends State<HalamanTracking> {
       if (res.success && res.data is Map && mounted) {
         final dataMap = res.data as Map;
         final items = (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
-        final totalKg = (dataMap['total_kg'] is num) ? (dataMap['total_kg'] as num).toDouble() : 0.0;
         final totalCount = (dataMap['total'] is int) ? (dataMap['total'] as int) : items.length;
 
         setState(() {
           _listSampah = items;
-          _totalKg = totalKg;
           _totalCount = totalCount;
           _isLoading = false;
           UserAccountData.isNewAccount = false;
@@ -108,7 +102,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
     if (mounted) {
       setState(() {
         _isLoading = false;
-        _totalKg = UserAccountData.totalSampahKg;
         _totalCount = UserAccountData.totalSetoran;
       });
     }
@@ -130,7 +123,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(22),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -143,10 +136,10 @@ class _HalamanTrackingState extends State<HalamanTracking> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Notifikasi Pelacakan & Verifikasi',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                  'Notifikasi Pengantaran & Verifikasi',
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
                 ),
-                IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context)),
               ],
             ),
             const SizedBox(height: 12),
@@ -155,21 +148,21 @@ class _HalamanTrackingState extends State<HalamanTracking> {
               decoration: BoxDecoration(
                 color: AppColors.bgScreen,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFFE2EFE7)),
+                border: Border.all(color: AppColors.cardBorder),
               ),
               child: Row(
                 children: [
                   const CircleAvatar(
                     radius: 16,
                     backgroundColor: Color(0xFFD6F5E1),
-                    child: Icon(Icons.verified_user_rounded, color: Colors.green, size: 18),
+                    child: Icon(Icons.verified_user_rounded, color: AppColors.darkGreen, size: 18),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
                       _listSampah.isNotEmpty
-                          ? 'Terdapat ${_listSampah.length} permintaan jual sampah tercatat di sistem bank sampah.'
-                          : 'Belum ada permintaan jual sampah yang dikirim.',
+                          ? 'Terdapat ${_listSampah.length} pengajuan jual sampah tercatat di sistem.'
+                          : 'Belum ada pengajuan jual sampah yang dikirim.',
                       style: const TextStyle(fontSize: 12.5, color: AppColors.darkGreen),
                     ),
                   ),
@@ -188,7 +181,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
       AuthRequiredModal.show(
         context,
         title: 'Jual Sampah Memerlukan Akun',
-        message: 'Mode Tamu tidak dapat melakukan penjualan sampah ke bank sampah. Silakan masuk terlebih dahulu.',
+        message: 'Mode Tamu tidak dapat melakukan pengajuan penjualan sampah ke bank sampah. Silakan masuk terlebih dahulu.',
         icon: Icons.recycling_rounded,
       );
       return;
@@ -264,7 +257,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _keranjangSetor.length,
                   itemBuilder: (context, idx) {
-                    final item = _keranjangSetor[idx] as Map<String, dynamic>;
+                    final item = Map<String, dynamic>.from(_keranjangSetor[idx]);
                     double itemWeight = (item['jumlah'] as num).toDouble();
                     
                     return Container(
@@ -294,6 +287,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                           double newW = double.parse((itemWeight - 0.1).toStringAsFixed(1));
                                           item['jumlah'] = newW;
                                           item['jenis_sampah'] = '${item['nama_kategori']} ${newW.toStringAsFixed(1)} kg';
+                                          _keranjangSetor[idx] = item;
                                         }
                                       });
                                     },
@@ -340,6 +334,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                                   setModalState(() {
                                                     item['jumlah'] = roundedVal;
                                                     item['jenis_sampah'] = '${item['nama_kategori']} ${roundedVal.toStringAsFixed(1)} kg';
+                                                    _keranjangSetor[idx] = item;
                                                   });
                                                 }
                                                 Navigator.pop(ctx);
@@ -371,6 +366,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                         double newW = double.parse((itemWeight + 0.1).toStringAsFixed(1));
                                         item['jumlah'] = newW;
                                         item['jenis_sampah'] = '${item['nama_kategori']} ${newW.toStringAsFixed(1)} kg';
+                                        _keranjangSetor[idx] = item;
                                       });
                                     },
                                     child: Container(
@@ -420,7 +416,8 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                         return StatefulBuilder(
                           builder: (context, setStateDialog) {
                             final filteredCategories = _daftarKategoriDatabase.where((cat) {
-                              final nama = (cat['nama_kategori'] ?? '').toString().toLowerCase();
+                              final catMap = cat as Map<String, dynamic>;
+                              final nama = (catMap['nama_kategori'] ?? '').toString().toLowerCase();
                               return nama.contains(searchQuery.toLowerCase());
                             }).toList();
 
@@ -482,7 +479,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
                                                         setModalState(() {
                                                           int existingIndex = _keranjangSetor.indexWhere(
-                                                            (element) => element['nama_kategori'].toString().toLowerCase() == namaKat.toLowerCase()
+                                                            (element) => (element as Map<String, dynamic>)['nama_kategori'].toString().toLowerCase() == namaKat.toLowerCase()
                                                           );
 
                                                           if (existingIndex != -1) {
@@ -546,9 +543,9 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                 ? Image.network(_pickedImage!.path, fit: BoxFit.cover, width: double.infinity, height: double.infinity)
                                 : Image.file(File(_pickedImage!.path), fit: BoxFit.cover, width: double.infinity, height: double.infinity),
                           )
-                        : Column(
+                        : const Column(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
+                            children: [
                               Icon(Icons.camera_alt_rounded, color: AppColors.darkGreen, size: 26),
                               SizedBox(height: 4),
                               Text('Ketuk untuk Ambil 1 Foto Gabungan Semua Sampah', style: TextStyle(fontSize: 10.5, color: AppColors.textMuted)),
@@ -583,17 +580,20 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                         ),
                       );
 
-                      final itemsPayload = _keranjangSetor.map((e) => {
-                        'id_kategori': e['id_kategori'],
-                        'jenis_sampah': e['jenis_sampah'],
-                        'jumlah': e['jumlah'],
-                        'satuan': e['satuan'] ?? 'kg',
+                      final itemsPayload = _keranjangSetor.map((e) {
+                        final eMap = e as Map<String, dynamic>;
+                        return {
+                          'id_kategori': eMap['id_kategori'],
+                          'jenis_sampah': eMap['jenis_sampah'],
+                          'jumlah': eMap['jumlah'],
+                          'satuan': eMap['satuan'] ?? 'kg',
+                        };
                       }).toList();
 
                       final res = await ApiService.kirimSetorSampahMultipart(
                         idUser: UserAccountData.currentUserId ?? 1,
                         items: itemsPayload,
-                        sumber: 'Auto-Track Titik Jemput: ${LokasiTrackingService.currentAddress}',
+                        sumber: 'Pengantaran Mandiri ke Bank Sampah',
                         fotoFile: _pickedImage,
                       );
 
@@ -633,7 +633,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                 ),
                                 const SizedBox(height: 16),
                                 const Text(
-                                  'Permintaan Jual Berhasil Dikirim!',
+                                  'Pengajuan Berhasil Dikirim!',
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -643,7 +643,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Total ${_keranjangSetor.length} kategori sampah ramah lingkungan telah berhasil dikirim ke sistem bank sampah dengan status "Pending" untuk diverifikasi admin.',
+                                  'Total ${_keranjangSetor.length} kategori sampah telah berhasil dikirim ke sistem dengan status "Pending". Silakan tunggu verifikasi admin sebelum mengantar ke cabang.',
                                   style: TextStyle(fontSize: 12.5, color: Colors.grey.shade700, height: 1.4),
                                   textAlign: TextAlign.center,
                                 ),
@@ -662,7 +662,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                       Navigator.pop(context);
                                     },
                                     child: const Text(
-                                      'Mengerti & Lihat Riwayat',
+                                      'Mengerti & Lihat Status',
                                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                                     ),
                                   ),
@@ -678,7 +678,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                         );
                       }
                     },
-                    child: const Text('Kirim Semua ke Admin (Jual Sampah)', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text('Kirim Pengajuan ke Admin', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -723,8 +723,9 @@ class _HalamanTrackingState extends State<HalamanTracking> {
   @override
   Widget build(BuildContext context) {
     final filteredList = _listSampah.where((item) {
+      final itemMap = item as Map<String, dynamic>;
       if (_selectedTabStatus == 'semua') return true;
-      final status = (item['status_verifikasi'] ?? 'pending').toString().toLowerCase();
+      final status = (itemMap['status_verifikasi'] ?? 'pending').toString().toLowerCase();
       if (_selectedTabStatus == 'pending') return status == 'pending';
       if (_selectedTabStatus == 'accepted') return status == 'accepted';
       return true;
@@ -733,11 +734,15 @@ class _HalamanTrackingState extends State<HalamanTracking> {
     final displayedList = _showAllRiwayat ? filteredList : filteredList.take(5).toList();
 
     final acceptedList = _listSampah.where((item) {
-      final status = (item['status_verifikasi'] ?? 'pending').toString().toLowerCase();
+      final itemMap = item as Map<String, dynamic>;
+      final status = (itemMap['status_verifikasi'] ?? 'pending').toString().toLowerCase();
       return status == 'accepted';
     }).toList();
 
-    double acceptedTotalKg = acceptedList.fold(0.0, (sum, item) => sum + (double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0));
+    double acceptedTotalKg = acceptedList.fold(0.0, (sum, item) {
+      final m = item as Map<String, dynamic>;
+      return sum + (double.tryParse(m['jumlah']?.toString() ?? '0') ?? 0.0);
+    });
     int acceptedCount = acceptedList.length;
 
     return Scaffold(
@@ -752,17 +757,121 @@ class _HalamanTrackingState extends State<HalamanTracking> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 14),
-                HeaderBeranda(
-                  userName: UserAccountData.isGuest
-                      ? 'Tamu'
-                      : (UserAccountData.currentNama.isNotEmpty ? UserAccountData.currentNama.split(' ').first : 'Harin'),
-                  onNotificationTap: _showNotificationSheet,
-                  onProfileTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HalamanAkun()));
-                  },
+
+                // ========================================================
+                // HEADER BARU: TANPA IKON KERANJANG BELANJA
+                // ========================================================
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Logo & Judul TR4SH! TRACKING
+                      Row(
+                        children: [
+                          Container(
+                            width: 38,
+                            height: 38,
+                            decoration: BoxDecoration(
+                              color: AppColors.darkGreen,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.eco_rounded,
+                                color: AppColors.limeAccent,
+                                size: 22,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'TR4SH!',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.darkGreen,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              Text(
+                                'TRACKING',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textMuted,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+
+                      // Ikon Aksi Kanan (Notifikasi & Profil Saja)
+                      Row(
+                        children: [
+                          // Tombol Notifikasi
+                          Stack(
+                            children: [
+                              IconButton(
+                                onPressed: _showNotificationSheet,
+                                icon: const Icon(
+                                  Icons.notifications_outlined,
+                                  color: AppColors.darkGreen,
+                                  size: 24,
+                                ),
+                              ),
+                              Positioned(
+                                right: 10,
+                                top: 10,
+                                child: Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.amber,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(width: 8),
+
+                          // Tombol Akun / Profil
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => const HalamanAkun()),
+                              );
+                            },
+                            child: Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD6F3DD),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.cardBorder),
+                              ),
+                              child: const Icon(
+                                Icons.person_rounded,
+                                color: AppColors.darkGreen,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
+
+                const SizedBox(height: 16),
+
                 if (UserAccountData.isGuest) ...[
-                  const SizedBox(height: 12),
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     padding: const EdgeInsets.all(14),
@@ -780,12 +889,12 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Mode Tamu: Pelacakan Terkunci',
+                                'Mode Tamu: Fitur Terkunci',
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Color(0xFF856404)),
                               ),
                               SizedBox(height: 2),
                               Text(
-                                'Masuk ke akun Anda untuk mencatat setoran dan mengumpulkan uang hasil jual.',
+                                'Masuk ke akun Anda untuk mencatat setoran dan memantau status pengantaran.',
                                 style: TextStyle(fontSize: 11, color: Color(0xFF856404)),
                               ),
                             ],
@@ -808,9 +917,102 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 16),
                 ],
-                const SizedBox(height: 16),
-                CardAutoTrackLokasi(onLocationUpdated: () => setState(() {})),
+                
+                // KARTU INTERAKTIF PETA CABANG
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E8850), Color(0xFF104E30)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const HalamanPetaCabang()),
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(18),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.map_rounded,
+                                color: AppColors.limeAccent,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Pusat Pengantaran & Cabang',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Buka Peta Cabang Bank Sampah',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  SizedBox(height: 4),
+                                  Text(
+                                    'Temukan titik drop-off terdekat untuk antar sampah',
+                                    style: TextStyle(
+                                      color: Colors.white60,
+                                      fontSize: 10.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const CircleAvatar(
+                              radius: 16,
+                              backgroundColor: Colors.white,
+                              child: Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 16,
+                                color: AppColors.darkGreen,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
                 const SizedBox(height: 16),
                 CardTrackingChart(
                   totalDisetor: (UserAccountData.isGuest || UserAccountData.isNewAccount)
@@ -862,7 +1064,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
     );
   }
 
-  Widget _buildSectionDataMasuk(int totalFilteredCount, List<dynamic> displayedList) {
+  Widget _buildSectionDataMasuk(int totalFilteredCount, List displayedList) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -885,7 +1087,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        'Data Permintaan Jual (${_listSampah.length})',
+                        'Data Pengajuan Jual (${_listSampah.length})',
                         style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -900,13 +1102,13 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFFC8E6C9)),
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const CircleAvatar(radius: 3.5, backgroundColor: Color(0xFF00C853)),
-                    const SizedBox(width: 5),
-                    const Text(
-                      'Sistem Ramah Lingkungan',
+                    CircleAvatar(radius: 3.5, backgroundColor: Color(0xFF00C853)),
+                    SizedBox(width: 5),
+                    Text(
+                      'Sistem Bank Sampah',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
@@ -920,7 +1122,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Status verifikasi dan riwayat penjualan sampah ramah lingkungan Anda',
+            'Status verifikasi dan riwayat pengantaran sampah Anda',
             style: TextStyle(fontSize: 11, color: AppColors.textMuted),
           ),
           const SizedBox(height: 12),
@@ -966,12 +1168,12 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   Icon(Icons.inbox_outlined, size: 36, color: Colors.grey.shade400),
                   const SizedBox(height: 8),
                   const Text(
-                    'Belum Ada Permintaan Jual Sampah',
+                    'Belum Ada Pengajuan Jual Sampah',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Gunakan estimasi berat di atas untuk mulai menjual sampah ramah lingkungan Anda.',
+                    'Gunakan estimasi berat di atas untuk mulai mengajukan penjualan sampah.',
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                   ),
@@ -987,7 +1189,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   itemCount: displayedList.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
-                    final item = displayedList[index] as Map<String, dynamic>;
+                    final item = Map<String, dynamic>.from(displayedList[index]);
                     final namaKategori = item['nama_kategori']?.toString() ?? 'Sampah';
                     final jenisSampah = item['jenis_sampah']?.toString() ?? 'Setoran';
                     final jumlah = item['jumlah']?.toString() ?? '0';
@@ -1139,25 +1341,27 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                           ),
 
                           if (statusVerifikasi == 'accepted') ...[
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE8F5E9),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: const Color(0xFFC8E6C9)),
-                              ),
-                              child: const Row(
-                                children: [
-                                  Icon(Icons.check_circle_rounded, size: 16, color: Colors.green),
-                                  SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      'Silahkan Jual sampah anda ke Bank Sampah Sahabat Ibu terdekat',
-                                      style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF2E7D32)),
-                                    ),
-                                  ),
-                                ],
+                            const SizedBox(height: 10),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 36,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.darkGreen,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                                onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (_) => const HalamanPetaCabang()),
+                                  );
+                                },
+                                icon: const Icon(Icons.map_rounded, size: 14, color: AppColors.limeAccent),
+                                label: const Text(
+                                  'Antar ke Cabang Bank Sampah Terdekat',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
                           ] else if (statusVerifikasi == 'denied') ...[
@@ -1175,7 +1379,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                   SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      'Maaf kelakuan seperti ini tidak sopan dan anda dapat diblock',
+                                      'Pengajuan ditolak oleh admin.',
                                       style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFFC62828)),
                                     ),
                                   ),
@@ -1208,9 +1412,9 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                       ),
                       onPressed: () {
                         setState(() {
-                      _showAllRiwayat = !_showAllRiwayat;
-                    });
-                  },
+                          _showAllRiwayat = !_showAllRiwayat;
+                        });
+                      },
                       child: Text(
                         _showAllRiwayat ? 'Sembunyikan Sebagian' : 'Data Penjualan Lainnya (${totalFilteredCount - 5} lainnya)',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
