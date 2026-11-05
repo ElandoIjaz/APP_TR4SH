@@ -42,7 +42,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
   bool _showAllRiwayat = false;
 
   XFile? _pickedImage;
-  String _satuanPilihan = 'kg';
   final TextEditingController _customSampahController = TextEditingController();
   final TextEditingController _beratController = TextEditingController(text: '1.0');
 
@@ -212,7 +211,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
       _pickedImage = null;
       _customSampahController.clear();
       _beratController.text = roundedWeight.toStringAsFixed(1);
-      _satuanPilihan = 'kg';
     });
 
     showModalBottomSheet(
@@ -407,7 +405,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                 ),
                 const SizedBox(height: 10),
 
-                // Tombol Tambah Kategori Lain (Memunculkan Dialog Pencarian Kategori)
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.darkGreen,
@@ -434,7 +431,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    // Search Bar Input
                                     TextField(
                                       autofocus: false,
                                       onChanged: (value) {
@@ -458,8 +454,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                       ),
                                     ),
                                     const SizedBox(height: 12),
-                                    
-                                    // List Kategori Berdasarkan Hasil Pencarian
                                     Flexible(
                                       child: _daftarKategoriDatabase.isEmpty
                                           ? const Padding(
@@ -484,10 +478,9 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                                       title: Text(namaKat, style: const TextStyle(fontWeight: FontWeight.bold)),
                                                       subtitle: Text('Rp ${hargaKat.toStringAsFixed(0)} / kg'),
                                                       onTap: () {
-                                                        Navigator.pop(context); // Tutup dialog pilihan
+                                                        Navigator.pop(context);
 
                                                         setModalState(() {
-                                                          // Cek duplikasi kategori di keranjang
                                                           int existingIndex = _keranjangSetor.indexWhere(
                                                             (element) => element['nama_kategori'].toString().toLowerCase() == namaKat.toLowerCase()
                                                           );
@@ -912,7 +905,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   children: [
                     const CircleAvatar(radius: 3.5, backgroundColor: Color(0xFF00C853)),
                     const SizedBox(width: 5),
-                    Text(
+                    const Text(
                       'Sistem Ramah Lingkungan',
                       style: TextStyle(
                         fontSize: 10,
@@ -1215,9 +1208,9 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                       ),
                       onPressed: () {
                         setState(() {
-                          _showAllRiwayat = !_showAllRiwayat;
-                        });
-                      },
+                      _showAllRiwayat = !_showAllRiwayat;
+                    });
+                  },
                       child: Text(
                         _showAllRiwayat ? 'Sembunyikan Sebagian' : 'Data Penjualan Lainnya (${totalFilteredCount - 5} lainnya)',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),

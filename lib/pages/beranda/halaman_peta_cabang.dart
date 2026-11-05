@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/data/api_service.dart'; // Terhubung ke ApiService
 import 'package:url_launcher/url_launcher.dart';
 
 class HalamanPetaCabang extends StatefulWidget {
@@ -28,14 +29,13 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   Map<String, dynamic>? _selectedCabang;
   Map<String, dynamic>? _cabangTerdekat;
   
-  // Daftar titik koordinat garis rute jalan raya dari OSRM
   List<LatLng> _routePoints = [];
   bool _isLoadingRoute = false;
 
   @override
   void initState() {
     super.initState();
-    _loadLokasiCabang();
+    _loadLokasiCabangFromDatabase();
   }
 
   double _hitungJarakKm(LatLng p1, LatLng p2) {
@@ -49,8 +49,61 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
     return 12742 * asin(sqrt(a));
   }
 
-  Future<void> _loadLokasiCabang() async {
-    final list = [
+  // Mengambil data secara dinamis dari database Laravel menggunakan ApiService.fetchBankSampah()
+  Future<void> _loadLokasiCabangFromDatabase() async {
+    try {
+      final res = await ApiService.fetchBankSampah(); // Menggunakan method yang tersedia di ApiService
+      if (res.success && res.data is List) {
+        final rawList = res.data as List;
+        final formattedList = rawList.map((item) {
+          final mapItem = Map<String, dynamic>.from(item);
+          
+          // Parsing koordinat latitude & longitude dari database
+          final double lat = double.tryParse(mapItem['latitude']?.toString() ?? '') ?? -8.184487;
+          final double lng = double.tryParse(mapItem['longitude']?.toString() ?? '') ?? 113.705886;
+          final LatLng pos = LatLng(lat, lng);
+
+          final double jarak = _hitungJarakKm(_userPosition, pos);
+
+          return {
+            'id': mapItem['id']?.toString() ?? mapItem['id_bank']?.toString() ?? '1',
+            'nama': mapItem['nama_cabang'] ?? mapItem['nama'] ?? 'Bank Sampah',
+            'alamat': mapItem['alamat'] ?? '',
+            'jam': mapItem['jam_operasional'] ?? '08:00 - 16:00 WIB',
+            'telp': mapItem['telepon'] ?? '-',
+            'latLng': pos,
+            'jarak_km': jarak,
+          };
+        }).toList();
+
+        if (formattedList.isNotEmpty) {
+          // Cari cabang terdekat
+          Map<String, dynamic>? terdekat;
+          double minJarak = double.infinity;
+          for (var c in formattedList) {
+            final double j = c['jarak_km'];
+            if (j < minJarak) {
+              minJarak = j;
+              terdekat = c;
+            }
+          }
+
+          setState(() {
+            _daftarCabang = formattedList;
+            _cabangTerdekat = terdekat;
+            _isLoading = false;
+          });
+
+          if (terdekat != null) {
+            _pilihCabang(terdekat);
+          }
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Fallback data statis jika server/database offline
+    final fallbackList = [
       {
         'id': '1',
         'nama': 'Bank Sampah Pusat Sahabat Ibu',
@@ -58,6 +111,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
         'jam': '08:00 - 16:00 WIB',
         'telp': '081234567890',
         'latLng': const LatLng(-8.165123, 113.716234),
+        'jarak_km': _hitungJarakKm(_userPosition, const LatLng(-8.165123, 113.716234)),
       },
       {
         'id': '2',
@@ -66,6 +120,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
         'jam': '08:00 - 14:00 WIB',
         'telp': '082198765432',
         'latLng': const LatLng(-8.152341, 113.698512),
+        'jarak_km': _hitungJarakKm(_userPosition, const LatLng(-8.152341, 113.698512)),
       },
       {
         'id': '3',
@@ -74,35 +129,19 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
         'jam': '08:30 - 15:00 WIB',
         'telp': '085611223344',
         'latLng': const LatLng(-8.173912, 113.678910),
+        'jarak_km': _hitungJarakKm(_userPosition, const LatLng(-8.173912, 113.678910)),
       },
     ];
 
-    Map<String, dynamic>? terdekat;
-    double minJarak = double.infinity;
-
-    for (var cabang in list) {
-      final LatLng pos = cabang['latLng'] as LatLng;
-      final jarak = _hitungJarakKm(_userPosition, pos);
-      cabang['jarak_km'] = jarak;
-      if (jarak < minJarak) {
-        minJarak = jarak;
-        terdekat = cabang;
-      }
-    }
-
     setState(() {
-      _daftarCabang = list;
-      _cabangTerdekat = terdekat;
+      _daftarCabang = fallbackList;
+      _cabangTerdekat = fallbackList.first;
       _isLoading = false;
     });
-
-    // Otomatis pilih cabang terdekat saat pertama kali buka halaman
-    if (terdekat != null) {
-      _pilihCabang(terdekat);
-    }
+    _pilihCabang(fallbackList.first);
   }
 
-  // Fungsi untuk menarik jalur rute jalan raya dari OSRM API (Gratis & In-App)
+  // Mengambil jalur rute jalan raya via OSRM API (Gratis & In-App)
   Future<void> _fetchRoute(LatLng tujuan) async {
     setState(() => _isLoadingRoute = true);
     try {
@@ -129,7 +168,6 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
       }
     } catch (_) {}
 
-    // Fallback jika gagal koneksi internet/OSRM: gunakan garis lurus biasa
     setState(() {
       _routePoints = [_userPosition, tujuan];
       _isLoadingRoute = false;
@@ -157,7 +195,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Rute Jalan Raya (OSRM Gratis)',
+          'Lokasi Cabang & Rute Bank Sampah',
           style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.darkGreen,
@@ -179,7 +217,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                       userAgentPackageName: 'com.tr4sh.app',
                     ),
                     
-                    // Layer Garis Rute Jalan Raya (Mengikuti Tikungan Jalan)
+                    // Layer Garis Rute Jalan Raya (OSRM)
                     if (_routePoints.isNotEmpty)
                       PolylineLayer(
                         polylines: [
@@ -222,7 +260,6 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                   ],
                 ),
 
-                // Indikator Loading saat menarik data rute jalan raya
                 if (_isLoadingRoute)
                   Positioned(
                     top: 90,
@@ -247,7 +284,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                     ),
                   ),
 
-                // Panel Atas: Rekomendasi Terdekat & Dropdown
+                // Panel Atas: Rekomendasi Terdekat & Dropdown Pilihan Cabang
                 Positioned(
                   top: 16,
                   left: 16,
@@ -321,7 +358,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                   ),
                 ),
 
-                // Card Bawah: Detail Cabang & Tombol Navigasi Eksternal
+                // Card Bawah: Detail Cabang & Tombol Navigasi
                 if (_selectedCabang != null)
                   Positioned(
                     bottom: 24,
