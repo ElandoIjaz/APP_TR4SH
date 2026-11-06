@@ -31,7 +31,6 @@ export 'produk/hero_banner_produk.dart';
 export 'produk/modal_filter_produk.dart';
 
 // Tracking
-export 'tracking/card_auto_track_lokasi.dart';
 export 'tracking/card_estimasi_berat.dart';
 export 'tracking/card_tracking_chart.dart';
 export 'tracking/grid_kategori_setor.dart';

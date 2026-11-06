@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
 
 class GridKategoriSetor extends StatefulWidget {
@@ -38,46 +38,48 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
   }
 
   /// Mengambil daftar kategori secara dinamis dari API Laravel
-  Future<void> _fetchCategoriesFromApi() async {
-    try {
-      final String baseUrl = kIsWeb
-          ? 'http://localhost:8000/api/kategori'
-          : 'http://10.0.2.2:8000/api/kategori';
+Future<void> _fetchCategoriesFromApi() async {
+  try {
+    // Panggil langsung variabel dari ApiConfig
+    final response = await http
+        .get(Uri.parse(ApiConfig.kategoriSampah))
+        .timeout(const Duration(seconds: 10));
 
-      final response = await http.get(Uri.parse(baseUrl));
+    if (!mounted) return;
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-          setState(() {
-            _categories = data['data'];
-            _isLoading = false;
-          });
-
-          if (_categories.isNotEmpty && widget.onCategorySelected != null) {
-            final first = _categories[_selectedIndex.clamp(0, _categories.length - 1)];
-            widget.onCategorySelected!(
-              first['id_kategori'] ?? 1,
-              first['nama_kategori'] ?? 'Lainnya',
-              'Kg / Gram',
-              0.5,
-              double.tryParse(first['harga_per_kg'].toString()) ?? 3000.0,
-            );
-          }
-        }
-      } else {
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['success'] == true) {
         setState(() {
-          _errorMessage = 'Gagal memuat kategori dari server (Code: ${response.statusCode})';
+          _categories = data['data'];
           _isLoading = false;
         });
+
+        if (_categories.isNotEmpty && widget.onCategorySelected != null) {
+          final first = _categories[_selectedIndex.clamp(0, _categories.length - 1)];
+          widget.onCategorySelected!(
+            first['id_kategori'] ?? 1,
+            first['nama_kategori'] ?? 'Lainnya',
+            'Kg / Gram',
+            0.5,
+            (first['harga_per_kg'] as num?)?.toDouble() ?? 3000.0,
+          );
+        }
       }
-    } catch (e) {
+    } else {
       setState(() {
-        _errorMessage = 'Terjadi kesalahan koneksi: $e';
+        _errorMessage = 'Gagal memuat kategori dari server (Code: ${response.statusCode})';
         _isLoading = false;
       });
     }
+  } catch (e) {
+    if (!mounted) return;
+    setState(() {
+      _errorMessage = 'Terjadi kesalahan koneksi: $e';
+      _isLoading = false;
+    });
   }
+}
 
   void _selectCategory(Map<String, dynamic> cat) {
     final actualIndex = _categories.indexWhere(
@@ -94,12 +96,12 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
         cat['nama_kategori'] as String,
         'Kg / Gram',
         0.5,
-        double.tryParse(cat['harga_per_kg'].toString()) ?? 3000.0,
+        (cat['harga_per_kg'] as num?)?.toDouble() ?? 3000.0,
       );
     }
   }
 
-  /// Menampilkan BottomSheet berisi seluruh daftar kategori lengkap saat kartu "Lainnya" diktekan
+  /// Menampilkan BottomSheet berisi seluruh daftar kategori lengkap saat kartu "Lainnya" ditekan
   void _showAllCategoriesSheet() {
     showModalBottomSheet(
       context: context,
@@ -146,7 +148,7 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
                 itemBuilder: (context, index) {
                   final cat = _categories[index] as Map<String, dynamic>;
                   final title = cat['nama_kategori'] ?? 'Kategori';
-                  final harga = double.tryParse(cat['harga_per_kg'].toString()) ?? 3000.0;
+                  final harga = (cat['harga_per_kg'] as num?)?.toDouble() ?? 3000.0;
                   
                   return ListTile(
                     shape: RoundedRectangleBorder(
@@ -198,7 +200,6 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
       );
     }
 
-    // Batasi data yang tampil maksimal 6 item (5 kategori asli + 1 kartu "Lainnya")
     final bool hasMore = _categories.length > 5;
     final displayList = hasMore ? _categories.take(5).toList() : _categories;
 
@@ -230,7 +231,6 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
           ),
           const SizedBox(height: 12),
 
-          // Grid Kategori 2 Kolom (Maksimal 6 Kartu Termasuk Lainnya)
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -242,7 +242,6 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
               childAspectRatio: 2.3,
             ),
             itemBuilder: (context, index) {
-              // Jika ini adalah kartu ke-6 dan ada lebih dari 5 kategori, tampilkan tombol "Lainnya"
               if (hasMore && index == displayList.length) {
                 return _buildLainnyaCard();
               }
@@ -259,7 +258,7 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
         _categories[_selectedIndex]['id_kategori'] == cat['id_kategori'];
 
     final String title = cat['nama_kategori'] ?? 'Kategori';
-    final double harga = double.tryParse(cat['harga_per_kg'].toString()) ?? 3000.0;
+    final double harga = (cat['harga_per_kg'] as num?)?.toDouble() ?? 3000.0;
 
     return GestureDetector(
       onTap: () => _selectCategory(cat),
@@ -328,7 +327,6 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
     );
   }
 
-  /// Kartu khusus "Lainnya" untuk membuka seluruh daftar kategori
   Widget _buildLainnyaCard() {
     return GestureDetector(
       onTap: _showAllCategoriesSheet,
@@ -346,9 +344,9 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
             ),
           ],
         ),
-        child: Row(
+         child: const Row(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 18,
               backgroundColor: AppColors.mintSoft,
               child: Icon(
@@ -357,12 +355,12 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
                 size: 18,
               ),
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
+                children: [
                   Text(
                     'Lainnya...',
                     style: TextStyle(

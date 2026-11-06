@@ -40,7 +40,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
 
   double _hitungJarakKm(LatLng p1, LatLng p2) {
     const p = 0.017453292519943295;
-    final c = cos;
+    const c = cos;
     final a = 0.5 -
         c((p2.latitude - p1.latitude) * p) / 2 +
         c(p1.latitude * p) *
@@ -207,7 +207,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
               children: [
                 FlutterMap(
                   mapController: _mapController,
-                  options: MapOptions(
+                  options: const MapOptions(
                     initialCenter: _initialPosition,
                     initialZoom: 13.0,
                   ),
@@ -254,7 +254,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                               ),
                             ),
                           );
-                        }).toList(),
+                        }),
                       ],
                     ),
                   ],
@@ -326,7 +326,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                             ),
                           ),
                         DropdownButtonFormField<String>(
-                          value: _selectedCabang?['id']?.toString(),
+                          initialValue: _selectedCabang?['id']?.toString(),
                           isExpanded: true,
                           decoration: InputDecoration(
                             isDense: true,

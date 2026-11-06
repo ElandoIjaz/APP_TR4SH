@@ -36,7 +36,7 @@ class ApiConfig {
 
   /// IP laptop saat testing di HP fisik via WiFi yang sama.
   /// Cek dengan `ipconfig` (IPv4 Address pada adapter Wi-Fi). Bisa berubah sewaktu-waktu.
-  static String laptopWifiIp = '192.168.1.4';
+  static String laptopWifiIp = '10.10.188.222';
 
   /// Port standar Laravel `php artisan serve`
   static int port = 8000;
