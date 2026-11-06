@@ -29,12 +29,12 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
   int _selectedIdKategori = 1;
   String _selectedCategory = 'Plastik';
-  double _hargaPerKg = 3500.0;
+  double _hargaPerKg = 3000.0;
 
   bool _isLoading = true;
-  List _listSampah = [];
+  List<dynamic> _listSampah = [];
   int _totalCount = 0;
-  
+
   String _selectedTabStatus = 'semua';
   bool _showAllRiwayat = false;
 
@@ -42,8 +42,8 @@ class _HalamanTrackingState extends State<HalamanTracking> {
   final TextEditingController _customSampahController = TextEditingController();
   final TextEditingController _beratController = TextEditingController(text: '1.0');
 
-  List _keranjangSetor = [];
-  List _daftarKategoriDatabase = [];
+  List<dynamic> _keranjangSetor = [];
+  List<dynamic> _daftarKategoriDatabase = [];
 
   @override
   void initState() {
@@ -84,14 +84,22 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
     try {
       final res = await ApiService.fetchRiwayatSetor();
-      if (res.success && res.data is Map && mounted) {
-        final dataMap = res.data as Map;
-        final items = (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
-        final totalCount = (dataMap['total'] is int) ? (dataMap['total'] as int) : items.length;
+      if (res.success && mounted) {
+        List<dynamic> items = [];
+        int total = 0;
+
+        if (res.data is Map) {
+          final dataMap = res.data as Map;
+          items = (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
+          total = (dataMap['total'] is int) ? (dataMap['total'] as int) : items.length;
+        } else if (res.data is List) {
+          items = res.data as List;
+          total = items.length;
+        }
 
         setState(() {
           _listSampah = items;
-          _totalCount = totalCount;
+          _totalCount = total;
           _isLoading = false;
           UserAccountData.isNewAccount = false;
         });
@@ -187,7 +195,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
       return;
     }
 
-    double roundedWeight = double.parse(initialWeight.toStringAsFixed(1));
+    final double roundedWeight = double.parse(initialWeight.toStringAsFixed(1));
 
     _keranjangSetor = [
       {
@@ -257,8 +265,8 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _keranjangSetor.length,
                   itemBuilder: (context, idx) {
-                    final item = Map<String, dynamic>.from(_keranjangSetor[idx]);
-                    double itemWeight = (item['jumlah'] as num).toDouble();
+                    final item = Map<String, dynamic>.from(_keranjangSetor[idx] as Map);
+                    final double itemWeight = (item['jumlah'] as num).toDouble();
                     
                     return Container(
                       margin: const EdgeInsets.only(bottom: 10),
@@ -284,7 +292,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                     onTap: () {
                                       setModalState(() {
                                         if (itemWeight > 0.1) {
-                                          double newW = double.parse((itemWeight - 0.1).toStringAsFixed(1));
+                                          final double newW = double.parse((itemWeight - 0.1).toStringAsFixed(1));
                                           item['jumlah'] = newW;
                                           item['jenis_sampah'] = '${item['nama_kategori']} ${newW.toStringAsFixed(1)} kg';
                                           _keranjangSetor[idx] = item;
@@ -304,7 +312,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                   
                                   GestureDetector(
                                     onTap: () {
-                                      TextEditingController editCtrl = TextEditingController(
+                                      final TextEditingController editCtrl = TextEditingController(
                                         text: itemWeight.toStringAsFixed(1),
                                       );
                                       showDialog(
@@ -328,9 +336,9 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                             ElevatedButton(
                                               style: ElevatedButton.styleFrom(backgroundColor: AppColors.darkGreen),
                                               onPressed: () {
-                                                double? val = double.tryParse(editCtrl.text);
+                                                final double? val = double.tryParse(editCtrl.text);
                                                 if (val != null && val > 0) {
-                                                  double roundedVal = double.parse(val.toStringAsFixed(1));
+                                                  final double roundedVal = double.parse(val.toStringAsFixed(1));
                                                   setModalState(() {
                                                     item['jumlah'] = roundedVal;
                                                     item['jenis_sampah'] = '${item['nama_kategori']} ${roundedVal.toStringAsFixed(1)} kg';
@@ -363,7 +371,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                   InkWell(
                                     onTap: () {
                                       setModalState(() {
-                                        double newW = double.parse((itemWeight + 0.1).toStringAsFixed(1));
+                                        final double newW = double.parse((itemWeight + 0.1).toStringAsFixed(1));
                                         item['jumlah'] = newW;
                                         item['jenis_sampah'] = '${item['nama_kategori']} ${newW.toStringAsFixed(1)} kg';
                                         _keranjangSetor[idx] = item;
@@ -478,7 +486,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                                         Navigator.pop(context);
 
                                                         setModalState(() {
-                                                          int existingIndex = _keranjangSetor.indexWhere(
+                                                          final int existingIndex = _keranjangSetor.indexWhere(
                                                             (element) => (element as Map<String, dynamic>)['nama_kategori'].toString().toLowerCase() == namaKat.toLowerCase()
                                                           );
 
@@ -521,7 +529,12 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                 GestureDetector(
                   onTap: () async {
                     final picker = ImagePicker();
-                    final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+                    final pickedFile = await picker.pickImage(
+                      source: ImageSource.camera,
+                      maxWidth: 1024,
+                      maxHeight: 1024,
+                      imageQuality: 80,
+                    );
                     if (pickedFile != null) {
                       setModalState(() {
                         _pickedImage = pickedFile;
@@ -597,16 +610,15 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                         fotoFile: _pickedImage,
                       );
 
-                      if (mounted) Navigator.pop(context);
-
                       if (!mounted) return;
+                      Navigator.pop(this.context);
 
                       if (res.success) {
-                        Navigator.pop(context);
+                        Navigator.pop(this.context);
                         _loadRiwayatSampah();
 
                         showModalBottomSheet(
-                          context: context,
+                          context: this.context,
                           isDismissible: false,
                           enableDrag: false,
                           backgroundColor: Colors.transparent,
@@ -673,7 +685,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                           ),
                         );
                       } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(this.context).showSnackBar(
                           SnackBar(content: Text('Gagal mengirim: ${res.message}'), backgroundColor: Colors.red),
                         );
                       }
@@ -739,11 +751,11 @@ class _HalamanTrackingState extends State<HalamanTracking> {
       return status == 'accepted';
     }).toList();
 
-    double acceptedTotalKg = acceptedList.fold(0.0, (sum, item) {
+    final double acceptedTotalKg = acceptedList.fold(0.0, (sum, item) {
       final m = item as Map<String, dynamic>;
       return sum + (double.tryParse(m['jumlah']?.toString() ?? '0') ?? 0.0);
     });
-    int acceptedCount = acceptedList.length;
+    final int acceptedCount = acceptedList.length;
 
     return Scaffold(
       backgroundColor: AppColors.bgScreen,
@@ -758,15 +770,12 @@ class _HalamanTrackingState extends State<HalamanTracking> {
               children: [
                 const SizedBox(height: 14),
 
-                // ========================================================
-                // HEADER BARU: TANPA IKON KERANJANG BELANJA
-                // ========================================================
+                // HEADER TR4SH! TRACKING
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Logo & Judul TR4SH! TRACKING
                       Row(
                         children: [
                           Container(
@@ -811,10 +820,8 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                         ],
                       ),
 
-                      // Ikon Aksi Kanan (Notifikasi & Profil Saja)
                       Row(
                         children: [
-                          // Tombol Notifikasi
                           Stack(
                             children: [
                               IconButton(
@@ -841,7 +848,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                           ),
                           const SizedBox(width: 8),
 
-                          // Tombol Akun / Profil
                           GestureDetector(
                             onTap: () {
                               Navigator.of(context).push(
@@ -920,7 +926,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   const SizedBox(height: 16),
                 ],
                 
-                // KARTU INTERAKTIF PETA CABANG
+                // KARTU PETA CABANG INTERAKTIF
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
@@ -1064,7 +1070,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
     );
   }
 
-  Widget _buildSectionDataMasuk(int totalFilteredCount, List displayedList) {
+  Widget _buildSectionDataMasuk(int totalFilteredCount, List<dynamic> displayedList) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -1087,7 +1093,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        'Data Pengajuan Jual (${_listSampah.length})',
+                        'Data Pengajuan Jual (${_totalCount > 0 ? _totalCount : _listSampah.length})',
                         style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1189,7 +1195,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   itemCount: displayedList.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
-                    final item = Map<String, dynamic>.from(displayedList[index]);
+                    final item = Map<String, dynamic>.from(displayedList[index] as Map);
                     final namaKategori = item['nama_kategori']?.toString() ?? 'Sampah';
                     final jenisSampah = item['jenis_sampah']?.toString() ?? 'Setoran';
                     final jumlah = item['jumlah']?.toString() ?? '0';
