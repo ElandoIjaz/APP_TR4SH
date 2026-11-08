@@ -47,7 +47,7 @@ class TrashBottomNav extends StatelessWidget {
     final bool isActive = currentIndex == index;
 
     return InkWell(
-      onTap: () => onTap(index),
+      onTap: () => onTap(index), // ✅ Sudah diperbaiki (tanpa tanda kurung kurawal ganda)
       borderRadius: BorderRadius.circular(20),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),

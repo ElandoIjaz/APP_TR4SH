@@ -78,7 +78,7 @@ class ApiService {
     try {
       final response = await http
           .get(Uri.parse(ApiConfig.ping))
-          .timeout(const Duration(seconds: 3));
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode == 200) return true;
     } catch (_) {}
 
@@ -88,7 +88,7 @@ class ApiService {
       try {
         final retry = await http
             .get(Uri.parse(ApiConfig.ping))
-            .timeout(const Duration(seconds: 3));
+            .timeout(const Duration(seconds: 15));
         return retry.statusCode == 200;
       } catch (_) {}
     }
@@ -96,7 +96,7 @@ class ApiService {
     try {
       final fallback = await http
           .get(Uri.parse(ApiConfig.baseUrl))
-          .timeout(const Duration(seconds: 2));
+          .timeout(const Duration(seconds: 15));
       return fallback.statusCode < 500;
     } catch (_) {
       return false;

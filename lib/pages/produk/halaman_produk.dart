@@ -5,20 +5,16 @@ import 'dart:convert';
 
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
-import 'package:test23/pages/akun/halaman_akun.dart';
-import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/produk/halaman_detail_produk.dart';
 import 'package:test23/pages/produk/halaman_keranjang.dart';
-import 'package:test23/pages/konten/halaman_konten.dart';
-import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:test23/widgets/produk/banner_kirim_sampah.dart';
 import 'package:test23/widgets/produk/card_produk_grid.dart';
 import 'package:test23/widgets/produk/header_produk.dart';
 import 'package:test23/widgets/produk/hero_banner_produk.dart';
 import 'package:test23/widgets/produk/modal_filter_produk.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
-import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 import 'package:test23/data/user_account_data.dart';
+import 'package:test23/pages/tracking/halaman_tracking.dart';
 
 class HalamanProduk extends StatefulWidget {
   const HalamanProduk({super.key});
@@ -28,7 +24,6 @@ class HalamanProduk extends StatefulWidget {
 }
 
 class _HalamanProdukState extends State<HalamanProduk> {
-  final int _currentNavIndex = 1;
   int _selectedCategoryIndex = 0;
   int _cartItemCount = 3;
   final TextEditingController _searchController = TextEditingController();
@@ -59,7 +54,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
     try {
       final response = await http
           .get(Uri.parse(ApiConfig.listPrakarya))
-          .timeout(const Duration(seconds: 4));
+          .timeout(const Duration(seconds: 15));
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
         final list = data['data'] as List?;
@@ -595,43 +590,11 @@ class _HalamanProdukState extends State<HalamanProduk> {
               ),
 
               const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
-
-      // ── 8. Bottom Navigation Bar ──
-      bottomNavigationBar: TrashBottomNav(
-        currentIndex: _currentNavIndex,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanBeranda()),
-            );
-          } else if (index == 2) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanKonten()),
-            );
-          } else if (index == 3) {
-            if (UserAccountData.isGuest) {
-              AuthRequiredModal.show(
-                context,
-                title: 'Fitur Tracking Sampah Memerlukan Akun',
-                message: 'Pelacakan sampah daur ulang, grafik analitik, dan perolehan poin hanya dapat digunakan setelah Anda masuk atau membuat akun.',
-                icon: Icons.query_stats_rounded,
-              );
-              return;
-            }
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanTracking()),
-            );
-          } else if (index == 4) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanAkun()),
-            );
-          }
-        },
-      ),
-    );
-  }
-}
+          const SizedBox(height: 24),
+        ], // Penutup children (Column / ListView)
+      ), 
+      ),  // Penutup Body Widget (Column / SingleChildScrollView / CustomScrollView)
+    ),
+         );     // Penutup Scaffold
+  }       // Penutup method build
+}         // Penutup class _HalamanProdukState

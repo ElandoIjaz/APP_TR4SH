@@ -5,15 +5,11 @@ import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
-import 'package:test23/pages/beranda/halaman_beranda.dart';
-import 'package:test23/pages/konten/halaman_konten.dart';
-import 'package:test23/pages/produk/halaman_produk.dart';
 import 'package:test23/widgets/tracking/card_auto_track_lokasi.dart';
 import 'package:test23/widgets/tracking/card_estimasi_berat.dart';
 import 'package:test23/widgets/tracking/card_tracking_chart.dart';
 import 'package:test23/widgets/tracking/grid_kategori_setor.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
-import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 import 'package:test23/widgets/umum/header_beranda.dart';
 
 class HalamanTracking extends StatefulWidget {
@@ -24,8 +20,6 @@ class HalamanTracking extends StatefulWidget {
 }
 
 class _HalamanTrackingState extends State<HalamanTracking> {
-  final int _currentNavIndex = 3; // Tracking is active (Index 3)
-
   String _selectedCategory = 'Plastik';
   String _selectedUnit = 'Botol';
   double _weightPerUnit = 0.1;
@@ -176,13 +170,13 @@ class _HalamanTrackingState extends State<HalamanTracking> {
       AuthRequiredModal.show(
         context,
         title: 'Input Sampah Memerlukan Akun',
-        message: 'Mode Tamu tidak dapat melakukan tracking sampah. Silakan masuk atau buat akun terlebih dahulu untuk mencatat data setoran ke database.',
+        message:
+            'Mode Tamu tidak dapat melakukan tracking sampah. Silakan masuk atau buat akun terlebih dahulu untuk mencatat data setoran ke database.',
         icon: Icons.recycling_rounded,
       );
       return;
     }
 
-    // 1. Tentukan kategori ID untuk database Laravel (1: Plastik, 2: Kertas, 3: Logam, 4: Kaca, 5: Organik)
     int idKategori = 1;
     final catLower = _selectedCategory.toLowerCase();
     if (catLower.contains('kertas')) {
@@ -195,14 +189,12 @@ class _HalamanTrackingState extends State<HalamanTracking> {
       idKategori = 5;
     }
 
-    final double beratHitung = totalWeight > 0
-        ? totalWeight
-        : (count * _weightPerUnit);
+    final double beratHitung =
+        totalWeight > 0 ? totalWeight : (count * _weightPerUnit);
     final double beratFinal = double.parse(
       (beratHitung > 0 ? beratHitung : 0.1).toStringAsFixed(2),
     );
 
-    // 2. Kirim request asynchronous ke API backend Laravel (/api/sampah/setor)
     final res = await ApiService.kirimSetorSampah(
       idUser: UserAccountData.currentUserId ?? 1,
       idKategori: idKategori,
@@ -213,7 +205,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
           'Auto-Track Titik Jemput: ${LokasiTrackingService.currentAddress}',
     );
 
-    // 3. Update state lokal dan muat ulang riwayat dari database
     if (res.success) {
       UserAccountData.userPoints += totalPoints;
       _loadRiwayatSampah();
@@ -221,7 +212,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
 
     if (!mounted) return;
 
-    // 4. Tampilkan bottom sheet konfirmasi sukses
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -265,8 +255,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
               ],
             ),
             const SizedBox(height: 8),
-
-            // Server database status badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
@@ -311,7 +299,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                 ],
               ),
             ),
-
             const SizedBox(height: 12),
             Text(
               'Rincian: $count $_selectedUnit $_selectedCategory (±${totalWeight.toStringAsFixed(1)} kg)',
@@ -458,8 +445,8 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   userName: UserAccountData.isGuest
                       ? 'Tamu'
                       : (UserAccountData.currentNama.isNotEmpty
-                            ? UserAccountData.currentNama.split(' ').first
-                            : 'Bintang'),
+                          ? UserAccountData.currentNama.split(' ').first
+                          : 'Bintang'),
                   onNotificationTap: _showNotificationSheet,
                   onProfileTap: () {
                     Navigator.of(context).push(
@@ -555,18 +542,18 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                 CardTrackingChart(
                   totalDisetor:
                       (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                      ? '0.0 kg'
-                      : '${_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'} kg',
+                          ? '0.0 kg'
+                          : '${_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'} kg',
                   trendPercent:
                       (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                      ? '+0 setoran'
-                      : (_totalCount > 0
-                            ? '+$_totalCount setoran tercatat'
-                            : '+28% dari minggu lalu'),
+                          ? '+0 setoran'
+                          : (_totalCount > 0
+                              ? '+$_totalCount setoran tercatat'
+                              : '+28% dari minggu lalu'),
                   rawData:
                       (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                      ? const []
-                      : _listSampah,
+                          ? const []
+                          : _listSampah,
                 ),
 
                 const SizedBox(height: 16),
@@ -604,38 +591,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
             ),
           ),
         ),
-      ),
-
-      // ── 7. Bottom Navigation Bar ──
-      bottomNavigationBar: TrashBottomNav(
-        currentIndex: _currentNavIndex,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanBeranda()),
-            );
-          } else if (index == 1) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanProduk()),
-            );
-          } else if (index == 2) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanKonten()),
-            );
-          } else if (index == 4) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanAkun()),
-            );
-          } else if (index != 3) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Menu index $index dipilih'),
-                duration: const Duration(milliseconds: 800),
-                backgroundColor: AppColors.darkGreen,
-              ),
-            );
-          }
-        },
       ),
     );
   }
@@ -714,7 +669,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
             style: TextStyle(fontSize: 11, color: AppColors.textMuted),
           ),
           const SizedBox(height: 12),
-
           if (_isLoading)
             Container(
               padding: const EdgeInsets.all(24),
@@ -803,7 +757,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Icon Kategori Avatar
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
@@ -817,8 +770,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                         ),
                       ),
                       const SizedBox(width: 12),
-
-                      // Informasi Setoran
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

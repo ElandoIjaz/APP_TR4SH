@@ -9,15 +9,12 @@ import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/akun/halaman_pilih_lokasi_akurat.dart';
-import 'package:test23/pages/produk/halaman_produk.dart';
-import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:test23/widgets/beranda/card_bank_sampah.dart';
 import 'package:test23/widgets/beranda/card_riwayat_sampah.dart';
 import 'package:test23/widgets/beranda/card_video_tutorial.dart';
 import 'package:test23/widgets/beranda/card_workshop.dart';
 import 'package:test23/widgets/beranda/grid_jenis_sampah.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
-import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 import 'package:test23/widgets/umum/header_beranda.dart';
 
 class HalamanBeranda extends StatefulWidget {
@@ -28,7 +25,6 @@ class HalamanBeranda extends StatefulWidget {
 }
 
 class _HalamanBerandaState extends State<HalamanBeranda> {
-  int _currentNavIndex = 0; // Default to 'Beranda' (Index 0)
   bool _isBookmarked = false;
   List<dynamic> _listEdukasi = [];
   bool _isLoadingEdukasi = true;
@@ -1382,56 +1378,13 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
                 // ── 6. Workshop Card Banner ──
                 CardWorkshop(onDaftarTap: _showWorkshopModal),
-
-                const SizedBox(height: 24),
-              ],
-            ),
-          ),
-        ),
+                const SizedBox(height: 24),    
+     ], // Penutup children dari Column utama Beranda Anda
       ),
-
-      // ── 7. Bottom Navigation Bar ──
-      bottomNavigationBar: TrashBottomNav(
-        currentIndex: _currentNavIndex,
-        onTap: (index) {
-          if (index == 2) {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const HalamanKonten()));
-          } else if (index == 1) {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const HalamanProduk()));
-          } else if (index == 4) {
-            Navigator.of(context)
-                .push(MaterialPageRoute(builder: (_) => const HalamanAkun()));
-          } else if (index == 3) {
-            if (UserAccountData.isGuest) {
-              AuthRequiredModal.show(
-                context,
-                title: 'Fitur Tracking Sampah Memerlukan Akun',
-                message: 'Pelacakan sampah daur ulang, grafik analitik, dan perolehan poin hanya dapat digunakan setelah Anda masuk atau membuat akun.',
-                icon: Icons.query_stats_rounded,
-              );
-              return;
-            }
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const HalamanTracking()));
-          } else {
-            setState(() {
-              _currentNavIndex = index;
-            });
-            if (index != 0) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Menu index $index dipilih'),
-                  duration: const Duration(milliseconds: 800),
-                  backgroundColor: AppColors.darkGreen,
-                ),
-              );
-            }
-          }
-        },
+           ), 
+           ),
       ),
-    );
-  }
-}
+           );
+           }
+           }// Penutup Column / SingleChildScrollView
+       

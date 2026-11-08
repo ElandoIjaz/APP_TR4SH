@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:test23/core/painters/green_corner_painter.dart';
-import 'package:test23/core/routes/white_page_route.dart' show WhiteFadePageRoute;
-import 'package:test23/pages/beranda/halaman_beranda.dart';
+import 'package:test23/pages/main_navigation.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,9 +25,11 @@ class _SplashScreenState extends State<SplashScreen>
 
     Timer(const Duration(seconds: 3), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-        WhiteFadePageRoute(page: const HalamanBeranda()),
-      );
+        Navigator.pushReplacement(
+  context,
+  MaterialPageRoute(builder: (context) => const MainNavigationPage()), // ✅ Wajib ke pembungkus PageView
+);
+    
       }
     });
   }

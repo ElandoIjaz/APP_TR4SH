@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
-import 'package:test23/pages/auth/auth_gate.dart';
 import 'package:test23/features/splash/splash_screen.dart';
 
 void main() async {

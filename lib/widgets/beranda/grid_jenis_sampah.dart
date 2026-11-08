@@ -200,7 +200,9 @@ class _CategoryCardState extends State<CategoryCard> {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: widget.badgeBg,
                           borderRadius: BorderRadius.circular(10),

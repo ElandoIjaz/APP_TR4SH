@@ -6,17 +6,13 @@ import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_alamat_pengiriman.dart';
 import 'package:test23/pages/akun/halaman_bantuan_faq.dart';
-import 'package:test23/pages/beranda/halaman_beranda.dart';
-import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/konten/halaman_upload_konten.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:test23/pages/akun/halaman_notifikasi.dart';
 import 'package:test23/pages/akun/halaman_pengaturan_akun.dart';
 import 'package:test23/pages/akun/halaman_poin_hadiah.dart';
-import 'package:test23/pages/produk/halaman_produk.dart';
 import 'package:test23/pages/akun/halaman_riwayat_setor.dart';
 import 'package:test23/pages/akun/halaman_riwayat_transaksi.dart';
-import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:test23/widgets/akun/banner_dampak_positif.dart';
 import 'package:test23/widgets/akun/card_menu_akun.dart';
 import 'package:test23/widgets/akun/card_profil_user.dart';
@@ -24,7 +20,6 @@ import 'package:test23/widgets/akun/card_statistik_akun.dart';
 import 'package:test23/widgets/akun/header_akun.dart';
 import 'package:test23/widgets/akun/tombol_keluar.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
-import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 
 class HalamanAkun extends StatefulWidget {
   const HalamanAkun({super.key});
@@ -34,7 +29,6 @@ class HalamanAkun extends StatefulWidget {
 }
 
 class _HalamanAkunState extends State<HalamanAkun> {
-  final int _currentNavIndex = 4; // Akun is active (Index 4)
 
   // User state
   String _namaLengkap = 'Bintang Pratama';
@@ -548,47 +542,8 @@ class _HalamanAkunState extends State<HalamanAkun> {
           ),
         ),
       ),
-
-      // ── 7. Bottom Navigation Bar (TrashBottomNav) ──
-      bottomNavigationBar: TrashBottomNav(
-        currentIndex: _currentNavIndex,
-        onTap: (index) {
-          if (index == 0) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanBeranda()),
-            );
-          } else if (index == 1) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanProduk()),
-            );
-          } else if (index == 2) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanKonten()),
-            );
-          } else if (index == 3) {
-            if (UserAccountData.isGuest) {
-              AuthRequiredModal.show(
-                context,
-                title: 'Fitur Tracking Sampah Memerlukan Akun',
-                message: 'Pelacakan sampah daur ulang, grafik analitik, dan perolehan poin hanya dapat digunakan setelah Anda masuk atau membuat akun.',
-                icon: Icons.query_stats_rounded,
-              );
-              return;
-            }
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(builder: (_) => const HalamanTracking()),
-            );
-          } else if (index != 4) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Menu index $index dipilih'),
-                duration: const Duration(milliseconds: 800),
-                backgroundColor: AppColors.darkGreen,
-              ),
-            );
-          }
-        },
-      ),
-    );
+        );
   }
-}
+  }
+
+      
