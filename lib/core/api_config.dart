@@ -1,24 +1,7 @@
 import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Konfigurasi alamat server API.
-///
-/// PRIORITAS alamat server (dari atas ke bawah):
-///   1. --dart-define=API_BASE_URL=...   (dev via USB & production)
-///   2. customBaseUrl                    (override manual)
-///   3. Deteksi otomatis per platform    ([DEV-ONLY], tidak aktif di mode release)
-///
-/// Contoh dev (USB):
-///   adb reverse tcp:8000 tcp:8000
-///   flutter run --dart-define=API_BASE_URL=http://127.0.0.1:8000/api
-///
-/// Contoh production:
-///   flutter build apk --release --dart-define=API_BASE_URL=https://domainmu.com/api
-///
-/// Cari tanda "[DEV-ONLY]" (Ctrl + F) untuk menemukan semua bagian yang
-/// boleh dihapus setelah backend di-deploy.
 class ApiConfig {
   ApiConfig._();
 

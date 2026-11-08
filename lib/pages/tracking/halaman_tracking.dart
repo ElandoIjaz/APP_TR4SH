@@ -5,7 +5,6 @@ import 'package:test23/data/lokasi_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
-import 'package:test23/widgets/tracking/card_auto_track_lokasi.dart';
 import 'package:test23/widgets/tracking/card_estimasi_berat.dart';
 import 'package:test23/widgets/tracking/card_tracking_chart.dart';
 import 'package:test23/widgets/tracking/grid_kategori_setor.dart';
@@ -23,7 +22,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
   String _selectedCategory = 'Plastik';
   String _selectedUnit = 'Botol';
   double _weightPerUnit = 0.1;
-  int _pointsPerUnit = 10;
 
   // Real-time backend state
   bool _isLoading = true;
@@ -534,7 +532,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                 const SizedBox(height: 16),
 
                 // ── 2. Card: Auto-Track Lokasi Penjemputan Sampah ──
-                CardAutoTrackLokasi(onLocationUpdated: () => setState(() {})),
 
                 const SizedBox(height: 16),
 
@@ -561,10 +558,16 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                 // ── 4. Card 2: ESTIMASI JUMLAH / BERAT (Counter & Input ke Database) ──
                 CardEstimasiBerat(
                   categoryName: _selectedCategory,
-                  itemUnit: _selectedUnit,
-                  weightPerUnit: _weightPerUnit,
-                  pointsPerUnit: _pointsPerUnit,
-                  onInputSampah: _handleInputSampah,
+                  onInputSampah: (double berat, double poin) {
+                    final countCalculated =
+                        (berat / (_weightPerUnit > 0 ? _weightPerUnit : 0.1))
+                            .round();
+                    _handleInputSampah(
+                      countCalculated > 0 ? countCalculated : 1,
+                      berat,
+                      poin.toInt(),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 20),
@@ -576,7 +579,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                       _selectedCategory = title;
                       _selectedUnit = unit;
                       _weightPerUnit = weight;
-                      _pointsPerUnit = points;
                     });
                   },
                 ),

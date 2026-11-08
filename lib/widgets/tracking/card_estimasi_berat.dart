@@ -3,18 +3,13 @@ import 'package:test23/core/app_colors.dart';
 
 class CardEstimasiBerat extends StatefulWidget {
   final String categoryName;
-  final String itemUnit;
-  final double weightPerUnit;
-  final int pointsPerUnit;
-  final void Function(int itemCount, double totalWeight, int totalPoints)?
-  onInputSampah;
+  final double hargaPerKg; // Harga akurat dari database
+  final void Function(double totalWeight, double totalRupiah)? onInputSampah;
 
   const CardEstimasiBerat({
     super.key,
     this.categoryName = 'Plastik',
-    this.itemUnit = 'Botol',
-    this.weightPerUnit = 0.1,
-    this.pointsPerUnit = 10,
+    this.hargaPerKg = 3500.0,
     this.onInputSampah,
   });
 
@@ -23,26 +18,40 @@ class CardEstimasiBerat extends StatefulWidget {
 }
 
 class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
-  int _itemCount = 5; // Default 5 items matching mockup
+  double _currentWeightKg = 1.0; 
+  bool _isGramUnit = false;     
 
   void _increment() {
     setState(() {
-      _itemCount++;
+      if (_isGramUnit) {
+        _currentWeightKg += 0.1; // Tambah 100 gram (ratusan gram)
+      } else {
+        _currentWeightKg += 0.5; // Tambah 0.5 kg
+      }
     });
   }
 
   void _decrement() {
-    if (_itemCount > 1) {
-      setState(() {
-        _itemCount--;
-      });
-    }
+    setState(() {
+      if (_isGramUnit) {
+        if (_currentWeightKg > 0.1) {
+          _currentWeightKg -= 0.1; // Kurang 100 gram (ratusan gram)
+        }
+      } else {
+        if (_currentWeightKg > 0.5) {
+          _currentWeightKg -= 0.5; // Kurang 0.5 kg
+        }
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final double totalWeight = _itemCount * widget.weightPerUnit;
-    final int totalPoints = _itemCount * widget.pointsPerUnit;
+    final double displayValue = _isGramUnit ? (_currentWeightKg * 1000) : _currentWeightKg;
+    final String unitLabel = _isGramUnit ? 'gram' : 'kg';
+    
+    // Hitung total rupiah berdasarkan harga per kg database
+    final double estimatedRupiah = _currentWeightKg * widget.hargaPerKg;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -62,12 +71,11 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'ESTIMASI JUMLAH / BERAT',
+                'ESTIMASI BERAT & NILAI JUAL',
                 style: TextStyle(
                   fontSize: 10.5,
                   fontWeight: FontWeight.w800,
@@ -81,24 +89,13 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
                   color: AppColors.mintSoft,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.bolt_rounded,
-                      size: 13,
-                      color: Color(0xFF1E8850),
-                    ),
-                    SizedBox(width: 3),
-                    Text(
-                      'Auto-Converted',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF1E8850),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  'Tarif: Rp ${widget.hargaPerKg.toStringAsFixed(0)}/kg',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1E8850),
+                  ),
                 ),
               ),
             ],
@@ -106,7 +103,7 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
 
           const SizedBox(height: 14),
 
-          // Selected Item Preview Box
+          // Preview Box
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -120,7 +117,7 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
                   radius: 20,
                   backgroundColor: AppColors.darkGreen,
                   child: Icon(
-                    Icons.hourglass_empty_rounded,
+                    Icons.scale_rounded,
                     color: AppColors.limeAccent,
                     size: 20,
                   ),
@@ -131,20 +128,29 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '$_itemCount ${widget.itemUnit} (±${totalWeight.toStringAsFixed(1)} kg)',
+                        'Kategori: ${widget.categoryName}',
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${displayValue.toStringAsFixed(_isGramUnit ? 0 : 1)} $unitLabel',
+                        style: const TextStyle(
+                          fontSize: 15.5,
                           fontWeight: FontWeight.bold,
                           color: AppColors.darkGreen,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Potensi Poin: +$totalPoints EcoPoints',
+                        'Estimasi Uang Jual: Rp ${estimatedRupiah.toStringAsFixed(0)}',
                         style: const TextStyle(
                           fontSize: 11.5,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF266147),
+                          color: Color(0xFF2E7D32),
                         ),
                       ),
                     ],
@@ -154,7 +160,40 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
             ),
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
+
+          // Toggle Satuan Kg / Gram
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              ChoiceChip(
+                label: const Text('Kilogram (Kg)', style: TextStyle(fontSize: 11)),
+                selected: !_isGramUnit,
+                onSelected: (selected) {
+                  setState(() {
+                    _isGramUnit = false;
+                  });
+                },
+                selectedColor: AppColors.mintSoft,
+              ),
+              const SizedBox(width: 8),
+              ChoiceChip(
+                label: const Text('Gram (g)', style: TextStyle(fontSize: 11)),
+                selected: _isGramUnit,
+                onSelected: (selected) {
+                  setState(() {
+                    _isGramUnit = true;
+                    // Pembulatan ke ratusan gram terdekat ketika berpindah ke Gram
+                    _currentWeightKg = (_currentWeightKg * 10).round() / 10;
+                    if (_currentWeightKg < 0.1) _currentWeightKg = 0.1;
+                  });
+                },
+                selectedColor: AppColors.mintSoft,
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
 
           // Counter Row
           Container(
@@ -167,36 +206,21 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Minus Button
                 IconButton(
                   onPressed: _decrement,
-                  icon: const Icon(
-                    Icons.remove,
-                    size: 20,
-                    color: AppColors.darkGreen,
-                  ),
-                  splashRadius: 20,
+                  icon: const Icon(Icons.remove, size: 20, color: AppColors.darkGreen),
                 ),
-
-                // Count text
                 Text(
-                  '$_itemCount Item',
+                  '${displayValue.toStringAsFixed(_isGramUnit ? 0 : 1)} $unitLabel',
                   style: const TextStyle(
                     fontSize: 15.5,
                     fontWeight: FontWeight.w800,
                     color: AppColors.darkGreen,
                   ),
                 ),
-
-                // Plus Button
                 IconButton(
                   onPressed: _increment,
-                  icon: const Icon(
-                    Icons.add,
-                    size: 20,
-                    color: AppColors.darkGreen,
-                  ),
-                  splashRadius: 20,
+                  icon: const Icon(Icons.add, size: 20, color: AppColors.darkGreen),
                 ),
               ],
             ),
@@ -204,23 +228,13 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
 
           const SizedBox(height: 14),
 
-          // Action Button "+ Input Sampah"
           SizedBox(
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
               onPressed: () {
                 if (widget.onInputSampah != null) {
-                  widget.onInputSampah!(_itemCount, totalWeight, totalPoints);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Berhasil mencatat $_itemCount ${widget.itemUnit} (+$totalPoints EcoPoints)!',
-                      ),
-                      backgroundColor: AppColors.darkGreen,
-                    ),
-                  );
+                  widget.onInputSampah!(_currentWeightKg, estimatedRupiah);
                 }
               },
               style: ElevatedButton.styleFrom(

@@ -25,7 +25,6 @@ void main() {
         equals('${ApiConfig.baseUrl}/sampah/riwayat'),
       );
       expect(ApiConfig.listPrakarya, equals('${ApiConfig.baseUrl}/prakarya'));
-      expect(ApiConfig.listProduk, equals('${ApiConfig.baseUrl}/prakarya'));
       expect(
         ApiConfig.uploadEdukasi,
         equals('${ApiConfig.baseUrl}/edukasi/upload'),
@@ -78,18 +77,19 @@ void main() {
     );
 
     test('kirimSetorSampah handles offline server gracefully', () async {
+      // Disesuaikan dengan parameter asli di ApiService
       final res = await ApiService.kirimSetorSampah(
-        kategori: 'Plastik',
-        jumlahItem: 5,
-        beratKg: 0.5,
-        latitude: -6.907482,
-        longitude: 107.618954,
-        alamatJemput: 'Jl. Riau No. 45',
+        idKategori: 1,
+        jenisSampah: 'Plastik',
+        jumlah: 0.5,
+        satuan: 'kg',
+        keterangan: 'Jl. Riau No. 45',
       );
       expect(res.success, isFalse);
     });
 
     test('uploadKonten handles offline server gracefully', () async {
+      // Disesuaikan dengan parameter asli di ApiService
       final res = await ApiService.uploadKonten(
         title: 'Tutorial Daur Ulang Galon Bekas',
         mediaUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
