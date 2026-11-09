@@ -1,13 +1,13 @@
-import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
-import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:test23/pages/beranda/halaman_peta_cabang.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
+import 'package:test23/pages/main_navigation.dart'; // <-- Diperlukan untuk mengakses MainNavigationPage.jumpToTab
+import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:test23/widgets/beranda/card_riwayat_sampah.dart';
 import 'package:test23/widgets/beranda/card_video_tutorial.dart';
 import 'package:test23/widgets/beranda/card_workshop.dart';
@@ -640,12 +640,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                           ),
                           const SizedBox(width: 8),
 
-                          // Tombol Akun / Profil
+                          // DIPERBAIKI: Menggunakan MainNavigationPage.jumpToTab(context, 4) 
+                          // agar Halaman Akun terbuka di PageView tanpa menghilangkan footer.
                           GestureDetector(
                             onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const HalamanAkun()),
-                              );
+                              MainNavigationPage.jumpToTab(context, 4);
                             },
                             child: Container(
                               width: 38,
@@ -693,12 +692,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 const SizedBox(height: 18),
                 CardWorkshop(onDaftarTap: _showWorkshopModal),
                 const SizedBox(height: 24),    
-     ], // Penutup children dari Column utama Beranda Anda
+              ],
+            ),
+          ),
+        ),
       ),
-           ), 
-           ),
-      ),
-           );
-           }
-           }// Penutup Column / SingleChildScrollView
-       
+    );
+  }
+}

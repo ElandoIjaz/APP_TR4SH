@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test23/data/user_account_data.dart';
 
 // Import 5 Halaman Utama
-import 'package:test23/pages/beranda/halaman_beranda.dart'; // <-- Ditambahkan
+import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/produk/halaman_produk.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/tracking/halaman_tracking.dart';
@@ -14,6 +14,12 @@ import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
+
+  // ⚠️ Wajib ada: Helper static agar halaman anak bisa memicu perpindahan tab utama
+  static void jumpToTab(BuildContext context, int index) {
+    final state = context.findAncestorStateOfType<_MainNavigationPageState>();
+    state?.switchToTab(index);
+  }
 
   @override
   State<MainNavigationPage> createState() => _MainNavigationPageState();
@@ -50,8 +56,8 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     return true;
   }
 
-  // Dipanggil saat ikon menu di TrashBottomNav ditekan
-  void _onNavTapped(int index) {
+  // ⚠️ Wajib ada: Method publik untuk mengontrol perpindahan halaman dari luar/dalam
+  void switchToTab(int index) {
     if (!_canNavigateToTab(index)) return;
 
     setState(() {
@@ -65,12 +71,17 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     );
   }
 
+  // Dipanggil saat ikon menu di TrashBottomNav ditekan
+  void _onNavTapped(int index) {
+    switchToTab(index);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView(
         controller: _pageController,
-        physics: const PageScrollPhysics(),  //pemaksaan gestur swipe PageView tetap aktif
+        physics: const PageScrollPhysics(), // Pemaksaan gestur swipe PageView tetap aktif
         onPageChanged: (index) {
           // Membatasi swipe jika user Guest mencoba masuk ke Tracking (Index 3)
           if (!_canNavigateToTab(index)) {
