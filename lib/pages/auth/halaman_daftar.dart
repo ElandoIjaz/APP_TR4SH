@@ -188,12 +188,12 @@ class _HalamanDaftarState extends State<HalamanDaftar> {
               const SizedBox(height: 8),
               _buildTextField(
                 controller: _usernameController,
-                hint: 'username_anda (3-30 karakter, huruf saja)',
+                hint: 'username_anda (3-30 karakter, tanpa spasi)',
                 prefixIcon: Icons.account_circle_outlined,
                 keyboardType: TextInputType.text,
                 maxLength: 30,
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9._-]')),
                   LengthLimitingTextInputFormatter(30),
                 ],
               ),

@@ -27,8 +27,6 @@ export 'konten/section_wawasan_komunitas.dart';
 export 'produk/banner_kirim_sampah.dart';
 export 'produk/card_produk_grid.dart';
 export 'produk/header_produk.dart';
-export 'produk/hero_banner_produk.dart';
-export 'produk/modal_filter_produk.dart';
 
 // Tracking
 export 'tracking/card_estimasi_berat.dart';

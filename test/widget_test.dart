@@ -9,7 +9,6 @@ void main() {
     UserAccountData.isNewAccount = false;
     UserAccountData.currentNama = 'Bintang Pratama';
     UserAccountData.currentUsername = 'bintang_eco';
-    UserAccountData.userPoints = 500;
   });
 
   testWidgets('HalamanBeranda renders correctly with all widgets', (

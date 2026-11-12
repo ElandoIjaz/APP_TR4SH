@@ -6,6 +6,7 @@ import 'package:test23/pages/produk/halaman_keranjang.dart';
 import 'package:test23/widgets/produk/merchant_card.dart';
 import 'package:test23/widgets/produk/dampak_lingkungan_card.dart';
 import 'package:test23/widgets/produk/spesifikasi_card.dart';
+import 'package:test23/data/cart_service.dart';
 
 class HalamanDetailProduk extends StatefulWidget {
   final Map<String, dynamic> productData;
@@ -69,7 +70,7 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   SpesifikasiCard(product: product),
                   const SizedBox(height: 20),
 
-                  // Deskripsi Koleksi (karena simpel, tidak perlu dipisah ke file baru)
+                  // Deskripsi Koleksi
                   const Text(
                     'Tentang Koleksi Ini',
                     style: TextStyle(
@@ -94,10 +95,9 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
     );
   }
 
-  // --- KOMPONEN LOKAL (Terlalu kecil jika dipisah ke file baru) ---
+  // --- KOMPONEN LOKAL ---
 
   /// Kartu merchant = Bank Sampah Ibu (baris dengan is_utama == true di database).
-  /// Kalau data belum datang atau gagal dimuat, kartu tidak ditampilkan.
   Widget _buildMerchantSection() {
     return FutureBuilder<ApiResponse>(
       future: _futureBank,
@@ -175,42 +175,106 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
     );
   }
 
+  String _formatRupiah(int nominal) {
+    return nominal.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]}.',
+    );
+  }
+
   Widget _buildPricingAndTitle(Map<String, dynamic> product) {
+    // 1. Ekstraksi data
+    final int hargaAsli = int.tryParse(product['harga']?.toString() ?? '0') ?? 0;
+    final double diskonPersen = double.tryParse(product['diskon_persen']?.toString() ?? '0') ?? 0.0;
+    final int hargaFinal = diskonPersen > 0
+        ? (hargaAsli - (hargaAsli * (diskonPersen / 100))).round()
+        : hargaAsli;
+
+    final String namaProduk = product['nama_product'] ?? product['nama_produk'] ?? 'Nama Produk';
+    final List<dynamic> grosirList = product['grosir'] as List<dynamic>? ?? [];
+    
+    // 2. Ekstraksi Terjual & Stok dari API
+    final int terjual = int.tryParse(product['terjual']?.toString() ?? '0') ?? 0;
+    final int stok = int.tryParse(product['jumlah']?.toString() ?? '0') ?? 0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Text(
-              product['harga_formatted'] ?? 'Rp 0',
+              'Rp ${_formatRupiah(hargaFinal)}',
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.darkGreen),
             ),
-            const SizedBox(width: 10),
-            Text(
-              product['harga_coret_dummy'] ?? '',
-              style: const TextStyle(fontSize: 13, color: AppColors.textMuted, decoration: TextDecoration.lineThrough),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-              decoration: BoxDecoration(color: const Color(0xFFD6F5E1), borderRadius: BorderRadius.circular(6)),
-              child: Text(
-                product['diskon_dummy'] ?? '',
-                style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800, color: Color(0xFF1E8850)),
+            if (diskonPersen > 0) ...[
+              const SizedBox(width: 10),
+              Text(
+                'Rp ${_formatRupiah(hargaAsli)}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textMuted,
+                  decoration: TextDecoration.lineThrough,
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD6F5E1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${diskonPersen.toInt()}% OFF',
+                  style: const TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1E8850),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
         const SizedBox(height: 8),
         Text(
-          product['nama_product'] ?? 'Nama Produk',
+          namaProduk,
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.darkGreen, height: 1.3),
         ),
         const SizedBox(height: 8),
+        
+        // Menampilkan Info Terjual dan Stok Tersedia
         Text(
-          'Terjual ${product['terjual_dummy'] ?? '0'}',
+          'Terjual $terjual • $stok Produk Tersedia',
           style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.w600),
         ),
+
+        if (grosirList.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: grosirList.map((g) {
+              final minQty = g['min_qty'] ?? 0;
+              final disc = g['diskon_persen'] ?? 0;
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF4E5),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFFCC80)),
+                ),
+                child: Text(
+                  'Beli $minQty+ Disc $disc%',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFE65100),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ],
     );
   }
@@ -233,8 +297,31 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const HalamanKeranjang()));
+                onPressed: () async {
+                  // 1. Masukkan produk ke keranjang (Panggil SATU KALI saja)
+                  final bool berhasil = await CartService.tambahProduk(
+                    product,
+                    context: context,
+                  );
+                  
+                  // 2. Gunakan pengecekan "mounted" sebelum menggunakan context
+                  if (!mounted || !berhasil) return;
+
+                  // 3. Beri notifikasi singkat
+                  final nama = product['nama_product'] ?? product['nama_produk'] ?? 'Produk';
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('$nama ditambahkan ke keranjang!'),
+                      duration: const Duration(milliseconds: 800),
+                      backgroundColor: AppColors.darkGreen,
+                    ),
+                  );
+
+                  // 4. Pindah langsung ke halaman keranjang belanja
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const HalamanKeranjang()),
+                  );
                 },
                 icon: const Icon(Icons.bolt_rounded, color: AppColors.limeAccent, size: 18),
                 label: const Text('Beli Sekarang', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white)),

@@ -3,12 +3,10 @@ import 'package:test23/core/app_colors.dart';
 
 class CardMenuAkun extends StatelessWidget {
   final ValueChanged<String> onMenuTap;
-  final String poinReward;
 
   const CardMenuAkun({
     super.key,
     required this.onMenuTap,
-    this.poinReward = '500 Pts',
   });
 
   @override
@@ -63,43 +61,6 @@ class CardMenuAkun extends StatelessWidget {
             color: Color(0xFFEDF5F0),
           ),
           _buildMenuItem(
-            icon: Icons.redeem_rounded,
-            title: 'Poin & Hadiah',
-            trailingBadge: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-              decoration: BoxDecoration(
-                color: AppColors.limeAccent,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                poinReward,
-                style: const TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.darkGreen,
-                ),
-              ),
-            ),
-            onTap: () => onMenuTap('Poin & Hadiah'),
-          ),
-          const Divider(
-            height: 1,
-            indent: 64,
-            endIndent: 20,
-            color: Color(0xFFEDF5F0),
-          ),
-          _buildMenuItem(
-            icon: Icons.location_on_outlined,
-            title: 'Alamat Pengiriman',
-            onTap: () => onMenuTap('Alamat Pengiriman'),
-          ),
-          const Divider(
-            height: 1,
-            indent: 64,
-            endIndent: 20,
-            color: Color(0xFFEDF5F0),
-          ),
-          _buildMenuItem(
             icon: Icons.notifications_none_rounded,
             title: 'Notifikasi',
             onTap: () => onMenuTap('Notifikasi'),
@@ -141,7 +102,7 @@ class CardMenuAkun extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             CircleAvatar(

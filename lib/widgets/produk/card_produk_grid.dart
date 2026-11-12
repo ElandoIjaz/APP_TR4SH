@@ -24,13 +24,25 @@ class _CardProdukGridState extends State<CardProdukGrid> {
   Widget build(BuildContext context) {
     final product = widget.product;
 
-    // Ekstraksi data dari API Laravel (Disempurnakan dengan fallback)
+    // Ekstraksi data dari API Laravel
     final String namaProduk =
         product['nama_product'] ??
         product['nama_produk'] ??
         product['title'] ??
         'Tanpa Nama';
-    final int harga = int.tryParse(product['harga'].toString()) ?? 0;
+
+    // Penanganan Harga Normal vs Harga Final (Diskon)
+    final int hargaAsli =
+        int.tryParse(product['harga']?.toString() ?? '0') ?? 0;
+    final double diskonPersen =
+        double.tryParse(product['diskon_persen']?.toString() ?? '0') ?? 0.0;
+    final int hargaFinal = diskonPersen > 0
+        ? (hargaAsli - (hargaAsli * (diskonPersen / 100))).round()
+        : hargaAsli;
+
+    // Terjual Riil
+    final int terjualRiil =
+        int.tryParse(product['terjual']?.toString() ?? '0') ?? 0;
 
     // Penanganan URL Gambar yang aman
     final String fotoUrl =
@@ -42,8 +54,6 @@ class _CardProdukGridState extends State<CardProdukGrid> {
     // Dummy data untuk mempertahankan desain UI aslimu
     const String badgeDummy = 'Eco Friendly';
     const String materialDummy = 'Upcycled Material';
-    const double ratingDummy = 4.8;
-    const int reviewCountDummy = 120;
 
     return InkWell(
       onTap: widget.onTap,
@@ -158,65 +168,76 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Material Tag (Dummy)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 2.5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE8F6EE),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.recycling_rounded,
-                                size: 10,
-                                color: Color(0xFF1E8850),
+                        // Material Tag
+                        // Material Tag
+                        Wrap(
+                          spacing: 4, // Jarak horizontal antar badge
+                          runSpacing:
+                              4, // Jarak vertikal jika badge turun baris
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2.5,
                               ),
-                              SizedBox(width: 3),
-                              Text(
-                                materialDummy,
-                                style: TextStyle(
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.w700,
-                                  color: Color(0xFF1E8850),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F6EE),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.recycling_rounded,
+                                    size: 10,
+                                    color: Color(0xFF1E8850),
+                                  ),
+                                  SizedBox(width: 3),
+                                  Text(
+                                    materialDummy, // "Upcycled Material"
+                                    style: TextStyle(
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xFF1E8850),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Tambahkan indikator diskon di katalog depan jika ada
+                            if (diskonPersen > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5,
+                                  vertical: 2.5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFEBEE),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '${diskonPersen.toInt()}% OFF',
+                                  style: const TextStyle(
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: Colors.redAccent,
+                                  ),
                                 ),
                               ),
-                            ],
-                          ),
+                          ],
                         ),
 
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 5),
 
-                        // Rating Row (Dummy)
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.star_rounded,
-                              size: 14,
-                              color: Color(0xFFF9A825),
-                            ),
-                            SizedBox(width: 3),
-                            Text(
-                              '$ratingDummy',
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.darkGreen,
-                              ),
-                            ),
-                            SizedBox(width: 2),
-                            Text(
-                              '($reviewCountDummy)',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                          ],
+                        // Status Terjual Menggunakan Data API Riil
+                        Text(
+                          'Terjual $terjualRiil',
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            color: AppColors.textMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
 
                         const SizedBox(height: 4),
@@ -239,16 +260,33 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                     // Price dari API & Add to Cart Button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Expanded(
-                          child: Text(
-                            'Rp${_formatPrice(harga)}',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.darkGreen,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Jika ada diskon, tampilkan harga coret tipis di atasnya
+                              if (diskonPersen > 0)
+                                Text(
+                                  'Rp${_formatPrice(hargaAsli)}',
+                                  style: const TextStyle(
+                                    fontSize: 9.5,
+                                    color: AppColors.textMuted,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              Text(
+                                'Rp${_formatPrice(hargaFinal)}',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w900,
+                                  color: AppColors.darkGreen,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 4),

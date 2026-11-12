@@ -1,20 +1,20 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-import 'dart:convert';
-
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/data/api_service.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/produk/halaman_detail_produk.dart';
 import 'package:test23/pages/produk/halaman_keranjang.dart';
-import 'package:test23/widgets/produk/banner_kirim_sampah.dart';
-import 'package:test23/widgets/produk/card_produk_grid.dart';
-import 'package:test23/widgets/produk/header_produk.dart';
-import 'package:test23/widgets/produk/hero_banner_produk.dart';
-import 'package:test23/widgets/produk/modal_filter_produk.dart';
-import 'package:test23/widgets/umum/auth_required_modal.dart';
-import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/tracking/halaman_tracking.dart';
+import 'package:test23/widgets/produk/banner_kirim_sampah.dart';
+import 'package:test23/data/cart_service.dart';
+import 'package:test23/widgets/produk/card_produk_grid.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test23/widgets/produk/header_produk.dart';
+import 'package:test23/widgets/produk/search_and_category_bar.dart';
+import 'package:test23/widgets/umum/auth_required_modal.dart';
 
 class HalamanProduk extends StatefulWidget {
   const HalamanProduk({super.key});
@@ -25,7 +25,7 @@ class HalamanProduk extends StatefulWidget {
 
 class _HalamanProdukState extends State<HalamanProduk> {
   int _selectedCategoryIndex = 0;
-  int _cartItemCount = 3;
+  int _cartItemCount = 0;
   final TextEditingController _searchController = TextEditingController();
 
   final List<String> _categories = [
@@ -36,20 +36,32 @@ class _HalamanProdukState extends State<HalamanProduk> {
   ];
 
   late Future<List<dynamic>> _futureProduk;
+  static const String _keyBroadcastDilihat = 'broadcast_id_terakhir_dilihat';
+  bool _adaBelumDibaca = false;
 
   @override
   void initState() {
     super.initState();
     _futureProduk = fetchProdukApi();
+    _loadBroadcast();
+    _loadInitialCart();
+  }
+
+  // 2. Fungsi baru untuk mengambil total item asli dari CartService
+  Future<void> _loadInitialCart() async {
+    await CartService.loadCart();
+    if (!mounted) return;
+    setState(() {
+      _cartItemCount = CartService.totalCount;
+    });
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _searchController.dispose(); 
     super.dispose();
   }
 
-  // Fungsi Memanggil API Laravel via IP WiFi dengan fallback offline/mock
   Future<List<dynamic>> fetchProdukApi() async {
     try {
       final response = await http
@@ -61,40 +73,66 @@ class _HalamanProdukState extends State<HalamanProduk> {
         if (list != null && list.isNotEmpty) {
           return list;
         }
-       }
-      // Baris baru: kalau status bukan 200, lempar error
+      }
       throw Exception('Server error: ${response.statusCode}');
     } catch (e) {
       debugPrint("Error Koneksi API: $e");
-      // Lempar error ke FutureBuilder agar UI menampilkan pesan gagal merah
       throw Exception('Gagal menghubungi server API.');
-    } 
+    }
   }
 
-  void _openFilterModal() {
+  /// Mengambil nomor (id_broadcast) dari daftar data server.
+  List<int> _idBroadcast(List data) {
+    return data
+        .whereType<Map>()
+        .map((b) => int.tryParse('${b['id_broadcast']}') ?? 0)
+        .toList();
+  }
+
+  /// Dipanggil saat halaman dibuka: titik menyala kalau ada broadcast yang belum dilihat.
+  Future<void> _loadBroadcast() async {
+    final res = await ApiService.fetchBroadcast();
+
+    var belumDibaca = false;
+    if (res.success && res.data is List) {
+      final prefs = await SharedPreferences.getInstance();
+      final terakhirDilihat = prefs.getInt(_keyBroadcastDilihat) ?? 0;
+      belumDibaca = _idBroadcast(res.data as List).any((id) => id > terakhirDilihat);
+    }
+
+    if (!mounted) return;
+    setState(() => _adaBelumDibaca = belumDibaca);
+  }
+
+  /// Dipanggil saat daftar tampil di sheet: simpan nomor terbesar sebagai "sudah dilihat".
+  Future<void> _tandaiSudahDibaca(ApiResponse res) async {
+    if (!res.success || res.data is! List) return;
+
+    final ids = _idBroadcast(res.data as List);
+    if (ids.isEmpty) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_keyBroadcastDilihat, ids.reduce((a, b) => a > b ? a : b));
+
+    if (!mounted) return;
+    setState(() => _adaBelumDibaca = false);
+  }
+
+  void _showNotificationSheet() {
+        final future = ApiService.fetchBroadcast().then((res) {
+      _tandaiSudahDibaca(res); // titik padam begitu daftar sudah sampai
+      return res;
+    });
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ModalFilterProduk(
-        onApply: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Filter produk berhasil diterapkan'),
-              backgroundColor: AppColors.darkGreen,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _showNotificationSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      builder: (sheetContext) => Container(
         padding: const EdgeInsets.all(22),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(sheetContext).size.height * 0.7,
+        ),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -107,7 +145,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Notifikasi Marketplace',
+                  'Notifikasi',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.bold,
@@ -116,47 +154,111 @@ class _HalamanProdukState extends State<HalamanProduk> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => Navigator.pop(sheetContext),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.bgScreen,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: const Row(
-                children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Color(0xFFD6F5E1),
-                    child: Icon(
-                      Icons.local_offer_rounded,
-                      color: AppColors.darkGreen,
-                      size: 18,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Flash sale karya daur ulang diskon hingga 25% sedang berlangsung!',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        color: AppColors.darkGreen,
+            Flexible(
+              child: FutureBuilder<ApiResponse>(
+                future: future,
+                builder: (_, snapshot) {
+                  if (snapshot.connectionState != ConnectionState.done) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 28),
+                      child: Center(
+                        child: CircularProgressIndicator(color: AppColors.darkGreen),
                       ),
-                    ),
-                  ),
-                ],
+                    );
+                  }
+
+                  final res = snapshot.data;
+                  if (res == null || !res.success) {
+                    return _pesanKosongNotif('Gagal memuat notifikasi. Periksa koneksimu lalu coba lagi.');
+                  }
+
+                  final items = (res.data is List)
+                      ? (res.data as List).whereType().toList()
+                      : [];
+                  if (items.isEmpty) return _pesanKosongNotif('Belum ada notifikasi.');
+
+                  return ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: items.length,
+                    separatorBuilder: (context, index) => const SizedBox(height: 10),
+                    itemBuilder: (_, i) => _kartuNotifikasi(items[i]),
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 8),
           ],
         ),
       ),
     );
+  }
+
+  Widget _pesanKosongNotif(String teks) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Center(
+        child: Text(
+          teks,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+        ),
+      ),
+    );
+  }
+
+  Widget _kartuNotifikasi(Map item) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.bgScreen,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const CircleAvatar(
+            radius: 16,
+            backgroundColor: Color(0xFFD6F5E1),
+            child: Icon(Icons.local_offer_rounded, color: AppColors.darkGreen, size: 18),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${item['judul'] ?? ''}',
+                  style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '${item['pesan'] ?? ''}',
+                  style: const TextStyle(fontSize: 12.5, color: AppColors.darkGreen, height: 1.4),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  _formatWaktu(item['dikirim_pada']?.toString()),
+                  style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatWaktu(String? iso) {
+    final t = DateTime.tryParse(iso ?? '')?.toLocal();
+    if (t == null) return '';
+    String dua(int n) => n.toString().padLeft(2, '0');
+    return '${dua(t.day)}/${dua(t.month)}/${t.year}  ${dua(t.hour)}:${dua(t.minute)}';
   }
 
   @override
@@ -172,6 +274,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
               // ── 1. Header ──
               HeaderProduk(
                 cartItemCount: _cartItemCount,
+                adaNotifikasi: _adaBelumDibaca,
                 onNotificationTap: _showNotificationSheet,
                 onCartTap: () {
                   Navigator.push(
@@ -183,161 +286,31 @@ class _HalamanProdukState extends State<HalamanProduk> {
 
               const SizedBox(height: 8),
 
-              // ── 2. Search Bar & Filter ──
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.cardBorder, width: 1.2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.only(left: 14, right: 6),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.search_rounded,
-                        color: AppColors.textMuted,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            color: AppColors.darkGreen,
-                          ),
-                          decoration: const InputDecoration(
-                            hintText: 'Cari produk daur ulang & upcycle...',
-                            hintStyle: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textMuted,
-                              fontWeight: FontWeight.normal,
-                            ),
-                            border: InputBorder.none,
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: _openFilterModal,
-                          borderRadius: BorderRadius.circular(10),
-                          child: Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFD6F3DD),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.tune_rounded,
-                              color: AppColors.darkGreen,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              // ── 3. Category Filter Chips ──
-              SizedBox(
-                height: 36,
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  scrollDirection: Axis.horizontal,
-                  physics: const ClampingScrollPhysics(),
-                  itemCount: _categories.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final bool isSelected = _selectedCategoryIndex == index;
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedCategoryIndex = index;
-                        });
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppColors.darkGreen
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: isSelected
-                                ? AppColors.darkGreen
-                                : AppColors.cardBorder,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (isSelected) ...[
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.limeAccent,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                            ],
-                            Text(
-                              _categories[index],
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: isSelected
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
-                                color: isSelected
-                                    ? Colors.white
-                                    : const Color(0xFF4C6656),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+              // ── 2 & 3. Search Bar & Filter Chips (Modular Widget) ──
+              SearchAndCategoryBar(
+                searchController: _searchController,
+                onSearchChanged: (val) {
+                  setState(() {});
+                },
+                onClearSearch: () {
+                  _searchController.clear();
+                  setState(() {});
+                },
+                categories: _categories,
+                selectedCategoryIndex: _selectedCategoryIndex,
+                onCategorySelected: (index) {
+                  setState(() {
+                    _selectedCategoryIndex = index;
+                  });
+                },
               ),
 
               const SizedBox(height: 16),
 
-              // ── 4. Hero Banner ──
-              HeroBannerProduk(
-                onJelajahiTap: () {
-                  _openFilterModal();
-                },
-              ),
 
               const SizedBox(height: 20),
 
-              // ── 5. Section: Produk Pilihan ──
+              // ── 4. Section: Produk Pilihan ──
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
@@ -373,7 +346,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
 
               const SizedBox(height: 12),
 
-              // ── 6. 2-Column Product Grid (FutureBuilder Data API) ──
+              // ── 5. 2-Column Product Grid ──
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: FutureBuilder<List<dynamic>>(
@@ -429,15 +402,11 @@ class _HalamanProdukState extends State<HalamanProduk> {
                                   ),
                                 ),
                                 onPressed: () {
-                                  // Memuat ulang data API saat tombol ditekan
                                   setState(() {
                                     _futureProduk = fetchProdukApi();
                                   });
                                 },
-                                icon: const Icon(
-                                  Icons.refresh_rounded,
-                                  size: 16,
-                                ),
+                                icon: const Icon(Icons.refresh_rounded, size: 16),
                                 label: const Text(
                                   'Coba Lagi',
                                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -449,24 +418,87 @@ class _HalamanProdukState extends State<HalamanProduk> {
                       );
                     }
 
-                    // Logika Filter Kategori Lokal
-                    final String selectedKategori =
-                        _categories[_selectedCategoryIndex];
+                    final String selectedKategori = _categories[_selectedCategoryIndex];
+                    final String query = _searchController.text.trim().toLowerCase();
+
                     final listProdukApi = snapshot.data!.where((p) {
-                      if (selectedKategori == 'Semua') return true;
-                      final String kategoriAPI =
-                          (p['kategori'] ?? p['kategori_produk'] ?? '')
-                              .toString();
-                      return kategoriAPI.toLowerCase().contains(
-                        selectedKategori.toLowerCase(),
-                      );
+                      if (p is! Map) return false;
+                      final item = Map<String, dynamic>.from(p);
+
+                      final String nama = (
+                        item['nama_produk'] ??
+                        item['nama_prakarya'] ??
+                        item['nama'] ??
+                        item['nama_barang'] ??
+                        item['title'] ??
+                        item['name'] ??
+                        item['judul'] ??
+                        ''
+                      ).toString().toLowerCase();
+
+                      final String deskripsi = (
+                        item['deskripsi'] ??
+                        item['keterangan'] ??
+                        item['detail'] ??
+                        item['description'] ??
+                        ''
+                      ).toString().toLowerCase();
+
+                      final String kategoriAPI = (
+                        item['kategori'] ??
+                        item['kategori_produk'] ??
+                        item['category'] ??
+                        ''
+                      ).toString().toLowerCase();
+
+                      if (selectedKategori != 'Semua') {
+                        final bool matchKategoriChip = kategoriAPI.contains(selectedKategori.toLowerCase()) ||
+                            nama.contains(selectedKategori.toLowerCase());
+                        if (!matchKategoriChip) {
+                          return false;
+                        }
+                      }
+
+                      if (query.isNotEmpty) {
+                        final bool matchNama = nama.contains(query);
+                        final bool matchDeskripsi = deskripsi.contains(query);
+                        final bool matchKategori = kategoriAPI.contains(query);
+
+                        final bool matchAnyValue = item.values.any((val) {
+                          if (val == null) return false;
+                          return val.toString().toLowerCase().contains(query);
+                        });
+
+                        if (!matchNama && !matchDeskripsi && !matchKategori && !matchAnyValue) {
+                          return false;
+                        }
+                      }
+
+                      return true;
                     }).toList();
 
                     if (listProdukApi.isEmpty) {
-                      return const Center(
+                      return Center(
                         child: Padding(
-                          padding: EdgeInsets.all(30),
-                          child: Text('Tidak ada produk di kategori ini.'),
+                          padding: const EdgeInsets.all(36),
+                          child: Column(
+                            children: [
+                              Icon(Icons.search_off_rounded, size: 40, color: Colors.grey.shade400),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Tidak ada produk yang sesuai.',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.darkGreen),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                query.isNotEmpty
+                                    ? 'Tidak ada produk dengan kata kunci "$query"'
+                                    : 'Belum ada produk untuk kategori ini.',
+                                style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }
@@ -475,87 +507,83 @@ class _HalamanProdukState extends State<HalamanProduk> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: listProdukApi.length,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 14,
-                            childAspectRatio: 0.58,
-                          ),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 14,
+                        childAspectRatio: 0.58,
+                      ),
                       itemBuilder: (context, index) {
                         final item = listProdukApi[index];
                         return CardProdukGrid(
                           product: item,
-
-                          // --- INI BAGIAN YANG SAYA PERBAIKI ---
                           onTap: () async {
-                            // Tampilkan loading berputar
+                            // 1) Tampilkan loading
                             showDialog(
                               context: context,
                               barrierDismissible: false,
-                              builder: (context) => const Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.darkGreen,
-                                ),
+                              builder: (_) => const Center(
+                                child: CircularProgressIndicator(color: AppColors.darkGreen),
                               ),
                             );
 
+                            // 2) Ambil detail. Hasilnya disimpan di variabel, error ditangkap di sini
+                            Map<String, dynamic>? detailData;
                             try {
-                              // Tarik data lengkap produk tersebut dari API
-                              // Asumsi teman Anda membuat variabel baseUrl di ApiConfig
-                              final response = await http.get(
-                                Uri.parse(
-                                  '${ApiConfig.baseUrl}/prakarya/${item['id_product']}',
-                                ),
-                              );
-
-                              // Tutup dialog loading
-                              if (context.mounted) Navigator.pop(context);
+                              final response = await http
+                                  .get(Uri.parse(ApiConfig.detailPrakarya(item['id_product'])))
+                                  .timeout(const Duration(seconds: 10));
 
                               if (response.statusCode == 200) {
-                                // Ekstrak JSON
-                                final Map<String, dynamic> detailData = json
-                                    .decode(response.body)['data'];
-
-                                // Pindah ke halaman detail dan lempar data API-nya ke parameter productData
-                                if (context.mounted) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => HalamanDetailProduk(
-                                        productData: detailData,
-                                      ),
-                                    ),
-                                  );
-                                }
-                              } else {
-                                throw Exception('Gagal memuat detail');
+                                detailData = Map<String, dynamic>.from(json.decode(response.body)['data']);
                               }
                             } catch (e) {
-                              if (context.mounted) {
-                                Navigator.pop(context); // Tutup loading
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Gagal mengambil data detail produk dari server.',
-                                    ),
-                                    backgroundColor: Colors.redAccent,
-                                  ),
-                                );
-                              }
+                              debugPrint('Gagal memuat detail produk: $e');
                             }
-                          },
-                          // ------------------------------------
 
-                          onAddToCart: () {
+                            // 3) Tutup loading TEPAT SATU KALI, apa pun hasilnya
+                            if (!context.mounted) return;
+                            Navigator.pop(context);
+
+                            // 4) Lanjut sesuai hasil
+                            final detail = detailData;
+                            if (detail == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Gagal mengambil data detail produk dari server.'),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                              return;
+                            }
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => HalamanDetailProduk(productData: detail),
+                              ),
+                            );
+                          },
+                          onAddToCart: () async {
+                            // 1. Eksekusi penambahan ke keranjang dengan context agar validasi jalan
+                            final bool berhasil = await CartService.tambahProduk(
+                              Map<String, dynamic>.from(item),
+                              context: context,
+                            );
+
+                            // 2. HENTIKAN eksekusi jika stok habis / keranjang penuh
+                            if (!context.mounted || !berhasil) return;
+
+                            // 3. Perbarui tampilan badge di header atas JIKA BERHASIL
                             setState(() {
-                              _cartItemCount++;
+                              _cartItemCount = CartService.totalCount;
                             });
+
+                            // 4. Tampilkan snackbar sukses hijau
+                            final nama = item['nama_product'] ?? item['nama_produk'] ?? 'Produk';
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text(
-                                  '${item['nama_produk'] ?? 'Produk'} dimasukkan ke keranjang!',
-                                ),
+                                content: Text('$nama dimasukkan ke keranjang!'),
                                 duration: const Duration(milliseconds: 900),
                                 backgroundColor: AppColors.darkGreen,
                               ),
@@ -570,7 +598,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
 
               const SizedBox(height: 20),
 
-              // ── 7. Kirim Sampah Anda Banner ──
+              // ── 6. Kirim Sampah Anda Banner ──
               BannerKirimSampah(
                 onSetorTap: () {
                   if (UserAccountData.isGuest) {

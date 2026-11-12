@@ -1,6 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
-import 'package:test23/data/produk_data.dart';
+import 'package:test23/data/cart_service.dart';
+import 'package:test23/data/user_account_data.dart';
+import 'package:test23/widgets/umum/auth_required_modal.dart';
+import 'package:test23/pages/produk/halaman_pembayaran.dart';
 
 class HalamanKeranjang extends StatefulWidget {
   const HalamanKeranjang({super.key});
@@ -10,23 +17,28 @@ class HalamanKeranjang extends StatefulWidget {
 }
 
 class _HalamanKeranjangState extends State<HalamanKeranjang> {
-  late List<ItemKeranjang> _cartItems;
-  bool _isVoucherApplied = true;
-  final TextEditingController _voucherController = TextEditingController(
-    text: 'ECOHERO-20K',
-  );
+  bool _isLoading = true;
+  bool _isCheckingOut = false;
+
+  // Metode Pembayaran Terpilih: 'qris' atau 'bank_transfer'
+  String _selectedMethod = 'qris';
+  String _selectedBank = 'bca'; // 'bca', 'bni', 'bri', 'mandiri'
 
   @override
   void initState() {
     super.initState();
-    _cartItems = ProdukData.getInitialCart();
+    _loadCartData();
   }
 
-  @override
-  void dispose() {
-    _voucherController.dispose();
-    super.dispose();
+  Future<void> _loadCartData() async {
+    await CartService.loadCart();
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
+    });
   }
+
+  List<ItemKeranjangModel> get _cartItems => CartService.items;
 
   bool get _isAllSelected =>
       _cartItems.isNotEmpty && _cartItems.every((item) => item.isSelected);
@@ -37,35 +49,93 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
 
   int get _totalPrice => _cartItems
       .where((item) => item.isSelected)
-      .fold(0, (sum, item) => sum + (item.product.price * item.quantity));
+      .fold(0, (sum, item) => sum + (item.hargaFinal * item.quantity));
 
-  int get _discount => _isVoucherApplied ? 20000 : 0;
-
-  int get _finalTotal =>
-      (_totalPrice - _discount).clamp(0, double.infinity).toInt();
-
-  void _toggleSelectAll(bool? value) {
+  void _toggleSelectAll(bool? value) async {
     final bool select = value ?? false;
     setState(() {
       for (var item in _cartItems) {
         item.isSelected = select;
       }
     });
+    await CartService.updateItem();
   }
 
-  void _removeItem(String id) {
-    setState(() {
-      _cartItems.removeWhere((item) => item.id == id);
-    });
+  void _removeItem(int idProduct) async {
+    await CartService.hapusProduk(idProduct);
+    if (!mounted) return;
+    setState(() {});
   }
 
-  void _clearCart() {
-    setState(() {
-      _cartItems.clear();
-    });
+  void _clearCart() async {
+    await CartService.kosongkanKeranjang();
+    if (!mounted) return;
+    setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Keranjang belanja dikosongkan')),
     );
+  }
+
+  Future<void> _prosesCheckout() async {
+    // 1. Cek apakah user berstatus Tamu (Guest) atau belum memiliki ID User
+    if (UserAccountData.isGuest || UserAccountData.currentUserId == null) {
+      AuthRequiredModal.show(
+        context,
+        title: 'Login Diperlukan untuk Checkout',
+        message:
+            'Silakan masuk atau daftar akun terlebih dahulu agar pesanan dan riwayat transaksi tercatat pada akun Anda.',
+        icon: Icons.shopping_bag_rounded,
+      );
+      return;
+    }
+
+    final selected = _cartItems.where((i) => i.isSelected).toList();
+    if (selected.isEmpty) return;
+
+    setState(() => _isCheckingOut = true);
+
+    try {
+      final url = Uri.parse('${ApiConfig.baseUrl}/transaksi/checkout');
+      final payload = {
+        'id_user': UserAccountData.currentUserId, // Dinamis sesuai akun login
+        'metode': _selectedMethod,
+        'bank': _selectedMethod == 'bank_transfer' ? _selectedBank : null,
+        'items': selected
+            .map((e) => {'id_product': e.idProduct, 'quantity': e.quantity})
+            .toList(),
+      };
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(payload),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 201 && data['success'] == true) {
+        if (!mounted) return;
+        setState(() => _isCheckingOut = false);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HalamanPembayaran(dataTransaksi: data),
+          ),
+        );
+      } else {
+        throw Exception(data['message'] ?? 'Gagal membuat pesanan');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isCheckingOut = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
+      );
+    }
   }
 
   @override
@@ -141,7 +211,11 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
           const SizedBox(width: 8),
         ],
       ),
-      body: _cartItems.isEmpty
+      body: _isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.darkGreen),
+            )
+          : _cartItems.isEmpty
           ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -178,148 +252,7 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                 children: [
                   const SizedBox(height: 14),
 
-                  // ── 1. Dampak Ekologis Keranjangmu Card ──
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0D4330),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.limeAccent,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.eco_rounded,
-                                      size: 14,
-                                      color: AppColors.darkGreen,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'Dampak Ekologis\nKeranjangmu',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white,
-                                      height: 1.15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: AppColors.limeAccent.withValues(
-                                      alpha: 0.4,
-                                    ),
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Verified\nEco',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.limeAccent,
-                                    height: 1.1,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          RichText(
-                            text: const TextSpan(
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.white70,
-                                height: 1.35,
-                              ),
-                              children: [
-                                TextSpan(text: 'Belanjaan ini menyelamatkan '),
-                                TextSpan(
-                                  text: '880g limbah',
-                                  style: TextStyle(
-                                    color: AppColors.limeAccent,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                TextSpan(text: ' & mencegah '),
-                                TextSpan(
-                                  text: '1.2kg emisi CO2',
-                                  style: TextStyle(
-                                    color: AppColors.limeAccent,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: ' dari tempat pembuangan akhir!',
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Target Batch Pengolahan: 1.0kg',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Colors.white60,
-                                ),
-                              ),
-                              Text(
-                                '88% Tercapai',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: AppColors.limeAccent,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(3),
-                            child: LinearProgressIndicator(
-                              value: 0.88,
-                              backgroundColor: Colors.white.withValues(
-                                alpha: 0.2,
-                              ),
-                              valueColor: const AlwaysStoppedAnimation<Color>(
-                                AppColors.limeAccent,
-                              ),
-                              minHeight: 5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // ── 2. Select All & Delete Action ──
+                  // ── 1. Select All & Delete Action ──
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
@@ -352,10 +285,15 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                           ),
                         ),
                         TextButton.icon(
-                          onPressed: () {
-                            setState(() {
-                              _cartItems.removeWhere((item) => item.isSelected);
-                            });
+                          onPressed: () async {
+                            final selected = _cartItems
+                                .where((item) => item.isSelected)
+                                .toList();
+                            for (var item in selected) {
+                              await CartService.hapusProduk(item.idProduct);
+                            }
+                            if (!mounted) return;
+                            setState(() {});
                           },
                           icon: const Icon(
                             Icons.delete_outline,
@@ -377,191 +315,21 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
 
                   const SizedBox(height: 6),
 
-                  // ── 3. Merchant Group 1: Karya Mandiri Eco ──
+                  // ── 2. Merchant & Daftar Produk Riil ──
                   _buildMerchantSection(
-                    merchantName: 'Karya Mandiri Eco',
-                    location: 'Bandung',
-                    items: _cartItems
-                        .where((i) => i.id == 'cart-1' || i.id == 'cart-2')
-                        .toList(),
-                  ),
-
-                  const SizedBox(height: 14),
-
-                  // ── 4. Merchant Group 2: Re-Craft Studio ──
-                  _buildMerchantSection(
-                    merchantName: 'Re-Craft Studio',
-                    location: 'Yogyakarta',
-                    items: _cartItems.where((i) => i.id == 'cart-3').toList(),
+                    merchantName: 'Bank Sampah Sahabat Ibu TR4SH',
+                    location: 'Jember, Jawa Timur',
+                    items: _cartItems,
                   ),
 
                   const SizedBox(height: 16),
 
-                  // ── 5. Voucher & Keberlanjutan ──
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: AppColors.cardBorder,
-                          width: 1.2,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.confirmation_number_outlined,
-                                      size: 16,
-                                      color: AppColors.darkGreen,
-                                    ),
-                                    SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        'Voucher & Keberlanjutan',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w800,
-                                          color: AppColors.darkGreen,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                '1 Kupon Tersedia',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: Color(0xFF1E8850),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  height: 42,
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.bgScreen,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                      color: AppColors.cardBorder,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.sell_outlined,
-                                        size: 14,
-                                        color: AppColors.textMuted,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _voucherController,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                            color: AppColors.darkGreen,
-                                          ),
-                                          decoration: const InputDecoration(
-                                            border: InputBorder.none,
-                                            isDense: true,
-                                            hintText: 'Masukkan kode voucher',
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.limeAccent,
-                                  foregroundColor: AppColors.darkGreen,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 12,
-                                  ),
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _isVoucherApplied = true;
-                                  });
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Voucher ECOHERO-20K berhasil digunakan!',
-                                      ),
-                                      backgroundColor: AppColors.darkGreen,
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  'Gunakan',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (_isVoucherApplied) ...[
-                            const SizedBox(height: 10),
-                            const Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  size: 14,
-                                  color: Color(0xFF1E8850),
-                                ),
-                                SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    'Voucher ECOHERO-20K aktif! Diskon Rp 20.000 berhasil dipotong.',
-                                    style: TextStyle(
-                                      fontSize: 10.5,
-                                      color: Color(0xFF1E8850),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
+                  // ── 3. Kartu Pilihan Metode Pembayaran ──
+                  _buildPaymentMethodSection(),
 
                   const SizedBox(height: 16),
 
-                  // ── 6. Rincian Pembayaran ──
+                  // ── 4. Rincian Pembayaran Murni ──
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Container(
@@ -591,16 +359,8 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                             'Rp ${_formatPrice(_totalPrice)}',
                           ),
                           const SizedBox(height: 8),
-                          if (_isVoucherApplied) ...[
-                            _buildPriceRow(
-                              'Diskon Voucher Eco',
-                              '- Rp ${_formatPrice(_discount)}',
-                              isDiscount: true,
-                            ),
-                            const SizedBox(height: 8),
-                          ],
                           _buildPriceRow(
-                            'Biaya Proteksi Daur Ulang',
+                            'Biaya Layanan Aplikasi',
                             'Gratis',
                             isHighlight: true,
                           ),
@@ -609,7 +369,7 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
-                                'Subtotal Pesanan',
+                                'Total Pembayaran',
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w800,
@@ -617,7 +377,7 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                                 ),
                               ),
                               Text(
-                                'Rp ${_formatPrice(_finalTotal)}',
+                                'Rp ${_formatPrice(_totalPrice)}',
                                 style: const TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w900,
@@ -636,119 +396,334 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
               ),
             ),
 
-      // ── 7. Bottom Checkout Bar ──
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 10,
-              offset: const Offset(0, -3),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Checkbox(
-                value: _isAllSelected,
-                activeColor: AppColors.darkGreen,
-                checkColor: AppColors.limeAccent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                onChanged: _toggleSelectAll,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      const Text(
-                        'Total: ',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
-                      Text(
-                        'Rp ${_formatPrice(_finalTotal)}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.darkGreen,
-                        ),
-                      ),
-                    ],
+      // ── 5. Bottom Checkout Bar ──
+      bottomNavigationBar: _cartItems.isEmpty
+          ? null
+          : Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, -3),
                   ),
-                  if (_discount > 0)
-                    Text(
-                      'Hemat Rp ${_formatPrice(_discount)}',
-                      style: const TextStyle(
-                        fontSize: 9.5,
-                        color: Color(0xFF1E8850),
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
                 ],
               ),
-              const Spacer(),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.darkGreen,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                ),
-                onPressed: _selectedItemCount == 0
-                    ? null
-                    : () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Melanjutkan ke pembayaran Rp ${_formatPrice(_finalTotal)}...',
-                            ),
-                            backgroundColor: AppColors.darkGreen,
-                          ),
-                        );
-                      },
+              child: SafeArea(
                 child: Row(
                   children: [
-                    Text(
-                      'Checkout ($_selectedItemCount)',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
+                    Checkbox(
+                      value: _isAllSelected,
+                      activeColor: AppColors.darkGreen,
+                      checkColor: AppColors.limeAccent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      onChanged: _toggleSelectAll,
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            'Total Pembayaran:',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                          Text(
+                            'Rp ${_formatPrice(_totalPrice)}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.darkGreen,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        color: AppColors.limeAccent,
-                        shape: BoxShape.circle,
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.darkGreen,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                       ),
-                      child: const Icon(
-                        Icons.arrow_forward_rounded,
-                        size: 14,
-                        color: AppColors.darkGreen,
-                      ),
+                      onPressed: (_selectedItemCount == 0 || _isCheckingOut)
+                          ? null
+                          : _prosesCheckout,
+                      child: _isCheckingOut
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Bayar ($_selectedItemCount)',
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  width: 20,
+                                  height: 20,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.limeAccent,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 14,
+                                    color: AppColors.darkGreen,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+    );
+  }
+
+  // ── Widget Pilihan Pembayaran Native ──
+  Widget _buildPaymentMethodSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.cardBorder, width: 1.2),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(
+                  Icons.payment_rounded,
+                  size: 16,
+                  color: AppColors.darkGreen,
+                ),
+                SizedBox(width: 6),
+                Text(
+                  'Metode Pembayaran',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.darkGreen,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Bungkus kedua pilihan dengan RadioGroup
+            RadioGroup<String>(
+              groupValue: _selectedMethod,
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() => _selectedMethod = val);
+                }
+              },
+              child: Column(
+                children: [
+                  // Opsi 1: QRIS
+                  InkWell(
+                    onTap: () => setState(() => _selectedMethod = 'qris'),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _selectedMethod == 'qris'
+                            ? const Color(0xFFE8F6EE)
+                            : AppColors.bgScreen,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _selectedMethod == 'qris'
+                              ? AppColors.darkGreen
+                              : AppColors.cardBorder,
+                          width: _selectedMethod == 'qris' ? 1.5 : 1,
+                        ),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(
+                            Icons.qr_code_2_rounded,
+                            color: AppColors.darkGreen,
+                            size: 22,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'QRIS (Instant)',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.darkGreen,
+                                  ),
+                                ),
+                                Text(
+                                  'GoPay, ShopeePay, Dana, & Semua M-Banking',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.textMuted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Radio<String>(
+                            value: 'qris',
+                            activeColor: AppColors.darkGreen,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Opsi 2: Bank Transfer VA
+                  InkWell(
+                    onTap: () =>
+                        setState(() => _selectedMethod = 'bank_transfer'),
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _selectedMethod == 'bank_transfer'
+                            ? const Color(0xFFE8F6EE)
+                            : AppColors.bgScreen,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: _selectedMethod == 'bank_transfer'
+                              ? AppColors.darkGreen
+                              : AppColors.cardBorder,
+                          width: _selectedMethod == 'bank_transfer' ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(
+                                Icons.account_balance_rounded,
+                                color: AppColors.darkGreen,
+                                size: 20,
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Transfer Virtual Account',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.darkGreen,
+                                      ),
+                                    ),
+                                    Text(
+                                      'BCA, BNI, BRI, Mandiri',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.textMuted,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Radio<String>(
+                                value: 'bank_transfer',
+                                activeColor: AppColors.darkGreen,
+                              ),
+                            ],
+                          ),
+
+                          // Jika bank_transfer dipilih, tampilkan opsi pilihan bank
+                          if (_selectedMethod == 'bank_transfer') ...[
+                            const Divider(height: 16, color: Color(0xFFC7E2D1)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: ['bca', 'bni', 'bri', 'mandiri'].map((
+                                bank,
+                              ) {
+                                final isBankActive = _selectedBank == bank;
+                                return InkWell(
+                                  onTap: () =>
+                                      setState(() => _selectedBank = bank),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 5,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isBankActive
+                                          ? AppColors.darkGreen
+                                          : Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: AppColors.darkGreen,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      bank.toUpperCase(),
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: isBankActive
+                                            ? Colors.white
+                                            : AppColors.darkGreen,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -757,7 +732,7 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
   Widget _buildMerchantSection({
     required String merchantName,
     required String location,
-    required List<ItemKeranjang> items,
+    required List<ItemKeranjangModel> items,
   }) {
     if (items.isEmpty) return const SizedBox.shrink();
 
@@ -774,7 +749,6 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
         ),
         child: Column(
           children: [
-            // Merchant Header
             Row(
               children: [
                 Checkbox(
@@ -784,12 +758,13 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  onChanged: (val) {
+                  onChanged: (val) async {
                     setState(() {
                       for (var item in items) {
                         item.isSelected = val ?? false;
                       }
                     });
+                    await CartService.updateItem();
                   },
                 ),
                 const Icon(
@@ -798,24 +773,35 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   color: AppColors.darkGreen,
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  merchantName,
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.darkGreen,
+                Expanded(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          merchantName,
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.darkGreen,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        size: 13,
+                        color: Color(0xFF1E8850),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 4),
-                const Icon(
-                  Icons.check_circle_rounded,
-                  size: 13,
-                  color: Color(0xFF1E8850),
-                ),
-                const Spacer(),
+                const SizedBox(width: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
+                    horizontal: 7,
                     vertical: 2.5,
                   ),
                   decoration: BoxDecoration(
@@ -829,14 +815,13 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                       color: AppColors.textMuted,
                       fontWeight: FontWeight.bold,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-
             const Divider(height: 16, color: Color(0xFFE2EFE7)),
-
-            // Cart Items
             ...items.map((item) => _buildCartItemTile(item)),
           ],
         ),
@@ -844,7 +829,11 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
     );
   }
 
-  Widget _buildCartItemTile(ItemKeranjang item) {
+  Widget _buildCartItemTile(ItemKeranjangModel item) {
+    final int hargaAsli = item.harga;
+    final double diskonAktif = item.diskonBerlaku(item.quantity);
+    final int hargaFinal = item.hargaFinal;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -857,29 +846,40 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(4),
             ),
-            onChanged: (val) {
+            onChanged: (val) async {
               setState(() {
                 item.isSelected = val ?? false;
               });
+              await CartService.updateItem();
             },
           ),
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.asset(
-              item.product.image,
-              width: 68,
-              height: 68,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                width: 68,
-                height: 68,
-                color: AppColors.mintSoft,
-                child: const Icon(
-                  Icons.inventory_2_outlined,
-                  color: AppColors.darkGreen,
-                ),
-              ),
-            ),
+            child: item.foto.isNotEmpty
+                ? Image.network(
+                    item.foto,
+                    width: 68,
+                    height: 68,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      width: 68,
+                      height: 68,
+                      color: AppColors.mintSoft,
+                      child: const Icon(
+                        Icons.inventory_2_outlined,
+                        color: AppColors.darkGreen,
+                      ),
+                    ),
+                  )
+                : Container(
+                    width: 68,
+                    height: 68,
+                    color: AppColors.mintSoft,
+                    child: const Icon(
+                      Icons.inventory_2_outlined,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -891,7 +891,7 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   children: [
                     Expanded(
                       child: Text(
-                        item.variant,
+                        item.namaProduk,
                         style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
@@ -902,7 +902,7 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                       ),
                     ),
                     InkWell(
-                      onTap: () => _removeItem(item.id),
+                      onTap: () => _removeItem(item.idProduct),
                       child: const Icon(
                         Icons.close_rounded,
                         size: 16,
@@ -912,35 +912,74 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   ],
                 ),
                 const SizedBox(height: 3),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F6EE),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    item.materialBadge,
-                    style: const TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1E8850),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE8F6EE),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        'Upcycled Material',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E8850),
+                        ),
+                      ),
                     ),
-                  ),
+                    if (diskonAktif > 0) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 1.5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFEBEE),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          '${diskonAktif.toInt()}% OFF',
+                          style: const TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.redAccent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 6),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Rp ${_formatPrice(item.product.price)}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.darkGreen,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Rp ${_formatPrice(hargaFinal)}',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.darkGreen,
+                          ),
+                        ),
+                        if (diskonAktif > 0)
+                          Text(
+                            'Rp ${_formatPrice(hargaAsli)}',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: AppColors.textMuted,
+                              decoration: TextDecoration.lineThrough,
+                            ),
+                          ),
+                      ],
                     ),
                     Container(
                       decoration: BoxDecoration(
@@ -950,9 +989,10 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                       child: Row(
                         children: [
                           InkWell(
-                            onTap: () {
+                            onTap: () async {
                               if (item.quantity > 1) {
                                 setState(() => item.quantity--);
+                                await CartService.updateItem();
                               }
                             },
                             child: const Padding(
@@ -979,8 +1019,21 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                             ),
                           ),
                           InkWell(
-                            onTap: () {
-                              setState(() => item.quantity++);
+                            onTap: () async {
+                              if (item.quantity < item.stokMaksimal) {
+                                // [BARU] Cek batas stok
+                                setState(() => item.quantity++);
+                                await CartService.updateItem();
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Maksimal stok tercapai! Sisa stok hanya ${item.stokMaksimal} unit.',
+                                    ),
+                                    duration: const Duration(seconds: 1),
+                                  ),
+                                );
+                              }
                             },
                             child: const Padding(
                               padding: EdgeInsets.symmetric(
@@ -1013,7 +1066,6 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
   Widget _buildPriceRow(
     String label,
     String value, {
-    bool isDiscount = false,
     bool isHighlight = false,
   }) {
     return Row(
@@ -1027,12 +1079,8 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
           value,
           style: TextStyle(
             fontSize: 12,
-            fontWeight: isDiscount || isHighlight
-                ? FontWeight.w800
-                : FontWeight.w600,
-            color: isDiscount || isHighlight
-                ? const Color(0xFF1E8850)
-                : AppColors.darkGreen,
+            fontWeight: isHighlight ? FontWeight.w800 : FontWeight.w600,
+            color: isHighlight ? const Color(0xFF1E8850) : AppColors.darkGreen,
           ),
         ),
       ],
