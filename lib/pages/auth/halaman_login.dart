@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
-import 'package:test23/pages/beranda/halaman_beranda.dart';
+import 'package:test23/pages/main_navigation.dart';
 import 'package:test23/pages/auth/halaman_daftar.dart';
 import 'package:test23/pages/auth/halaman_lupa_pw.dart';
 
@@ -68,8 +68,9 @@ class _HalamanLoginState extends State<HalamanLogin> {
       );
 
       // Navigasi ke halaman beranda TR4SH!
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const HalamanBeranda()),
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const MainNavigationPage()),
+        (route) => false,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -176,12 +177,12 @@ class _HalamanLoginState extends State<HalamanLogin> {
                 keyboardType: TextInputType.text,
                 maxLength: 50,
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
+                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9._-]')),
                   LengthLimitingTextInputFormatter(50),
                 ],
                 style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'Masukkan nama pengguna / username (huruf saja)',
+                  hintText: 'Masukkan nama pengguna / username Anda',
                   hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
                   prefixIcon: Padding(
                     padding: const EdgeInsets.all(12),

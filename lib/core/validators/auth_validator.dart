@@ -61,7 +61,6 @@ class AuthValidator {
   }
 
   /// Validasi form Login.
-  /// Mengembalikan pesan error jika tidak valid, atau `null` jika valid.
   static String? validateLogin({
     required String username,
     required String password,
@@ -73,8 +72,8 @@ class AuthValidator {
       return 'Username dan kata sandi tidak boleh kosong!';
     }
 
-    if (!RegExp(r'^[a-zA-Z]+$').hasMatch(cleanUsername)) {
-      return 'Nama pengguna / username hanya boleh berisi huruf (tanpa angka dan simbol)!';
+    if (cleanUsername.contains(' ')) {
+      return 'Username tidak boleh mengandung spasi!';
     }
 
     if (cleanPassword.length > maxPasswordLength) {
@@ -91,15 +90,14 @@ class AuthValidator {
       return 'Username atau nama akun tidak boleh kosong!';
     }
 
-    if (!RegExp(r'^[a-zA-Z]+$').hasMatch(clean)) {
-      return 'Username / nama akun hanya boleh berisi huruf (tanpa angka dan simbol)!';
+    if (clean.contains(' ')) {
+      return 'Username tidak boleh mengandung spasi!';
     }
 
     return null;
   }
 
   /// Validasi form Pendaftaran (Register).
-  /// Mengembalikan pesan error jika tidak valid, atau `null` jika valid.
   static String? validateRegister({
     required String nama,
     required String username,
@@ -127,7 +125,6 @@ class AuthValidator {
       return 'Nama lengkap maksimal 60 karakter!';
     }
 
-    // Validasi nama lengkap hanya huruf dan spasi (tanpa simbol dan angka)
     if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(cleanNama)) {
       return 'Nama lengkap hanya boleh berisi huruf (tanpa angka dan simbol)!';
     }
@@ -144,22 +141,20 @@ class AuthValidator {
       return 'Username tidak boleh mengandung spasi!';
     }
 
-    // Validasi username hanya huruf (tanpa simbol dan angka)
-    if (!RegExp(r'^[a-zA-Z]+$').hasMatch(cleanUsername)) {
-      return 'Username hanya boleh berisi huruf (tanpa angka dan simbol)!';
-    }
-
     if (cleanUsername.contains('@')) {
       return 'Username tidak boleh menggunakan simbol "@" (bukan email/gmail)!';
     }
 
-    // ── Validasi No. Telepon ──
+    // Izinkan kombinasi huruf, angka, titik, underscore, dan tanda hubung
+    if (!RegExp(r'^[a-zA-Z0-9._-]+$').hasMatch(cleanUsername)) {
+      return 'Username hanya boleh berisi huruf, angka, titik (.), garis bawah (_), atau tanda hubung (-)!';
+    }
+
     final hpError = validateNomorHp(cleanTelepon);
     if (hpError != null) {
       return hpError;
     }
 
-    // ── Validasi Kata Sandi ──
     final pwError = validatePassword(cleanPassword);
     if (pwError != null) {
       return pwError;

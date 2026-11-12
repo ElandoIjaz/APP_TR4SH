@@ -5,6 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiConfig {
   ApiConfig._();
 
+  /// endpoint checkout transaksi
+  static String get checkoutTransaksi => '$baseUrl/transaksi/checkout';
+
   /// Alamat dari --dart-define. Kosong jika tidak diberikan.
   static const String _envBaseUrl = String.fromEnvironment('API_BASE_URL');
 
@@ -19,7 +22,7 @@ class ApiConfig {
 
   /// IP laptop saat testing di HP fisik via WiFi yang sama.
   /// Cek dengan `ipconfig` (IPv4 Address pada adapter Wi-Fi). Bisa berubah sewaktu-waktu.
-  static String laptopWifiIp = '10.10.6.210'; //DISESUAIN GUYYSS
+  static String laptopWifiIp = '192.168.1.8';
 
   /// Port standar Laravel `php artisan serve`
   static int port = 8000;
@@ -186,6 +189,9 @@ class ApiConfig {
 
   // ── Bank Sampah (lokasi) ──
   static String get bankSampah => '$baseUrl/bank-sampah';
+
+    // ── Broadcast promo (notifikasi in-app) ──
+  static String get broadcast => '$baseUrl/broadcast';
 
   // ── Konten Edukasi & Upload Konten ──
   static String get listEdukasi => '$baseUrl/edukasi';
