@@ -21,15 +21,12 @@ void main() {
     UserAccountData.isNewAccount = false;
     UserAccountData.currentNama = 'Bintang Pratama';
     UserAccountData.currentUsername = 'bintang_eco';
-    UserAccountData.userPoints = 500;
   });
 
   test('UserAccountData.initNewUser initializes all stats to zero', () {
     expect(UserAccountData.isNewAccount, isTrue);
-    expect(UserAccountData.userPoints, equals(0));
     expect(UserAccountData.totalSampahKg, equals(0.0));
     expect(UserAccountData.totalSetoran, equals(0));
-    expect(UserAccountData.totalMisiSelesai, equals(0));
     expect(UserAccountData.listRiwayatSetor, isEmpty);
     expect(UserAccountData.listKontenSaya, isEmpty);
     expect(UserAccountData.listTransaksi, isEmpty);

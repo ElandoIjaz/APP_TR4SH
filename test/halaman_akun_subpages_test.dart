@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
-import 'package:test23/pages/akun/halaman_alamat_pengiriman.dart';
 import 'package:test23/pages/akun/halaman_bantuan_faq.dart';
 import 'package:test23/pages/akun/halaman_notifikasi.dart';
 import 'package:test23/pages/akun/halaman_pengaturan_akun.dart';
-import 'package:test23/pages/akun/halaman_poin_hadiah.dart';
 import 'package:test23/pages/akun/halaman_riwayat_setor.dart';
 import 'package:test23/pages/akun/halaman_riwayat_transaksi.dart';
 
