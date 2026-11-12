@@ -51,8 +51,8 @@ class ApiService {
     UserAccountData.resetSession();
   }
 
-  static Future _getHeaders({
-    bool requireAuth = false,
+  static Future<Map<String, dynamic>> _getHeaders({
+    bool requireAuth = true,
   }) async {
     final headers = <String, String>{
       'Accept': 'application/json',
@@ -438,7 +438,7 @@ class ApiService {
     }
   }
 
-  // ── 5. Katalog Produk Prakarya Daur Ulang ──
+  // ── Katalog Produk Prakarya Daur Ulang ──
 
   /// Ambil daftar produk prakarya dari `/api/prakarya`
   static Future<ApiResponse> fetchProduk({String? search}) async {
@@ -493,7 +493,33 @@ class ApiService {
     }
   }
 
-  // ── 6. Konten Edukasi Publik ──
+  // ── Broadcast Promo (notifikasi in-app) ──
+
+  /// Ambil broadcast promo yang aktif dari `/api/broadcast`
+  static Future<ApiResponse> fetchBroadcast() async {
+    try {
+      final response = await http
+          .get(Uri.parse(ApiConfig.broadcast), headers: (await _getHeaders()).cast<String, String>())
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      return ApiResponse(
+        success: response.statusCode == 200,
+        message: body['message'] ?? 'Daftar broadcast berhasil dimuat.',
+        data: body['data'] ?? [],
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal memuat broadcast dari server: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  // ── Konten Edukasi Publik ──
 
   /// Ambil konten edukasi publik dari `/api/edukasi`
   static Future<ApiResponse> fetchEdukasi({
