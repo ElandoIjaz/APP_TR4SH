@@ -5,12 +5,14 @@ class HeaderProduk extends StatelessWidget {
   final VoidCallback onNotificationTap;
   final VoidCallback onCartTap;
   final int cartItemCount;
+  final bool adaNotifikasi;
 
   const HeaderProduk({
     super.key,
     required this.onNotificationTap,
     required this.onCartTap,
     this.cartItemCount = 3,
+    this.adaNotifikasi = false,
   });
 
   @override
@@ -85,6 +87,7 @@ class HeaderProduk extends StatelessWidget {
                         color: AppColors.darkGreen,
                         size: 24,
                       ),
+                     if(adaNotifikasi)
                       Positioned(
                         top: 2,
                         right: 2,
