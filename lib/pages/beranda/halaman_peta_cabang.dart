@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 import 'package:test23/core/app_colors.dart';
-import 'package:test23/data/api_service.dart'; // Terhubung ke ApiService
+import 'package:test23/data/api_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HalamanPetaCabang extends StatefulWidget {
@@ -18,11 +19,8 @@ class HalamanPetaCabang extends StatefulWidget {
 class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   final MapController _mapController = MapController();
 
-  // Titik pusat awal (Area Jember, Jawa Timur)
   static const LatLng _initialPosition = LatLng(-8.184487, 113.705886);
-
-  // Posisi Pengguna / "Kita"
-  final LatLng _userPosition = const LatLng(-8.170200, 113.700100);
+  LatLng _userPosition = _initialPosition;
 
   var _daftarCabang = [];
   bool _isLoading = true;
@@ -35,7 +33,31 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   @override
   void initState() {
     super.initState();
-    _loadLokasiCabangFromDatabase();
+    _initializeLocationAndData();
+  }
+
+  Future<void> _initializeLocationAndData() async {
+    setState(() => _isLoading = true);
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (serviceEnabled) {
+        LocationPermission permission = await Geolocator.checkPermission();
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+        }
+        
+        if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+          Position position = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high,
+          );
+          _userPosition = LatLng(position.latitude, position.longitude);
+        }
+      }
+    } catch (e) {
+      debugPrint("Gagal mendeteksi lokasi GPS: $e");
+    }
+
+    await _loadLokasiCabangFromDatabase();
   }
 
   double _hitungJarakKm(LatLng p1, LatLng p2) {
@@ -49,16 +71,14 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
     return 12742 * asin(sqrt(a));
   }
 
-  // Mengambil data secara dinamis dari database Laravel menggunakan ApiService.fetchBankSampah()
   Future<void> _loadLokasiCabangFromDatabase() async {
     try {
-      final res = await ApiService.fetchBankSampah(); // Menggunakan method yang tersedia di ApiService
+      final res = await ApiService.fetchBankSampah();
       if (res.success && res.data is List) {
         final rawList = res.data as List;
         final formattedList = rawList.map((item) {
           final mapItem = Map<String, dynamic>.from(item);
           
-          // Parsing koordinat latitude & longitude dari database
           final double lat = double.tryParse(mapItem['latitude']?.toString() ?? '') ?? -8.184487;
           final double lng = double.tryParse(mapItem['longitude']?.toString() ?? '') ?? 113.705886;
           final LatLng pos = LatLng(lat, lng);
@@ -77,7 +97,6 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
         }).toList();
 
         if (formattedList.isNotEmpty) {
-          // Cari cabang terdekat
           Map<String, dynamic>? terdekat;
           double minJarak = double.infinity;
           for (var c in formattedList) {
@@ -102,7 +121,6 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
       }
     } catch (_) {}
 
-    // Fallback data statis jika server/database offline
     final fallbackList = [
       {
         'id': '1',
@@ -141,7 +159,6 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
     _pilihCabang(fallbackList.first);
   }
 
-  // Mengambil jalur rute jalan raya via OSRM API (Gratis & In-App)
   Future<void> _fetchRoute(LatLng tujuan) async {
     setState(() => _isLoadingRoute = true);
     try {
@@ -180,7 +197,19 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
     });
     final LatLng target = cabang['latLng'] as LatLng;
     _fetchRoute(target);
-    _mapController.move(target, 14.5);
+    _fokuskanPetaKeRute(_userPosition, target);
+  }
+
+  void _fokuskanPetaKeRute(LatLng start, LatLng end) {
+    final double centerLat = (start.latitude + end.latitude) / 2;
+    final double centerLng = (start.longitude + end.longitude) / 2;
+    
+    final double jarak = _hitungJarakKm(start, end);
+    double targetZoom = 15.0;
+    if (jarak > 5) targetZoom = 13.5;
+    if (jarak > 10) targetZoom = 12.0;
+
+    _mapController.move(LatLng(centerLat, centerLng), targetZoom);
   }
 
   Future<void> _bukaNavigasiEksternal(double lat, double lng) async {
@@ -207,9 +236,9 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
               children: [
                 FlutterMap(
                   mapController: _mapController,
-                  options: const MapOptions(
-                    initialCenter: _initialPosition,
-                    initialZoom: 13.0,
+                  options: MapOptions(
+                    initialCenter: _userPosition,
+                    initialZoom: 14.0,
                   ),
                   children: [
                     TileLayer(
@@ -217,7 +246,6 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                       userAgentPackageName: 'com.tr4sh.app',
                     ),
                     
-                    // Layer Garis Rute Jalan Raya (OSRM)
                     if (_routePoints.isNotEmpty)
                       PolylineLayer(
                         polylines: [
@@ -229,7 +257,6 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                         ],
                       ),
 
-                    // Marker Layer (Posisi Kita & Cabang)
                     MarkerLayer(
                       markers: [
                         Marker(
@@ -284,7 +311,20 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                     ),
                   ),
 
-                // Panel Atas: Rekomendasi Terdekat & Dropdown Pilihan Cabang
+                Positioned(
+                  right: 16,
+                  bottom: _selectedCabang != null ? 220 : 30,
+                  child: FloatingActionButton(
+                    mini: true,
+                    backgroundColor: AppColors.darkGreen,
+                    foregroundColor: Colors.white,
+                    onPressed: () {
+                      _mapController.move(_userPosition, 15.0);
+                    },
+                    child: const Icon(Icons.my_location_rounded),
+                  ),
+                ),
+
                 Positioned(
                   top: 16,
                   left: 16,
@@ -358,7 +398,6 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                   ),
                 ),
 
-                // Card Bawah: Detail Cabang & Tombol Navigasi
                 if (_selectedCabang != null)
                   Positioned(
                     bottom: 24,
@@ -428,6 +467,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                               ),
                               onPressed: () {
                                 final LatLng target = _selectedCabang!['latLng'] as LatLng;
+                                _fokuskanPetaKeRute(_userPosition, target);
                                 _bukaNavigasiEksternal(target.latitude, target.longitude);
                               },
                               icon: const Icon(Icons.navigation_rounded, size: 16),
