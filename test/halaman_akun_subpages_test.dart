@@ -1,76 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_akun.dart';
 import 'package:test23/pages/akun/halaman_bantuan_faq.dart';
 import 'package:test23/pages/akun/halaman_notifikasi.dart';
 import 'package:test23/pages/akun/halaman_pengaturan_akun.dart';
 import 'package:test23/pages/akun/halaman_riwayat_setor.dart';
 import 'package:test23/pages/akun/halaman_riwayat_transaksi.dart';
+import 'package:test23/pages/konten/halaman_upload_konten.dart';
 
 void main() {
-  testWidgets(
-    'HalamanAlamatPengiriman and HalamanPilihLokasiAkurat work accurately',
-    (WidgetTester tester) async {
-      tester.view.physicalSize = const Size(1080, 2400);
-      tester.view.devicePixelRatio = 2.0;
-      addTearDown(tester.view.resetPhysicalSize);
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    UserAccountData.isGuest = false;
+    UserAccountData.isNewAccount = false;
+    UserAccountData.currentUserId = null;
+    UserAccountData.currentNama = 'Bintang Pratama';
+    UserAccountData.currentUsername = 'bintang_eco';
+    UserAccountData.totalSampahKg = 0.0;
+    UserAccountData.totalSetoran = 0;
+    UserAccountData.listRiwayatSetor = [];
+    UserAccountData.listTransaksi = [];
+  });
 
-      await tester.pumpWidget(
-        const MaterialApp(home: HalamanAlamatPengiriman()),
-      );
-      await tester.pump();
-
-      // Verify Title & Header
-      expect(find.text('Alamat Pengiriman'), findsWidgets);
-      expect(find.text('Penentuan Lokasi Akurat via GPS'), findsOneWidget);
-
-      // Verify existing dummy address cards
-      expect(find.text('Rumah'), findsOneWidget);
-      expect(find.text('Kantor'), findsOneWidget);
-      expect(find.text('Utama'), findsOneWidget);
-
-      // Verify accuracy badge
-      expect(find.textContaining('Titik GPS:'), findsWidgets);
-
-      // Test tapping Tambah Alamat Baru
-      await tester.tap(find.text('Tambah Alamat Baru (GPS Akurat)'));
-      await tester.pumpAndSettle();
-
-      // Now in HalamanPilihLokasiAkurat
-      expect(find.text('Tentukan Lokasi Akurat'), findsOneWidget);
-      expect(find.textContaining('Titik Pin Presisi:'), findsOneWidget);
-      expect(find.text('Kunci GPS Saya'), findsOneWidget);
-
-      // Test locking GPS
-      await tester.tap(find.text('Kunci GPS Saya'));
-      await tester.pumpAndSettle();
-
-      // Drag to scroll form into view
-      await tester.drag(
-        find.byType(SingleChildScrollView),
-        const Offset(0, -200),
-      );
-      await tester.pumpAndSettle();
-
-      // Select label chip 'Apartemen'
-      await tester.tap(find.text('Apartemen'));
-      await tester.pump();
-
-      // Scroll to Simpan button and tap
-      await tester.drag(
-        find.byType(SingleChildScrollView),
-        const Offset(0, -600),
-      );
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Simpan Lokasi Akurat'));
-      await tester.pumpAndSettle();
-
-      // Returned to address list
-      expect(find.text('Alamat Pengiriman'), findsWidgets);
-    },
-  );
-
-  testWidgets('HalamanRiwayatTransaksi renders and filters orders', (
+  testWidgets('HalamanRiwayatTransaksi renders header and status filters', (
     WidgetTester tester,
   ) async {
     tester.view.physicalSize = const Size(1080, 2400);
@@ -78,30 +32,16 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
 
     await tester.pumpWidget(const MaterialApp(home: HalamanRiwayatTransaksi()));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Riwayat Transaksi'), findsOneWidget);
     expect(find.text('Semua'), findsOneWidget);
-    expect(find.text('Dikirim'), findsWidgets);
-    expect(find.text('Selesai'), findsWidgets);
+    expect(find.text('Menunggu Pembayaran'), findsOneWidget);
+    expect(find.text('Selesai'), findsOneWidget);
     expect(find.text('Dibatalkan'), findsOneWidget);
-
-    // Verify order items
-    expect(find.text('Pot Bunga dari Botol Plastik Daur Ulang'), findsWidgets);
-    expect(find.text('Lacak'), findsWidgets);
-
-    // Tap Lacak opens tracking modal
-    await tester.tap(find.text('Lacak').first);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Pelacakan Ekspedisi Kurir'), findsOneWidget);
-    expect(find.textContaining('Kurir Ramah Lingkungan'), findsOneWidget);
-
-    await tester.tap(find.byIcon(Icons.close_rounded));
-    await tester.pumpAndSettle();
   });
 
-  testWidgets('HalamanRiwayatSetor renders metrics and waste history', (
+  testWidgets('HalamanRiwayatSetor renders metrics and empty state cleanly', (
     WidgetTester tester,
   ) async {
     tester.view.physicalSize = const Size(1080, 2400);
@@ -115,74 +55,26 @@ void main() {
     expect(find.text('14.8 kg'), findsOneWidget);
     expect(find.text('+1.900'), findsOneWidget);
     expect(find.text('23.0 kg'), findsOneWidget);
-
-    // Verify deposit items
-    expect(find.text('Botol Plastik PET'), findsOneWidget);
-    expect(find.text('Kardus & Kertas Bekas'), findsOneWidget);
-    expect(find.text('+630 Poin'), findsOneWidget);
+    expect(find.text('Belum ada riwayat setoran sampah'), findsOneWidget);
     expect(find.text('Setor Sampah Sekarang'), findsOneWidget);
   });
 
-  testWidgets('HalamanPoinHadiah allows reward redemption', (
-    WidgetTester tester,
-  ) async {
-    tester.view.physicalSize = const Size(1080, 2400);
-    tester.view.devicePixelRatio = 2.0;
-    addTearDown(tester.view.resetPhysicalSize);
-
-    await tester.pumpWidget(const MaterialApp(home: HalamanPoinHadiah()));
-    await tester.pump();
-
-    expect(find.text('Poin & Hadiah'), findsOneWidget);
-    expect(find.text('500'), findsOneWidget);
-    expect(find.text('Eco Guardian Tier 2'), findsOneWidget);
-
-    // Verify rewards
-    expect(find.text('Voucher Belanja Eco Rp 20.000'), findsOneWidget);
-    expect(find.text('Tote Bag Sirkular Eksklusif'), findsOneWidget);
-
-    // Test redeeming reward
-    await tester.tap(find.text('Tukarkan Sekarang').first);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Konfirmasi Penukaran'), findsOneWidget);
-    expect(find.text('Tukarkan'), findsOneWidget);
-
-    await tester.tap(find.text('Tukarkan'));
-    await tester.pumpAndSettle();
-
-    // Points reduced from 500 to 300
-    expect(find.text('300'), findsOneWidget);
-  });
-
   testWidgets(
-    'HalamanNotifikasi renders notifications and handles marking read',
+    'HalamanNotifikasi renders filter tabs and handles empty offline state',
     (WidgetTester tester) async {
       tester.view.physicalSize = const Size(1080, 2400);
       tester.view.devicePixelRatio = 2.0;
       addTearDown(tester.view.resetPhysicalSize);
 
       await tester.pumpWidget(const MaterialApp(home: HalamanNotifikasi()));
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       expect(find.text('Notifikasi'), findsOneWidget);
       expect(find.text('Semua'), findsOneWidget);
       expect(find.text('Transaksi'), findsOneWidget);
       expect(find.text('Setor Sampah'), findsOneWidget);
       expect(find.text('Info & Promo'), findsOneWidget);
-
-      expect(
-        find.text('Penyetoran Sampah 4.2 kg Terverifikasi'),
-        findsOneWidget,
-      );
-
-      // Tap Tandai Semua Dibaca via icon
-      await tester.tap(find.byIcon(Icons.done_all_rounded));
-      await tester.pumpAndSettle();
-      expect(
-        find.text('Semua notifikasi ditandai telah dibaca'),
-        findsOneWidget,
-      );
+      expect(find.byIcon(Icons.done_all_rounded), findsOneWidget);
     },
   );
 
@@ -241,7 +133,7 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('HalamanAkun navigates correctly to all 7 subpages', (
+  testWidgets('HalamanAkun navigates correctly to all 6 subpages', (
     WidgetTester tester,
   ) async {
     tester.view.physicalSize = const Size(1080, 2400);
@@ -267,23 +159,15 @@ void main() {
     await tester.tap(find.byIcon(Icons.arrow_back_rounded));
     await tester.pumpAndSettle();
 
-    // 3. Poin & Hadiah
-    await tester.scrollUntilVisible(find.text('Poin & Hadiah'), 150);
-    await tester.tap(find.text('Poin & Hadiah'));
+    // 3. Konten Edukasi Saya
+    await tester.scrollUntilVisible(find.text('Konten Edukasi Saya'), 150);
+    await tester.tap(find.text('Konten Edukasi Saya'));
     await tester.pumpAndSettle();
-    expect(find.byType(HalamanPoinHadiah), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
-    await tester.pumpAndSettle();
-
-    // 4. Alamat Pengiriman
-    await tester.scrollUntilVisible(find.text('Alamat Pengiriman'), 150);
-    await tester.tap(find.text('Alamat Pengiriman'));
-    await tester.pumpAndSettle();
-    expect(find.byType(HalamanAlamatPengiriman), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
+    expect(find.byType(HalamanUploadKonten), findsOneWidget);
+    Navigator.of(tester.element(find.byType(HalamanUploadKonten))).pop();
     await tester.pumpAndSettle();
 
-    // 5. Notifikasi
+    // 4. Notifikasi
     await tester.scrollUntilVisible(find.text('Notifikasi'), 150);
     await tester.tap(find.text('Notifikasi'));
     await tester.pumpAndSettle();
@@ -291,7 +175,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.arrow_back_rounded));
     await tester.pumpAndSettle();
 
-    // 6. Bantuan & FAQ
+    // 5. Bantuan & FAQ
     await tester.scrollUntilVisible(find.text('Bantuan & FAQ'), 150);
     await tester.tap(find.text('Bantuan & FAQ'));
     await tester.pumpAndSettle();
@@ -299,7 +183,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.arrow_back_rounded));
     await tester.pumpAndSettle();
 
-    // 7. Pengaturan Akun
+    // 6. Pengaturan Akun
     await tester.scrollUntilVisible(find.text('Pengaturan Akun'), 150);
     await tester.tap(find.text('Pengaturan Akun'));
     await tester.pumpAndSettle();

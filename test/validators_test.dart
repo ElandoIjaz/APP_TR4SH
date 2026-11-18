@@ -155,7 +155,7 @@ void main() {
 
   group('AuthValidator Tests', () {
     test(
-      'validateLogin checks for empty inputs and valid letters-only username',
+      'validateLogin checks for empty inputs and valid username without spaces',
       () {
         expect(
           AuthValidator.validateLogin(username: '', password: ''),
@@ -167,17 +167,24 @@ void main() {
         );
         expect(
           AuthValidator.validateLogin(
+            username: 'elando user',
+            password: 'password',
+          ),
+          'Username tidak boleh mengandung spasi!',
+        );
+        expect(
+          AuthValidator.validateLogin(
             username: 'elando123',
             password: 'password',
           ),
-          'Nama pengguna / username hanya boleh berisi huruf (tanpa angka dan simbol)!',
+          isNull,
         );
         expect(
           AuthValidator.validateLogin(
             username: 'elando_test',
             password: 'password',
           ),
-          'Nama pengguna / username hanya boleh berisi huruf (tanpa angka dan simbol)!',
+          isNull,
         );
         expect(
           AuthValidator.validateLogin(
@@ -248,23 +255,34 @@ void main() {
       expect(
         AuthValidator.validateRegister(
           nama: 'John Doe',
-          username: 'john123',
+          username: 'john@mail.com',
           telepon: '08123456789',
           password: 'secretpassword',
           setuju: true,
         ),
-        'Username hanya boleh berisi huruf (tanpa angka dan simbol)!',
+        'Username tidak boleh menggunakan simbol "@" (bukan email/gmail)!',
       );
 
       expect(
         AuthValidator.validateRegister(
           nama: 'John Doe',
-          username: 'john_doe',
+          username: 'john!#',
           telepon: '08123456789',
           password: 'secretpassword',
           setuju: true,
         ),
-        'Username hanya boleh berisi huruf (tanpa angka dan simbol)!',
+        'Username hanya boleh berisi huruf, angka, titik (.), garis bawah (_), atau tanda hubung (-)!',
+      );
+
+      expect(
+        AuthValidator.validateRegister(
+          nama: 'John Doe',
+          username: 'john_doe123',
+          telepon: '08123456789',
+          password: 'secretpassword',
+          setuju: true,
+        ),
+        isNull,
       );
 
       expect(
@@ -432,13 +450,11 @@ void main() {
         'Username atau nama akun tidak boleh kosong!',
       );
       expect(
-        AuthValidator.validateLupaPassword('user123'),
-        'Username / nama akun hanya boleh berisi huruf (tanpa angka dan simbol)!',
+        AuthValidator.validateLupaPassword('user name'),
+        'Username tidak boleh mengandung spasi!',
       );
-      expect(
-        AuthValidator.validateLupaPassword('user_name'),
-        'Username / nama akun hanya boleh berisi huruf (tanpa angka dan simbol)!',
-      );
+      expect(AuthValidator.validateLupaPassword('user123'), isNull);
+      expect(AuthValidator.validateLupaPassword('user_name'), isNull);
       expect(AuthValidator.validateLupaPassword('username'), isNull);
     });
   });

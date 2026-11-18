@@ -121,8 +121,13 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
     for (final item in records) {
       if (item is! Map) continue;
-      final weight = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
-      final cat = (item['nama_kategori'] ?? 'Lainnya').toString().trim();
+      final weight =
+          double.tryParse((item['jumlah'] ?? item['bobot'])?.toString() ?? '0') ??
+          0.0;
+      final cat =
+          (item['nama_kategori'] ?? item['kategori'] ?? 'Lainnya')
+              .toString()
+              .trim();
 
       if (cat.isNotEmpty) {
         catMap[cat] = (catMap[cat] ?? 0.0) + weight;
@@ -176,11 +181,14 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
       // Filter jika kategori tertentu sedang dipilih
       if (_selectedCategory != null && _selectedCategory != 'Semua') {
-        final cat = (item['nama_kategori'] ?? '').toString().trim();
+        final cat =
+            (item['nama_kategori'] ?? item['kategori'] ?? '').toString().trim();
         if (cat != _selectedCategory) continue;
       }
 
-      final weight = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
+      final weight =
+          double.tryParse((item['jumlah'] ?? item['bobot'])?.toString() ?? '0') ??
+          0.0;
       DateTime dt = now;
       if (item['created_at'] != null) {
         try {
@@ -240,11 +248,14 @@ class _CardTrackingChartState extends State<CardTrackingChart>
         if (item is! Map) continue;
 
         if (_selectedCategory != null && _selectedCategory != 'Semua') {
-          final cat = (item['nama_kategori'] ?? '').toString().trim();
+          final cat =
+              (item['nama_kategori'] ?? item['kategori'] ?? '').toString().trim();
           if (cat != _selectedCategory) continue;
         }
 
-        final weight = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
+        final weight =
+            double.tryParse((item['jumlah'] ?? item['bobot'])?.toString() ?? '0') ??
+            0.0;
         DateTime dt = now;
         if (item['created_at'] != null) {
           try {
@@ -264,11 +275,14 @@ class _CardTrackingChartState extends State<CardTrackingChart>
         if (item is! Map) continue;
 
         if (_selectedCategory != null && _selectedCategory != 'Semua') {
-          final cat = (item['nama_kategori'] ?? '').toString().trim();
+          final cat =
+              (item['nama_kategori'] ?? item['kategori'] ?? '').toString().trim();
           if (cat != _selectedCategory) continue;
         }
 
-        final weight = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
+        final weight =
+            double.tryParse((item['jumlah'] ?? item['bobot'])?.toString() ?? '0') ??
+            0.0;
         DateTime dt = now;
         if (item['created_at'] != null) {
           try {

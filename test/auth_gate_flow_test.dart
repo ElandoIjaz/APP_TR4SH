@@ -7,6 +7,7 @@ import 'package:test23/pages/auth/halaman_daftar.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:test23/pages/beranda/halaman_beranda.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
+import 'package:test23/pages/main_navigation.dart';
 
 void main() {
   setUp(() {
@@ -18,13 +19,14 @@ void main() {
     (WidgetTester tester) async {
       // Jalankan aplikasi default tanpa session login
       await tester.pumpWidget(const MyApp());
+      await tester.pump(const Duration(seconds: 3));
       await tester.pumpAndSettle();
 
       // Pastikan user langsung masuk ke Beranda (dapat langsung menggunakan aplikasi)
       expect(find.byType(HalamanBeranda), findsOneWidget);
       expect(find.text('TR4SH!'), findsOneWidget);
+      expect(find.text('HOME'), findsOneWidget);
       expect(find.text('Bank Sampah Digital'), findsOneWidget);
-      expect(find.text('Halo, Tamu 👋'), findsOneWidget);
       expect(UserAccountData.isGuest, isTrue);
     },
   );
@@ -34,7 +36,7 @@ void main() {
     (WidgetTester tester) async {
       UserAccountData.setGuestMode();
 
-      await tester.pumpWidget(const MyApp(initialHome: HalamanBeranda()));
+      await tester.pumpWidget(const MyApp(initialHome: MainNavigationPage()));
       await tester.pumpAndSettle();
 
       // 1. Coba tekan tombol "Mulai Setor" pada kartu Bank Sampah Digital

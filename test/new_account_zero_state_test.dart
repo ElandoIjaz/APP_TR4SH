@@ -56,11 +56,11 @@ void main() {
       expect(find.text('0.0 kg'), findsWidgets);
       expect(find.text('+0 setoran'), findsOneWidget);
 
-      // Verify all 4 category breakdown chips exist
-      expect(find.text('Botol Plastik'), findsOneWidget);
-      expect(find.text('Kertas Bekas'), findsOneWidget);
-      expect(find.text('Baterai (B3)'), findsOneWidget);
-      expect(find.text('Bungkus Kaleng'), findsOneWidget);
+      // Verify empty category state is displayed when rawData is empty
+      expect(
+        find.text('Belum ada kategori sampah disetorkan'),
+        findsOneWidget,
+      );
 
       // Verify summary cards show +0 setor
       expect(find.text('+0 setor'), findsWidgets);
@@ -78,9 +78,10 @@ void main() {
     expect(find.text('@rian_peduli'), findsOneWidget);
 
     // Verify Stats (all 0)
+    expect(find.text('0 Kali'), findsOneWidget);
     expect(find.text('0.0 kg'), findsOneWidget);
-    expect(find.text('0 Poin'), findsOneWidget);
-    expect(find.text('0 Misi'), findsOneWidget);
+    expect(find.text('Frekuensi Setoran'), findsOneWidget);
+    expect(find.text('Total Sampah Disetor'), findsOneWidget);
 
     // Verify Dampak Positif banner (0.0 kg and 0.0 CO2e)
     expect(
@@ -88,9 +89,6 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Setara 0.0 kg reduksi CO2e'), findsOneWidget);
-
-    // Verify Poin & Hadiah badge is 0 Pts
-    expect(find.text('0 Pts'), findsOneWidget);
   });
 
   testWidgets(
@@ -159,8 +157,9 @@ void main() {
       await tester.pumpWidget(const MaterialApp(home: HalamanBeranda()));
       await tester.pumpAndSettle();
 
-      // Verify Header shows Tamu
-      expect(find.text('Halo, Tamu 👋'), findsOneWidget);
+      // Verify Header shows TR4SH! HOME
+      expect(find.text('TR4SH!'), findsOneWidget);
+      expect(find.text('HOME'), findsOneWidget);
 
       // Verify Riwayat Setor Sampah shows 0.0 kg and +0 setoran
       expect(find.text('RIWAYAT SETOR SAMPAH'), findsOneWidget);

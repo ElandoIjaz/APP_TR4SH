@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    UserAccountData.isGuest = false;
+  });
+
   testWidgets('HalamanKonten renders correctly with all elements from design', (
     WidgetTester tester,
   ) async {
@@ -12,7 +19,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
 
     await tester.pumpWidget(const MaterialApp(home: HalamanKonten()));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     // 1. Verify Header Branding & Icons
     expect(find.text('TR4SH!'), findsOneWidget);
@@ -58,14 +65,7 @@ void main() {
     expect(find.text('KIRIM KONTEN ANDA'), findsOneWidget);
     expect(find.text('Mulai Berbagi Ide'), findsOneWidget);
 
-    // 7. Verify Bottom Navigation
-    expect(find.text('Konten'), findsOneWidget);
-    expect(find.text('Produk'), findsOneWidget);
-    expect(find.text('Beranda'), findsOneWidget);
-    expect(find.text('Tracking'), findsOneWidget);
-    expect(find.text('Akun'), findsOneWidget);
-
-    // 8. Test Interaction: Tapping Filter button opens Filter Sheet
+    // 7. Test Interaction: Tapping Filter button opens Filter Sheet
     await tester.tap(find.byIcon(Icons.tune_rounded));
     await tester.pumpAndSettle();
     expect(find.text('Filter Konten'), findsOneWidget);

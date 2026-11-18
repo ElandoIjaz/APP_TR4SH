@@ -375,29 +375,31 @@ class ApiService {
           ? (int.tryParse(body['total'].toString()) ?? listRaw.length)
           : listRaw.length;
 
-      UserAccountData.totalSampahKg = totalKg;
-      UserAccountData.totalSetoran = totalCount;
+      if (response.statusCode == 200) {
+        UserAccountData.totalSampahKg = totalKg;
+        UserAccountData.totalSetoran = totalCount;
 
-      if (listRaw.isNotEmpty) {
-        UserAccountData.listRiwayatSetor = listRaw.map((item) {
-          final idSampah = item['id_sampah']?.toString() ?? '0';
-          final kategori = item['nama_kategori']?.toString() ?? 'Sampah';
-          final berat = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
-          final tanggalRaw = item['created_at']?.toString() ?? '';
+        if (listRaw.isNotEmpty) {
+          UserAccountData.listRiwayatSetor = listRaw.map((item) {
+            final idSampah = item['id_sampah']?.toString() ?? '0';
+            final kategori = item['nama_kategori']?.toString() ?? 'Sampah';
+            final berat = double.tryParse(item['jumlah']?.toString() ?? '0') ?? 0.0;
+            final tanggalRaw = item['created_at']?.toString() ?? '';
 
-          return RiwayatSetorModel(
-            id: 'SET-$idSampah',
-            tanggal: tanggalRaw.isNotEmpty ? tanggalRaw : 'Hari Ini',
-            kategori: kategori,
-            beratKg: berat,
-            poin: (berat * 15).round(),
-            lokasiBankSampah: item['keterangan']?.toString() ?? 'TR4SH Drop Point',
-            status: item['status_verifikasi'] == 'accepted' 
-                ? 'Disetujui' 
-                : (item['status_verifikasi'] == 'denied' ? 'Ditolak' : 'Pending'),
-            estimasiCo2: '${(berat * 1.5).toStringAsFixed(1)} kg CO2e',
-          );
-        }).toList();
+            return RiwayatSetorModel(
+              id: 'SET-$idSampah',
+              tanggal: tanggalRaw.isNotEmpty ? tanggalRaw : 'Hari Ini',
+              kategori: kategori,
+              beratKg: berat,
+              poin: (berat * 15).round(),
+              lokasiBankSampah: item['keterangan']?.toString() ?? 'TR4SH Drop Point',
+              status: item['status_verifikasi'] == 'accepted'
+                  ? 'Disetujui'
+                  : (item['status_verifikasi'] == 'denied' ? 'Ditolak' : 'Pending'),
+              estimasiCo2: '${(berat * 1.5).toStringAsFixed(1)} kg CO2e',
+            );
+          }).toList();
+        }
       }
 
       return ApiResponse(

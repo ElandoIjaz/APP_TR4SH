@@ -39,17 +39,22 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   Future<void> _initializeLocationAndData() async {
     setState(() => _isLoading = true);
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled()
+          .timeout(const Duration(seconds: 3));
       if (serviceEnabled) {
-        LocationPermission permission = await Geolocator.checkPermission();
+        LocationPermission permission = await Geolocator.checkPermission()
+            .timeout(const Duration(seconds: 3));
         if (permission == LocationPermission.denied) {
-          permission = await Geolocator.requestPermission();
+          permission = await Geolocator.requestPermission()
+              .timeout(const Duration(seconds: 5));
         }
         
         if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
           Position position = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.high,
-          );
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+            ),
+          ).timeout(const Duration(seconds: 5));
           _userPosition = LatLng(position.latitude, position.longitude);
         }
       }
@@ -107,6 +112,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
             }
           }
 
+          if (!mounted) return;
           setState(() {
             _daftarCabang = formattedList;
             _cabangTerdekat = terdekat;
@@ -151,6 +157,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
       },
     ];
 
+    if (!mounted) return;
     setState(() {
       _daftarCabang = fallbackList;
       _cabangTerdekat = fallbackList.first;
@@ -160,6 +167,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   }
 
   Future<void> _fetchRoute(LatLng tujuan) async {
+    if (!mounted) return;
     setState(() => _isLoadingRoute = true);
     try {
       final url = Uri.parse(
@@ -174,6 +182,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
           final geometry = routes[0]['geometry'];
           final coords = geometry['coordinates'] as List;
 
+          if (!mounted) return;
           setState(() {
             _routePoints = coords.map<LatLng>((coord) {
               return LatLng(coord[1] as double, coord[0] as double);
@@ -185,6 +194,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
       }
     } catch (_) {}
 
+    if (!mounted) return;
     setState(() {
       _routePoints = [_userPosition, tujuan];
       _isLoadingRoute = false;
@@ -192,6 +202,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   }
 
   void _pilihCabang(Map<String, dynamic> cabang) {
+    if (!mounted) return;
     setState(() {
       _selectedCabang = cabang;
     });
@@ -209,7 +220,12 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
     if (jarak > 5) targetZoom = 13.5;
     if (jarak > 10) targetZoom = 12.0;
 
-    _mapController.move(LatLng(centerLat, centerLng), targetZoom);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      try {
+        _mapController.move(LatLng(centerLat, centerLng), targetZoom);
+      } catch (_) {}
+    });
   }
 
   Future<void> _bukaNavigasiEksternal(double lat, double lng) async {
