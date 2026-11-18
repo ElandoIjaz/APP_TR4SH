@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/widgets/umum/tr4sh_brand_logo.dart';
 
 class HeaderProduk extends StatelessWidget {
   final VoidCallback onNotificationTap;
@@ -21,49 +22,7 @@ class HeaderProduk extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // ── TR4SH! ECO MARKETPLACE Branding ──
-          Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: const BoxDecoration(
-                  color: AppColors.darkGreen,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.eco_rounded,
-                  color: AppColors.limeAccent,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'TR4SH!',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.darkGreen,
-                      letterSpacing: -0.5,
-                      height: 1.1,
-                    ),
-                  ),
-                  Text(
-                    'ECO MARKETPLACE',
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF2E6B4E),
-                      letterSpacing: 0.8,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+         const Tr4shBrandLogo(subtitle: 'ECO MARKETPLACE'),
 
           // ── Right Action Buttons (Notification Bell & Cart / Avatar) ──
           Row(
@@ -103,7 +62,7 @@ class HeaderProduk extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(width: 4),
+              const SizedBox(width: 8),
 
               // Cart Button with Counter
               GestureDetector(

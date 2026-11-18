@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/widgets/umum/tr4sh_brand_logo.dart';
 
 class HeaderKonten extends StatelessWidget {
   final VoidCallback onBookmarkTap;
@@ -23,32 +24,7 @@ class HeaderKonten extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // ── TR4SH! Brand Logo ──
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppColors.mintSoft,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.eco_rounded,
-                  color: AppColors.darkGreen,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'TR4SH!',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.darkGreen,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ],
-          ),
+          const Tr4shBrandLogo(subtitle:'KONTEN'),
 
           // ── Right Action Buttons (Bookmark & Notification) ──
           Row(
@@ -69,7 +45,7 @@ class HeaderKonten extends StatelessWidget {
                   size: 24,
                 ),
               ),
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
 
               // Notification Bell with Lime Dot
               GestureDetector(

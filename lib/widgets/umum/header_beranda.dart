@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/widgets/umum/tr4sh_brand_logo.dart';
 
 class HeaderBeranda extends StatelessWidget {
   final VoidCallback onNotificationTap;
@@ -27,32 +28,8 @@ class HeaderBeranda extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Logo TR4SH!
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: AppColors.mintSoft,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.eco_rounded,
-                      color: AppColors.darkGreen,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'TR4SH!',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.darkGreen,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ],
-              ),
+                    const Tr4shBrandLogo(subtitle: 'TRACKING'),
+
 
               // Bell Notification Button with Dot
               GestureDetector(

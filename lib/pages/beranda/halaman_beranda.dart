@@ -13,6 +13,7 @@ import 'package:test23/widgets/beranda/card_video_tutorial.dart';
 import 'package:test23/widgets/beranda/card_workshop.dart';
 import 'package:test23/widgets/beranda/grid_jenis_sampah.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
+import 'package:test23/widgets/umum/tr4sh_brand_logo.dart';
 
 class HalamanBeranda extends StatefulWidget {
   const HalamanBeranda({super.key});
@@ -565,51 +566,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Logo & Judul TR4SH! HOME
-                      Row(
-                        children: [
-                          Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: AppColors.darkGreen,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.eco_rounded,
-                                color: AppColors.limeAccent,
-                                size: 22,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'TR4SH!',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.darkGreen,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              Text(
-                                'HOME',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textMuted,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-
+                    
+                     const Tr4shBrandLogo(subtitle:'HOME'),
+                         
                       // Ikon Aksi Kanan (Notifikasi & Profil Saja)
                       Row(
                         children: [

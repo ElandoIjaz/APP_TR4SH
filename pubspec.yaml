@@ -28,4 +28,5 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
+    - assets/images/logo_trash.png
+    - assets/images/logo_sampah.png
