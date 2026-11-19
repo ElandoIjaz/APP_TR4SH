@@ -306,7 +306,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                             width: 70,
                             height: 48,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _miniThumbFallback(true),
+                            errorBuilder: (_, _, _) => _miniThumbFallback(true),
                           )
                         : (localImagePath != null
                             ? Image.file(
@@ -1016,7 +1016,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                   height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     height: 180,
                     color: Colors.black87,
                     child: const Center(
@@ -1289,7 +1289,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                         width: 80,
                         height: 56,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
+                        errorBuilder: (_, _, _) => Container(
                           width: 80,
                           height: 56,
                           color: Colors.grey.shade300,

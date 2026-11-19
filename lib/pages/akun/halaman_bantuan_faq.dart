@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
 
 class HalamanBantuanFaq extends StatefulWidget {
@@ -12,39 +13,58 @@ class _HalamanBantuanFaqState extends State<HalamanBantuanFaq> {
   final TextEditingController _searchController = TextEditingController();
   int _selectedCategoryIndex = 0;
 
+  static const String _adminWhatsApp = '0856-4974-5782';
+  static const String _adminWhatsAppRaw = '6285649745782';
+
   final List<String> _categories = [
     'Semua',
     'Setor Sampah',
-    'EcoPoints',
     'Marketplace',
-    'Alamat & Kurir',
+    'Akun & Keamanan',
   ];
 
-  final List<Map<String, String>> _faqItems = [
+  final List<Map<String, dynamic>> _faqItems = [
     {
       'kategori': 'Setor Sampah',
       'tanya': 'Bagaimana cara menyetor sampah di TR4SH!?',
-      'jawab': 'Anda dapat memilih metode Setor Mandiri ke Bank Sampah terdekat atau Pesan Penjemputan ke alamat Anda melalui menu Tracking di aplikasi.',
+      'jawab':
+          'Masuk ke menu Setor / Tracking, pilih jenis sampah yang sudah dipilah, masukkan perkiraan berat, lalu serahkan langsung ke cabang Bank Sampah TR4SH terdekat. Anda bisa mengecek lokasi cabang melalui tombol "Cari Cabang" di halaman Beranda.',
     },
     {
-      'kategori': 'Alamat & Kurir',
-      'tanya': 'Mengapa penentuan lokasi alamat pengiriman harus akurat?',
-      'jawab': 'Karena kurir kami memerlukan koordinat GPS presisi dan patokan alamat agar produk hasil daur ulang dan jadwal penjemputan sampah dapat sampai tepat waktu di depan pintu rumah Anda tanpa tersasar.',
+      'kategori': 'Setor Sampah',
+      'tanya': 'Jenis sampah apa saja yang diterima untuk disetor?',
+      'jawab':
+          'Kami menerima sampah terpilah seperti botol plastik (PET/HDPE), kertas dan kardus kemasan, kaleng aluminium/logam, kaca tebal, serta limbah daur ulang lain sesuai daftar kategori di menu Setor Sampah.',
     },
     {
-      'kategori': 'EcoPoints',
-      'tanya': 'Bagaimana cara mendapatkan dan menukar EcoPoints?',
-      'jawab': 'EcoPoints didapatkan setiap kali Anda menyetor sampah terpilah atau membagikan tutorial ide sirkular. Poin dapat ditukar dengan voucher belanja, donasi pohon, dan saldo e-wallet.',
+      'kategori': 'Marketplace',
+      'tanya': 'Bagaimana cara mengambil produk yang sudah dibeli?',
+      'jawab':
+          'Setelah pembayaran berstatus lunas, produk kreasi daur ulang dapat diambil langsung di Bank Sampah Sahabat Ibu TR4SH (Perumahan Taman Gading, Tumpengsari, Tegal Besar, Kec. Kaliwates, Jember) dengan menunjukkan Nomor Order (TR4SH-...) kepada petugas.',
+    },
+    {
+      'kategori': 'Marketplace',
+      'tanya': 'Metode pembayaran apa saja yang tersedia?',
+      'jawab':
+          'Pembayaran produk di TR4SH! didukung oleh Midtrans melalui QRIS dan Transfer Virtual Account (BCA, BNI, BRI, Mandiri, Permata). Status pembayaran akan diperbarui otomatis setelah transaksi berhasil.',
     },
     {
       'kategori': 'Marketplace',
       'tanya': 'Apakah produk yang dijual terbuat dari sampah daur ulang asli?',
-      'jawab': 'Ya, seluruh produk di TR4SH! Eco Marketplace telah melalui kurasi ketat dan diverifikasi dibuat dari bahan limbah daur ulang (seperti botol plastik PET, karung goni, dan kardus bekas).',
+      'jawab':
+          'Ya, seluruh produk di TR4SH! Eco Marketplace telah melalui kurasi dan dibuat dari bahan limbah daur ulang terverifikasi seperti botol plastik PET, karung goni, dan kardus bekas.',
     },
     {
-      'kategori': 'Setor Sampah',
-      'tanya': 'Jenis sampah apa saja yang diterima untuk ditabung?',
-      'jawab': 'Kami menerima botol plastik (PET/HDPE), kertas & kardus kemasan, kaleng aluminium & logam, kaca tebal, dan minyak jelantah bekas.',
+      'kategori': 'Akun & Keamanan',
+      'tanya': 'Bagaimana jika saya lupa kata sandi akun?',
+      'jawab':
+          'Pilih "Lupa Kata Sandi" di halaman Login lalu masukkan nomor WhatsApp yang terdaftar pada akun Anda. Sistem akan mengirimkan kode pemulihan 8 karakter secara otomatis ke WhatsApp Anda yang berlaku selama 15 menit.',
+    },
+    {
+      'kategori': 'Akun & Keamanan',
+      'tanya': 'Mengapa Username tidak dapat diubah di Edit Profil?',
+      'jawab':
+          'Username bersifat permanen karena digunakan sebagai identitas unik untuk login akun Anda. Anda tetap dapat memperbarui Nama Lengkap, Nomor WhatsApp, dan Foto Profil kapan saja melalui menu Edit Profil.',
     },
   ];
 
@@ -54,13 +74,165 @@ class _HalamanBantuanFaqState extends State<HalamanBantuanFaq> {
     super.dispose();
   }
 
+  void _showContactSupportSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => Container(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(sheetContext).size.height * 0.85,
+        ),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.support_agent_rounded,
+                      color: AppColors.darkGreen,
+                      size: 24,
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Layanan Bantuan TR4SH!',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.darkGreen,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgScreen,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'WhatsApp Admin',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        _adminWhatsApp,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.darkGreen,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Lokasi Pengambilan & Bank Sampah',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Bank Sampah Sahabat Ibu TR4SH\nPerumahan Taman Gading, Tumpengsari, Tegal Besar, Kec. Kaliwates, Jember, Jawa Timur',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF3A5245),
+                          height: 1.4,
+                        ),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Jam Operasional: Setiap hari, 08.00 - 20.00 WIB',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.darkGreen,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.darkGreen,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: () {
+                      Clipboard.setData(
+                        const ClipboardData(text: _adminWhatsAppRaw),
+                      );
+                      Navigator.pop(sheetContext);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Nomor WhatsApp Admin ($_adminWhatsApp) berhasil disalin!',
+                          ),
+                          backgroundColor: AppColors.darkGreen,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.copy_rounded, size: 17),
+                    label: const Text(
+                      'Salin Nomor WhatsApp Admin',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final filtered = _faqItems.where((item) {
       final matchesCategory =
           _selectedCategoryIndex == 0 ||
           item['kategori'] == _categories[_selectedCategoryIndex];
-      final query = _searchController.text.toLowerCase();
+      final query = _searchController.text.trim().toLowerCase();
       final matchesQuery =
           query.isEmpty ||
           item['tanya']!.toLowerCase().contains(query) ||
@@ -148,6 +320,18 @@ class _HalamanBantuanFaqState extends State<HalamanBantuanFaq> {
                         ),
                       ),
                     ),
+                    if (_searchController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          _searchController.clear();
+                          setState(() {});
+                        },
+                        child: const Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: AppColors.textMuted,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -211,54 +395,102 @@ class _HalamanBantuanFaqState extends State<HalamanBantuanFaq> {
             // FAQ Expansion Tiles
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: filtered.map<Widget>((faq) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Material(
-                      color: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(color: AppColors.cardBorder),
+              child: filtered.isEmpty
+                  ? Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 28,
                       ),
-                      clipBehavior: Clip.antiAlias,
-                      child: Theme(
-                        data: Theme.of(context)
-                            .copyWith(dividerColor: Colors.transparent),
-                        child: ExpansionTile(
-                          tilePadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.cardBorder),
+                      ),
+                      child: const Column(
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 36,
+                            color: AppColors.textMuted,
                           ),
-                          iconColor: AppColors.darkGreen,
-                          collapsedIconColor: AppColors.textMuted,
-                          title: Text(
-                            faq['tanya']!,
-                            style: const TextStyle(
-                              fontSize: 13,
+                          SizedBox(height: 8),
+                          Text(
+                            'Pertanyaan tidak ditemukan',
+                            style: TextStyle(
+                              fontSize: 13.5,
                               fontWeight: FontWeight.bold,
                               color: AppColors.darkGreen,
                             ),
                           ),
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                              child: Text(
-                                faq['jawab']!,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF4C6656),
-                                  height: 1.4,
-                                ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Coba kata kunci lain atau hubungi Layanan Bantuan di bawah.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Column(
+                      children: filtered.map<Widget>((faq) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Material(
+                            color: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: const BorderSide(
+                                color: AppColors.cardBorder,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
+                            clipBehavior: Clip.antiAlias,
+                            child: Theme(
+                              data: Theme.of(context).copyWith(
+                                dividerColor: Colors.transparent,
+                              ),
+                              child: ExpansionTile(
+                                tilePadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                iconColor: AppColors.darkGreen,
+                                collapsedIconColor: AppColors.textMuted,
+                                title: Text(
+                                  faq['tanya']!,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.darkGreen,
+                                  ),
+                                ),
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      16,
+                                      0,
+                                      16,
+                                      16,
+                                    ),
+                                    child: Text(
+                                      faq['jawab']!,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Color(0xFF4C6656),
+                                        height: 1.45,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
-                  );
-                }).toList(),
-              ),
             ),
 
             const SizedBox(height: 16),
@@ -315,16 +547,7 @@ class _HalamanBantuanFaqState extends State<HalamanBantuanFaq> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Menghubungi Customer Service TR4SH!...',
-                              ),
-                              backgroundColor: AppColors.darkGreen,
-                            ),
-                          );
-                        },
+                        onPressed: _showContactSupportSheet,
                         icon: const Icon(
                           Icons.chat_bubble_outline_rounded,
                           size: 16,

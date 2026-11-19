@@ -7,6 +7,7 @@ import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
+import 'package:test23/pages/akun/halaman_notifikasi.dart';
 import 'package:test23/pages/konten/halaman_upload_konten.dart';
 import 'package:test23/widgets/konten/banner_kontributor_konten.dart';
 import 'package:test23/widgets/konten/header_konten.dart';
@@ -128,7 +129,9 @@ class _HalamanKontenState extends State<HalamanKonten> {
         );
         if (res.statusCode >= 200 && res.statusCode < 300 && mounted) {
           final decoded = jsonDecode(res.body);
-          if (decoded is Map && decoded['success'] == true && decoded['data'] is List) {
+          if (decoded is Map &&
+              decoded['success'] == true &&
+              decoded['data'] is List) {
             final apiKeys = <String>[];
             for (final raw in (decoded['data'] as List)) {
               if (raw is Map) {
@@ -251,7 +254,9 @@ class _HalamanKontenState extends State<HalamanKonten> {
   }
 
   void _openInitialContentIfNeeded() {
-    if (_hasOpenedInitialContent || widget.initialSelectedKonten == null || !mounted) {
+    if (_hasOpenedInitialContent ||
+        widget.initialSelectedKonten == null ||
+        !mounted) {
       return;
     }
     final matched = _findInitialContentMatch();
@@ -274,7 +279,8 @@ class _HalamanKontenState extends State<HalamanKonten> {
           _isLoadingEdukasi = false;
         });
         for (var item in _listEdukasiPublik) {
-          final map = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+          final map =
+              item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
           final key = _getItemKey(map);
           _loadCommentCount(key);
         }
@@ -308,7 +314,8 @@ class _HalamanKontenState extends State<HalamanKonten> {
 
     if (_selectedCategoryIndex == 6) {
       list = list.where((item) {
-        final map = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+        final map =
+            item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
         return _savedContentKeys.contains(_getItemKey(map));
       }).toList();
     }
@@ -316,23 +323,47 @@ class _HalamanKontenState extends State<HalamanKonten> {
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       list = list.where((item) {
-        final map = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+        final map =
+            item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
         final title = (map['title'] ?? '').toString().toLowerCase();
         final desc = (map['description'] ?? '').toString().toLowerCase();
         final penulis = (map['penulis'] ?? '').toString().toLowerCase();
         final jenis = (map['jenis_edukasi'] ?? '').toString().toLowerCase();
-        return title.contains(q) || desc.contains(q) || penulis.contains(q) || jenis.contains(q);
+        return title.contains(q) ||
+            desc.contains(q) ||
+            penulis.contains(q) ||
+            jenis.contains(q);
       }).toList();
     }
 
     if (_selectedCategoryIndex == 2) {
-      list = list.where((item) => (item['jenis_edukasi'] ?? '').toString().toLowerCase().contains('recycle')).toList();
+      list = list
+          .where((item) => (item['jenis_edukasi'] ?? '')
+              .toString()
+              .toLowerCase()
+              .contains('recycle'))
+          .toList();
     } else if (_selectedCategoryIndex == 3) {
-      list = list.where((item) => (item['jenis_edukasi'] ?? '').toString().toLowerCase().contains('reuse')).toList();
+      list = list
+          .where((item) => (item['jenis_edukasi'] ?? '')
+              .toString()
+              .toLowerCase()
+              .contains('reuse'))
+          .toList();
     } else if (_selectedCategoryIndex == 4) {
-      list = list.where((item) => (item['jenis_edukasi'] ?? '').toString().toLowerCase().contains('reduce')).toList();
+      list = list
+          .where((item) => (item['jenis_edukasi'] ?? '')
+              .toString()
+              .toLowerCase()
+              .contains('reduce'))
+          .toList();
     } else if (_selectedCategoryIndex == 5) {
-      list = list.where((item) => (item['jenis_edukasi'] ?? '').toString().toLowerCase().contains('resell')).toList();
+      list = list
+          .where((item) => (item['jenis_edukasi'] ?? '')
+              .toString()
+              .toLowerCase()
+              .contains('resell'))
+          .toList();
     }
 
     return list;
@@ -342,6 +373,20 @@ class _HalamanKontenState extends State<HalamanKonten> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _navigateToNotifikasi() {
+    if (!UserAccountData.isLoggedIn) {
+      AuthRequiredModal.show(
+        context,
+        title: 'Notifikasi Memerlukan Akun',
+        message: 'Silakan masuk terlebih dahulu untuk melihat notifikasi Anda.',
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
+    );
   }
 
   void _showFilterSheet() {
@@ -363,9 +408,16 @@ class _HalamanKontenState extends State<HalamanKonten> {
               children: [
                 const Text(
                   'Filter Kategori Konten',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
-                IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context)),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -381,7 +433,13 @@ class _HalamanKontenState extends State<HalamanKonten> {
                   backgroundColor: const Color(0xFFE8F5EE),
                   label: Text(
                     label,
-                    style: TextStyle(fontSize: 12, color: isSelected ? AppColors.limeAccent : AppColors.darkGreen, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isSelected
+                          ? AppColors.limeAccent
+                          : AppColors.darkGreen,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   onSelected: (selected) {
                     setState(() => _selectedCategoryIndex = idx);
@@ -398,7 +456,8 @@ class _HalamanKontenState extends State<HalamanKonten> {
 
   void _showContentDetailModal(Map<String, dynamic> itemMap) {
     final title = itemMap['title']?.toString() ?? 'Edukasi TR4SH';
-    final desc = itemMap['description']?.toString() ?? 'Tidak ada deskripsi tersedia.';
+    final desc =
+        itemMap['description']?.toString() ?? 'Tidak ada deskripsi tersedia.';
     final author = itemMap['penulis']?.toString() ?? 'Komunitas TR4SH';
     final jenis = itemMap['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan';
     final mediaUrl = itemMap['media_url']?.toString() ?? '';
@@ -415,158 +474,323 @@ class _HalamanKontenState extends State<HalamanKonten> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (modalContext, setModalState) {
           final isSaved = _savedContentKeys.contains(itemKey);
 
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.9,
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(color: const Color(0xFFD8F4E4), borderRadius: BorderRadius.circular(8)),
-                      child: Text(jenis, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF1B6B44))),
+            child: Container(
+              height: MediaQuery.of(context).size.height * 0.9,
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
-                    IconButton(
-                      icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_border, color: AppColors.darkGreen),
-                      onPressed: () async {
-                        await _toggleSaveContent(itemMap);
-                        if (context.mounted) {
-                          setModalState(() {});
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Expanded(
-                  child: FutureBuilder<ApiResponse>(
-                    future: ApiService.fetchComments(itemKey),
-                    builder: (context, snapshot) {
-                      List<dynamic> commentsList = [];
-                      bool isLoading = snapshot.connectionState == ConnectionState.waiting;
-
-                      if (snapshot.hasData && snapshot.data!.success && snapshot.data!.data is List) {
-                        commentsList = snapshot.data!.data as List;
-                      }
-
-                      return ListView(
-                        physics: const ClampingScrollPhysics(),
-                        children: [
-                          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.darkGreen, height: 1.3)),
-                          const SizedBox(height: 12),
-
-                          if (isVideo)
-                            YoutubePlayerSection(mediaUrl: mediaUrl)
-                          else if (mediaUrl.isNotEmpty && mediaUrl.startsWith('http'))
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.network(
-                                mediaUrl,
-                                height: 200,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(
-                                  height: 170,
-                                  color: AppColors.darkGreen,
-                                  child: const Center(child: Icon(Icons.image_not_supported_rounded, color: Colors.white, size: 40)),
-                                ),
-                              ),
-                            ),
-
-                          const SizedBox(height: 10),
-                          Text('Oleh: $author', style: const TextStyle(fontSize: 11.5, color: Color(0xFF1E8850), fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 12),
-                          const Text('Deskripsi Konten:', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-                          const SizedBox(height: 4),
-                          Text(desc, style: const TextStyle(fontSize: 12.5, color: Color(0xFF465A50), height: 1.4)),
-                          const Divider(height: 30),
-                          Text('Komentar & Diskusi (${commentsList.length})', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-                          const SizedBox(height: 10),
-                          isLoading
-                              ? const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: AppColors.darkGreen)))
-                              : commentsList.isEmpty
-                                  ? const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 10),
-                                      child: Text('Belum ada komentar. Jadilah yang pertama berkomentar!', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
-                                    )
-                                  : Column(
-                                      children: commentsList.map((comm) {
-                                        final cMap = comm is Map ? Map<String, dynamic>.from(comm) : <String, dynamic>{};
-                                        final idKomentar = cMap['id_komentar']?.toString() ?? '0';
-                                        final authorName = cMap['author']?.toString() ?? 'Pengguna';
-                                        final commentText = cMap['comment']?.toString() ?? '';
-                                        return _buildCommentItem(idKomentar, authorName, commentText, setModalState);
-                                      }).toList(),
-                                    ),
-                        ],
-                      );
-                    },
                   ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: AppColors.bgScreen,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: AppColors.cardBorder),
-                  ),
-                  child: Row(
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Expanded(
-                        child: TextField(
-                          controller: commentController,
-                          decoration: const InputDecoration(
-                            hintText: 'Tulis komentar Anda...',
-                            border: InputBorder.none,
-                            hintStyle: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD8F4E4),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          jenis,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1B6B44),
                           ),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.send_rounded, color: AppColors.darkGreen, size: 20),
+                        icon: Icon(
+                          isSaved ? Icons.bookmark : Icons.bookmark_border,
+                          color: AppColors.darkGreen,
+                        ),
                         onPressed: () async {
-                          final text = commentController.text.trim();
-                          if (text.isEmpty) return;
-
-                          final res = await ApiService.postComment(itemKey, text);
-                          if (res.success) {
-                            commentController.clear();
-                            _loadCommentCount(itemKey);
+                          await _toggleSaveContent(itemMap);
+                          if (modalContext.mounted) {
                             setModalState(() {});
-                            setState(() {});
-                          } else {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(res.message ?? 'Gagal mengirim komentar')),
-                              );
-                            }
                           }
                         },
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Expanded(
+                    child: FutureBuilder<ApiResponse>(
+                      future: ApiService.fetchComments(itemKey),
+                      builder: (context, snapshot) {
+                        List<dynamic> commentsList = [];
+                        bool isLoading =
+                            snapshot.connectionState == ConnectionState.waiting;
+
+                        if (snapshot.hasData &&
+                            snapshot.data!.success &&
+                            snapshot.data!.data is List) {
+                          commentsList = snapshot.data!.data as List;
+                        }
+
+                        return ListView(
+                          physics: const ClampingScrollPhysics(),
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.darkGreen,
+                                height: 1.3,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            if (isVideo)
+                              YoutubePlayerSection(mediaUrl: mediaUrl)
+                            else if (mediaUrl.isNotEmpty &&
+                                mediaUrl.startsWith('http'))
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.network(
+                                  mediaUrl,
+                                  height: 200,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Container(
+                                    height: 170,
+                                    color: AppColors.darkGreen,
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.image_not_supported_rounded,
+                                        color: Colors.white,
+                                        size: 40,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Oleh: $author',
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: Color(0xFF1E8850),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Deskripsi Konten:',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.darkGreen,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              desc,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                color: Color(0xFF465A50),
+                                height: 1.4,
+                              ),
+                            ),
+                            const Divider(height: 30),
+                            Text(
+                              'Komentar & Diskusi (${commentsList.length})',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.darkGreen,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            isLoading
+                                ? const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(20),
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.darkGreen,
+                                      ),
+                                    ),
+                                  )
+                                : commentsList.isEmpty
+                                    ? const Padding(
+                                        padding:
+                                            EdgeInsets.symmetric(vertical: 10),
+                                        child: Text(
+                                          'Belum ada komentar. Jadilah yang pertama berkomentar!',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.textMuted,
+                                          ),
+                                        ),
+                                      )
+                                    : Column(
+                                        children: commentsList.map((comm) {
+                                          final cMap = comm is Map
+                                              ? Map<String, dynamic>.from(comm)
+                                              : <String, dynamic>{};
+                                          final idKomentar =
+                                              cMap['id_komentar']?.toString() ??
+                                                  '0';
+                                          final authorName =
+                                              cMap['author']?.toString() ??
+                                                  'Pengguna';
+                                          final commentText =
+                                              cMap['comment']?.toString() ?? '';
+                                          return _buildCommentItem(
+                                            idKomentar,
+                                            authorName,
+                                            commentText,
+                                            setModalState,
+                                          );
+                                        }).toList(),
+                                      ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (!UserAccountData.isLoggedIn)
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(sheetContext);
+                        AuthRequiredModal.show(
+                          context,
+                          title: 'Komentar Memerlukan Akun',
+                          message:
+                              'Silakan masuk atau daftar akun terlebih dahulu untuk menuliskan komentar pada konten edukasi ini.',
+                          icon: Icons.chat_bubble_outline_rounded,
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(24),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.bgScreen,
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: AppColors.cardBorder),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.lock_outline_rounded,
+                              size: 18,
+                              color: AppColors.textMuted,
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Masuk ke akun untuk menulis komentar...',
+                                style: TextStyle(
+                                  fontSize: 12.5,
+                                  color: AppColors.textMuted,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.login_rounded,
+                              color: AppColors.darkGreen,
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: AppColors.bgScreen,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppColors.cardBorder),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: commentController,
+                              decoration: const InputDecoration(
+                                hintText: 'Tulis komentar Anda...',
+                                border: InputBorder.none,
+                                hintStyle: TextStyle(
+                                  fontSize: 12.5,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.send_rounded,
+                              color: AppColors.darkGreen,
+                              size: 20,
+                            ),
+                            onPressed: () async {
+                              final text = commentController.text.trim();
+                              if (text.isEmpty) return;
+
+                              final res =
+                                  await ApiService.postComment(itemKey, text);
+                              if (res.success) {
+                                commentController.clear();
+                                _loadCommentCount(itemKey);
+                                if (modalContext.mounted) {
+                                  setModalState(() {});
+                                }
+                                if (mounted) {
+                                  setState(() {});
+                                }
+                              } else {
+                                if (modalContext.mounted) {
+                                  ScaffoldMessenger.of(modalContext)
+                                      .showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        res.message.isNotEmpty
+    ? res.message
+    : 'Gagal mengirim komentar',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
           );
         },
@@ -576,7 +800,12 @@ class _HalamanKontenState extends State<HalamanKonten> {
     });
   }
 
-  Widget _buildCommentItem(String idKomentar, String author, String comment, StateSetter setModalState) {
+  Widget _buildCommentItem(
+    String idKomentar,
+    String author,
+    String comment,
+    StateSetter setModalState,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -587,7 +816,11 @@ class _HalamanKontenState extends State<HalamanKonten> {
             backgroundColor: AppColors.mintSoft,
             child: Text(
               author.isNotEmpty ? author.substring(0, 1).toUpperCase() : 'U',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.darkGreen,
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -598,7 +831,14 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(author, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                    Text(
+                      author,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGreen,
+                      ),
+                    ),
                     InkWell(
                       borderRadius: BorderRadius.circular(8),
                       onTap: () => _showReportDialog(idKomentar),
@@ -614,7 +854,13 @@ class _HalamanKontenState extends State<HalamanKonten> {
                   ],
                 ),
                 const SizedBox(height: 2),
-                Text(comment, style: const TextStyle(fontSize: 11.5, color: Color(0xFF465A50))),
+                Text(
+                  comment,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    color: Color(0xFF465A50),
+                  ),
+                ),
               ],
             ),
           ),
@@ -647,28 +893,56 @@ class _HalamanKontenState extends State<HalamanKonten> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Laporkan Komentar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
-                IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context)),
+                const Text(
+                  'Laporkan Komentar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkGreen,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ],
             ),
             const SizedBox(height: 4),
-            const Text('Pilih alasan mengapa komentar ini dilaporkan:', style: TextStyle(fontSize: 12, color: AppColors.textMuted)),
+            const Text(
+              'Pilih alasan mengapa komentar ini dilaporkan:',
+              style: TextStyle(fontSize: 12, color: AppColors.textMuted),
+            ),
             const SizedBox(height: 12),
-            ...alasanList.map((alasan) => ListTile(
-                  dense: true,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(alasan, style: const TextStyle(fontSize: 13, color: Color(0xFF465A50))),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: AppColors.textMuted),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    final res = await ApiService.reportComment(idKomentar, alasan);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(res.message ?? 'Laporan terkirim')),
-                      );
-                    }
-                  },
-                )),
+            ...alasanList.map(
+              (alasan) => ListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  alasan,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF465A50),
+                  ),
+                ),
+                trailing: const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 12,
+                  color: AppColors.textMuted,
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final res =
+                      await ApiService.reportComment(idKomentar, alasan);
+                  if (mounted) {
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      SnackBar(
+                        content: Text(res.message.isNotEmpty ? res.message : 'Laporan terkirim'),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -692,22 +966,57 @@ class _HalamanKontenState extends State<HalamanKonten> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkGreen))),
-                IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context)),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded),
+                  onPressed: () => Navigator.pop(context),
+                ),
               ],
             ),
             const SizedBox(height: 6),
-            Text(author, style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted, fontWeight: FontWeight.w600)),
+            Text(
+              author,
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 12),
-            Text(desc, style: const TextStyle(fontSize: 13, color: Color(0xFF465A50), height: 1.45)),
+            Text(
+              desc,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF465A50),
+                height: 1.45,
+              ),
+            ),
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               height: 44,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppColors.darkGreen, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.darkGreen,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Tutup', style: TextStyle(fontWeight: FontWeight.bold)),
+                child: const Text(
+                  'Tutup',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
             ),
           ],
@@ -717,16 +1026,20 @@ class _HalamanKontenState extends State<HalamanKonten> {
   }
 
   void _showContributorModal() async {
-    if (UserAccountData.isGuest) {
+    if (!UserAccountData.isLoggedIn) {
       AuthRequiredModal.show(
         context,
         title: 'Upload Konten Memerlukan Akun',
-        message: 'Silakan masuk atau daftar akun terlebih dahulu untuk mengunggah edukasi dan tips ke komunitas TR4SH!',
+        message:
+            'Silakan masuk atau daftar akun terlebih dahulu untuk mengunggah edukasi dan tips ke komunitas TR4SH!',
         icon: Icons.video_collection_rounded,
       );
       return;
     }
-    await Navigator.push(context, MaterialPageRoute(builder: (_) => const HalamanUploadKonten()));
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const HalamanUploadKonten()),
+    );
     _loadEdukasiPublik();
   }
 
@@ -745,16 +1058,30 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(color: const Color(0xFFD8F4E4), borderRadius: BorderRadius.circular(6)),
-                    child: const Icon(Icons.new_releases_rounded, size: 16, color: Color(0xFF1B6B44)),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD8F4E4),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(
+                      Icons.new_releases_rounded,
+                      size: 16,
+                      color: Color(0xFF1B6B44),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   RichText(
                     text: const TextSpan(
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.darkGreen,
+                      ),
                       children: [
                         TextSpan(text: 'Konten T'),
-                        TextSpan(text: 'R4', style: TextStyle(color: Colors.blue)),
+                        TextSpan(
+                          text: 'R4',
+                          style: TextStyle(color: Colors.blue),
+                        ),
                         TextSpan(text: 'SH'),
                       ],
                     ),
@@ -763,9 +1090,22 @@ class _HalamanKontenState extends State<HalamanKonten> {
               ),
               if (list.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: AppColors.limeAccent, borderRadius: BorderRadius.circular(10)),
-                  child: Text('${list.length} Topik', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.limeAccent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${list.length} Topik',
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -773,17 +1113,39 @@ class _HalamanKontenState extends State<HalamanKonten> {
           if (_isLoadingEdukasi)
             Container(
               height: 90,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.cardBorder)),
-              child: const Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.darkGreen))),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              child: const Center(
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.darkGreen,
+                  ),
+                ),
+              ),
             )
           else if (list.isEmpty)
             Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.cardBorder)),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
               child: Center(
                 child: Text(
-                  _selectedCategoryIndex == 6 ? 'Belum ada konten yang disimpan.' : 'Tidak ada konten untuk kategori atau pencarian ini.',
-                  style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+                  _selectedCategoryIndex == 6
+                      ? 'Belum ada konten yang disimpan.'
+                      : 'Tidak ada konten untuk kategori atau pencarian ini.',
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.textMuted,
+                  ),
                 ),
               ),
             )
@@ -795,18 +1157,25 @@ class _HalamanKontenState extends State<HalamanKonten> {
               separatorBuilder: (context, index) => const SizedBox(height: 14),
               itemBuilder: (context, index) {
                 final item = list[index];
-                final itemMap = item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+                final itemMap = item is Map
+                    ? Map<String, dynamic>.from(item)
+                    : <String, dynamic>{};
                 final title = itemMap['title']?.toString() ?? 'Edukasi TR4SH';
-                final author = itemMap['penulis']?.toString() ?? 'Komunitas TR4SH';
-                final jenis = itemMap['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan';
+                final author =
+                    itemMap['penulis']?.toString() ?? 'Komunitas TR4SH';
+                final jenis =
+                    itemMap['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan';
                 final mediaUrl = itemMap['media_url']?.toString() ?? '';
-                final tipeMedia = itemMap['tipe_media']?.toString() ?? 'Video YouTube';
+                final tipeMedia =
+                    itemMap['tipe_media']?.toString() ?? 'Video YouTube';
 
-                final bool isVideo = tipeMedia.toLowerCase().contains('video') ||
-                    mediaUrl.contains('youtube.com') ||
-                    mediaUrl.contains('youtu.be');
+                final bool isVideo =
+                    tipeMedia.toLowerCase().contains('video') ||
+                        mediaUrl.contains('youtube.com') ||
+                        mediaUrl.contains('youtu.be');
 
-                final thumb = isVideo ? _getYoutubeThumbnail(mediaUrl) : mediaUrl;
+                final thumb =
+                    isVideo ? _getYoutubeThumbnail(mediaUrl) : mediaUrl;
                 final itemKey = _getItemKey(itemMap);
                 final isSaved = _savedContentKeys.contains(itemKey);
                 final commentsCount = _commentCounts[itemKey] ?? 0;
@@ -820,7 +1189,13 @@ class _HalamanKontenState extends State<HalamanKonten> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: AppColors.cardBorder),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -836,12 +1211,15 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                   width: 100,
                                   height: 75,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stack) => Container(
+                                  errorBuilder: (context, error, stack) =>
+                                      Container(
                                     width: 100,
                                     height: 75,
                                     color: AppColors.darkGreen,
                                     child: Icon(
-                                      isVideo ? Icons.videocam_rounded : Icons.image_rounded,
+                                      isVideo
+                                          ? Icons.videocam_rounded
+                                          : Icons.image_rounded,
                                       color: Colors.white,
                                       size: 26,
                                     ),
@@ -853,17 +1231,27 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                   height: 75,
                                   color: AppColors.darkGreen,
                                   child: Icon(
-                                    isVideo ? Icons.videocam_rounded : Icons.image_rounded,
+                                    isVideo
+                                        ? Icons.videocam_rounded
+                                        : Icons.image_rounded,
                                     color: Colors.white,
                                     size: 26,
                                   ),
                                 ),
                               if (isVideo) ...[
-                                Container(width: 100, height: 75, color: Colors.black.withValues(alpha: 0.2)),
+                                Container(
+                                  width: 100,
+                                  height: 75,
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                ),
                                 const CircleAvatar(
                                   radius: 14,
                                   backgroundColor: AppColors.limeAccent,
-                                  child: Icon(Icons.play_arrow_rounded, color: AppColors.darkGreen, size: 18),
+                                  child: Icon(
+                                    Icons.play_arrow_rounded,
+                                    color: AppColors.darkGreen,
+                                    size: 18,
+                                  ),
                                 ),
                               ],
                             ],
@@ -875,19 +1263,35 @@ class _HalamanKontenState extends State<HalamanKonten> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(color: const Color(0xFFD8F4E4), borderRadius: BorderRadius.circular(6)),
-                                    child: Text(jenis, style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, color: Color(0xFF1B6B44))),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFD8F4E4),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      jenis,
+                                      style: const TextStyle(
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xFF1B6B44),
+                                      ),
+                                    ),
                                   ),
                                   GestureDetector(
                                     onTap: () => _toggleSaveContent(itemMap),
                                     child: Padding(
                                       padding: const EdgeInsets.all(4),
                                       child: Icon(
-                                        isSaved ? Icons.bookmark : Icons.bookmark_border,
+                                        isSaved
+                                            ? Icons.bookmark
+                                            : Icons.bookmark_border,
                                         size: 18,
                                         color: AppColors.darkGreen,
                                       ),
@@ -896,26 +1300,59 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                 ],
                               ),
                               const SizedBox(height: 5),
-                              Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.darkGreen, height: 1.25), maxLines: 2, overflow: TextOverflow.ellipsis),
+                              Text(
+                                title,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.darkGreen,
+                                  height: 1.25,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               const SizedBox(height: 3),
-                              Text('Oleh: $author', style: const TextStyle(fontSize: 10.5, color: Color(0xFF1E8850), fontWeight: FontWeight.w600)),
+                              Text(
+                                'Oleh: $author',
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  color: Color(0xFF1E8850),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                               const SizedBox(height: 8),
                               InkWell(
                                 onTap: () => _showContentDetailModal(itemMap),
                                 borderRadius: BorderRadius.circular(8),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFFF1F8F4),
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: const Color(0xFFDCEFE3)),
+                                    border: Border.all(
+                                      color: const Color(0xFFDCEFE3),
+                                    ),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.chat_bubble_outline_rounded, size: 13, color: AppColors.darkGreen),
+                                      const Icon(
+                                        Icons.chat_bubble_outline_rounded,
+                                        size: 13,
+                                        color: AppColors.darkGreen,
+                                      ),
                                       const SizedBox(width: 4),
-                                      Text('Komentar ($commentsCount)', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.darkGreen)),
+                                      Text(
+                                        'Komentar ($commentsCount)',
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.darkGreen,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -946,27 +1383,48 @@ class _HalamanKontenState extends State<HalamanKonten> {
           color: AppColors.darkGreen,
           backgroundColor: AppColors.limeAccent,
           child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(parent: ClampingScrollPhysics()),
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: ClampingScrollPhysics(),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 HeaderKonten(
                   isBookmarked: _isHeaderBookmarked,
                   hasUnreadNotification: true,
-                  onBookmarkTap: () => setState(() => _isHeaderBookmarked = !_isHeaderBookmarked),
-                  onNotificationTap: () {},
+                  onBookmarkTap: () => setState(
+                    () => _isHeaderBookmarked = !_isHeaderBookmarked,
+                  ),
+                  onNotificationTap: _navigateToNotifikasi,
                 ),
                 const SizedBox(height: 6),
-                SearchKontenBar(controller: _searchController, onFilterTap: _showFilterSheet, onChanged: (q) => setState(() => _searchQuery = q)),
+                SearchKontenBar(
+                  controller: _searchController,
+                  onFilterTap: _showFilterSheet,
+                  onChanged: (q) => setState(() => _searchQuery = q),
+                ),
                 const SizedBox(height: 12),
-                KategoriKontenTabs(categories: _categories, selectedIndex: _selectedCategoryIndex, onSelectIndex: (idx) => setState(() => _selectedCategoryIndex = idx)),
+                KategoriKontenTabs(
+                  categories: _categories,
+                  selectedIndex: _selectedCategoryIndex,
+                  onSelectIndex: (idx) =>
+                      setState(() => _selectedCategoryIndex = idx),
+                ),
                 const SizedBox(height: 16),
                 _buildSectionKontenBaruEdukasi(),
                 const SizedBox(height: 20),
                 SectionWawasanKomunitas(
                   onSeeAllTap: () {},
-                  onCardQnATap: () => _showWawasanDetail('Apakah sampah dapat berguna kembali?', 'Tentu! Lebih dari 78% sampah an-organik rumah tangga dapat dikonversi menjadi produk bernilai guna.', 'Oleh: Budi Prakoso • Komunitas TR4SH'),
-                  onCardKreasiTap: () => _showWawasanDetail('Kreasi Daur Ulang: Tatakan Gelas Marmer HDPE', 'Ide sulap tutup botol plastik menjadi tatakan gelas minimalis yang tahan panas dan bernilai ekonomis.', 'Dilihat 892 kali • Terverifikasi Komunitas'),
+                  onCardQnATap: () => _showWawasanDetail(
+                    'Apakah sampah dapat berguna kembali?',
+                    'Tentu! Lebih dari 78% sampah an-organik rumah tangga dapat dikonversi menjadi produk bernilai guna.',
+                    'Oleh: Budi Prakoso • Komunitas TR4SH',
+                  ),
+                  onCardKreasiTap: () => _showWawasanDetail(
+                    'Kreasi Daur Ulang: Tatakan Gelas Marmer HDPE',
+                    'Ide sulap tutup botol plastik menjadi tatakan gelas minimalis yang tahan panas dan bernilai ekonomis.',
+                    'Dilihat 892 kali • Terverifikasi Komunitas',
+                  ),
                 ),
                 const SizedBox(height: 20),
                 BannerKontributorKonten(onBerbagiIdeTap: _showContributorModal),
@@ -981,7 +1439,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
         backgroundColor: AppColors.limeAccent,
         foregroundColor: AppColors.darkGreen,
         icon: const Icon(Icons.video_call_rounded, size: 22),
-        label: const Text('Upload Konten', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
+        label: const Text(
+          'Upload Konten',
+          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+        ),
       ),
     );
   }

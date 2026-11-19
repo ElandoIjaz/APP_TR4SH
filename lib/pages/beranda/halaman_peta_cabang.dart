@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -26,7 +27,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   bool _isLoading = true;
   Map<String, dynamic>? _selectedCabang;
   Map<String, dynamic>? _cabangTerdekat;
-  
+
   List<LatLng> _routePoints = [];
   bool _isLoadingRoute = false;
 
@@ -45,10 +46,13 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
         if (permission == LocationPermission.denied) {
           permission = await Geolocator.requestPermission();
         }
-        
-        if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+
+        if (permission == LocationPermission.always ||
+            permission == LocationPermission.whileInUse) {
           Position position = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.high,
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.high,
+            ),
           );
           _userPosition = LatLng(position.latitude, position.longitude);
         }
@@ -63,11 +67,13 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   double _hitungJarakKm(LatLng p1, LatLng p2) {
     const p = 0.017453292519943295;
     const c = cos;
-    final a = 0.5 -
+    final a =
+        0.5 -
         c((p2.latitude - p1.latitude) * p) / 2 +
         c(p1.latitude * p) *
             c(p2.latitude * p) *
-            (1 - c((p2.longitude - p1.longitude) * p)) / 2;
+            (1 - c((p2.longitude - p1.longitude) * p)) /
+            2;
     return 12742 * asin(sqrt(a));
   }
 
@@ -78,16 +84,28 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
         final rawList = res.data as List;
         final formattedList = rawList.map((item) {
           final mapItem = Map<String, dynamic>.from(item);
-          
-          final double lat = double.tryParse(mapItem['latitude']?.toString() ?? '') ?? -8.184487;
-          final double lng = double.tryParse(mapItem['longitude']?.toString() ?? '') ?? 113.705886;
+
+          final double lat =
+              double.tryParse(mapItem['latitude']?.toString() ?? '') ??
+              -8.184487;
+          final double lng =
+              double.tryParse(mapItem['longitude']?.toString() ?? '') ??
+              113.705886;
           final LatLng pos = LatLng(lat, lng);
 
           final double jarak = _hitungJarakKm(_userPosition, pos);
 
           return {
-            'id': mapItem['id']?.toString() ?? mapItem['id_bank']?.toString() ?? mapItem['id_bank_sampah']?.toString() ?? '1',
-            'nama': mapItem['nama_cabang'] ?? mapItem['nama'] ?? mapItem['nama_bank_sampah'] ?? 'Bank Sampah',
+            'id':
+                mapItem['id']?.toString() ??
+                mapItem['id_bank']?.toString() ??
+                mapItem['id_bank_sampah']?.toString() ??
+                '1',
+            'nama':
+                mapItem['nama_cabang'] ??
+                mapItem['nama'] ??
+                mapItem['nama_bank_sampah'] ??
+                'Bank Sampah',
             'alamat': mapItem['alamat'] ?? '',
             'jam': mapItem['jam_operasional'] ?? '08:00 - 16:00 WIB',
             'telp': mapItem['telepon'] ?? mapItem['no_telp'] ?? '-',
@@ -132,7 +150,10 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
         'jam': '08:00 - 16:00 WIB',
         'telp': '081234567890',
         'latLng': const LatLng(-8.165123, 113.716234),
-        'jarak_km': _hitungJarakKm(_userPosition, const LatLng(-8.165123, 113.716234)),
+        'jarak_km': _hitungJarakKm(
+          _userPosition,
+          const LatLng(-8.165123, 113.716234),
+        ),
       },
     ];
 
@@ -188,7 +209,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   void _fokuskanPetaKeRute(LatLng start, LatLng end) {
     final double centerLat = (start.latitude + end.latitude) / 2;
     final double centerLng = (start.longitude + end.longitude) / 2;
-    
+
     final double jarak = _hitungJarakKm(start, end);
     double targetZoom = 15.0;
     if (jarak > 5) targetZoom = 13.5;
@@ -198,7 +219,9 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   }
 
   Future<void> _bukaNavigasiEksternal(double lat, double lng) async {
-    final url = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving');
+    final url = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving',
+    );
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
@@ -210,13 +233,19 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
       appBar: AppBar(
         title: const Text(
           'Lokasi Cabang & Rute Bank Sampah',
-          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         backgroundColor: AppColors.darkGreen,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.darkGreen))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.darkGreen),
+            )
           : Stack(
               children: [
                 FlutterMap(
@@ -227,10 +256,11 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.tr4sh.app',
                     ),
-                    
+
                     if (_routePoints.isNotEmpty)
                       PolylineLayer(
                         polylines: [
@@ -248,11 +278,16 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                           point: _userPosition,
                           width: 50,
                           height: 50,
-                          child: const Icon(Icons.my_location_rounded, color: Colors.blueAccent, size: 32),
+                          child: const Icon(
+                            Icons.my_location_rounded,
+                            color: Colors.blueAccent,
+                            size: 32,
+                          ),
                         ),
                         ..._daftarCabang.map<Marker>((cabang) {
                           final LatLng actualPos = cabang['latLng'] as LatLng;
-                          final bool isSelected = _selectedCabang?['id'] == cabang['id'];
+                          final bool isSelected =
+                              _selectedCabang?['id'] == cabang['id'];
                           return Marker(
                             point: actualPos,
                             width: isSelected ? 55 : 45,
@@ -261,7 +296,9 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                               onTap: () => _pilihCabang(cabang),
                               child: Icon(
                                 Icons.location_pin,
-                                color: isSelected ? Colors.amber : Colors.redAccent,
+                                color: isSelected
+                                    ? Colors.amber
+                                    : Colors.redAccent,
                                 size: isSelected ? 50 : 42,
                               ),
                             ),
@@ -279,17 +316,33 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                     right: 0,
                     child: Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
+                          color: Colors.black.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                            SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            ),
                             SizedBox(width: 8),
-                            Text('Memuat rute jalan raya...', style: TextStyle(color: Colors.white, fontSize: 11)),
+                            Text(
+                              'Memuat rute jalan raya...',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -320,7 +373,11 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2)),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
                       ],
                     ),
                     child: Column(
@@ -337,12 +394,20 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.recommend_rounded, color: AppColors.darkGreen, size: 20),
+                                const Icon(
+                                  Icons.recommend_rounded,
+                                  color: AppColors.darkGreen,
+                                  size: 20,
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     'Rekomendasi Terdekat: ${_cabangTerdekat!['nama']} (${(_cabangTerdekat!['jarak_km'] as double).toStringAsFixed(1)} km)',
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.darkGreen,
+                                    ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -351,14 +416,22 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                             ),
                           ),
                         DropdownButtonFormField<String>(
-                          value: _selectedCabang?['id']?.toString(),
+                          initialValue: _selectedCabang?['id']?.toString(),
                           isExpanded: true,
                           decoration: InputDecoration(
                             isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                             labelText: 'Pilih Cabang Bank Sampah',
-                            labelStyle: const TextStyle(fontSize: 13, color: AppColors.darkGreen),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            labelStyle: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.darkGreen,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                           items: _daftarCabang.map((cabang) {
                             final double jarak = cabang['jarak_km'];
@@ -373,7 +446,9 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                           }).toList(),
                           onChanged: (val) {
                             if (val != null) {
-                              final dipilih = _daftarCabang.firstWhere((c) => c['id'].toString() == val);
+                              final dipilih = _daftarCabang.firstWhere(
+                                (c) => c['id'].toString() == val,
+                              );
                               _pilihCabang(dipilih);
                             }
                           },
@@ -394,7 +469,11 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4)),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
                         ],
                       ),
                       child: Column(
@@ -407,24 +486,36 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                               Expanded(
                                 child: Text(
                                   _selectedCabang!['nama'],
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.darkGreen,
+                                  ),
                                 ),
                               ),
                               IconButton(
                                 icon: const Icon(Icons.close, size: 20),
-                                onPressed: () => setState(() => _selectedCabang = null),
+                                onPressed: () =>
+                                    setState(() => _selectedCabang = null),
                               ),
                             ],
                           ),
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.location_on_rounded, size: 14, color: Colors.grey),
+                              const Icon(
+                                Icons.location_on_rounded,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
                                   _selectedCabang!['alamat'],
-                                  style: const TextStyle(fontSize: 12.5, color: Colors.black87),
+                                  style: const TextStyle(
+                                    fontSize: 12.5,
+                                    color: Colors.black87,
+                                  ),
                                 ),
                               ),
                             ],
@@ -432,11 +523,19 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(Icons.near_me_rounded, size: 14, color: Colors.blueAccent),
+                              const Icon(
+                                Icons.near_me_rounded,
+                                size: 14,
+                                color: Colors.blueAccent,
+                              ),
                               const SizedBox(width: 6),
                               Text(
                                 'Jarak: ${(_selectedCabang!['jarak_km'] as double).toStringAsFixed(1)} km dari posisi Anda',
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blueAccent,
+                                ),
                               ),
                             ],
                           ),
@@ -448,17 +547,29 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.darkGreen,
                                 foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                               onPressed: () {
-                                final LatLng target = _selectedCabang!['latLng'] as LatLng;
+                                final LatLng target =
+                                    _selectedCabang!['latLng'] as LatLng;
                                 _fokuskanPetaKeRute(_userPosition, target);
-                                _bukaNavigasiEksternal(target.latitude, target.longitude);
+                                _bukaNavigasiEksternal(
+                                  target.latitude,
+                                  target.longitude,
+                                );
                               },
-                              icon: const Icon(Icons.navigation_rounded, size: 16),
+                              icon: const Icon(
+                                Icons.navigation_rounded,
+                                size: 16,
+                              ),
                               label: const Text(
                                 'Buka Navigasi Turn-by-Turn',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
                           ),

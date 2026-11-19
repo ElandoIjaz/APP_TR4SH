@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 
-class CardProdukGrid extends StatefulWidget {
+class CardProdukGrid extends StatelessWidget {
   final Map<String, dynamic> product; // Menerima data JSON dari API
   final VoidCallback onTap;
   final VoidCallback onAddToCart;
@@ -14,16 +14,7 @@ class CardProdukGrid extends StatefulWidget {
   });
 
   @override
-  State<CardProdukGrid> createState() => _CardProdukGridState();
-}
-
-class _CardProdukGridState extends State<CardProdukGrid> {
-  bool _isFavorite = false;
-
-  @override
   Widget build(BuildContext context) {
-    final product = widget.product;
-
     // Ekstraksi data dari API Laravel
     final String namaProduk =
         product['nama_product'] ??
@@ -51,12 +42,11 @@ class _CardProdukGridState extends State<CardProdukGrid> {
         product['image'] ??
         'https://via.placeholder.com/150';
 
-    // Dummy data untuk mempertahankan desain UI aslimu
-    const String badgeDummy = 'Eco Friendly';
-    const String materialDummy = 'Upcycled Material';
+    const String badgeLabel = 'Eco Friendly';
+    const String materialLabel = 'Upcycled Material';
 
     return InkWell(
-      onTap: widget.onTap,
+      onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
         decoration: BoxDecoration(
@@ -74,7 +64,7 @@ class _CardProdukGridState extends State<CardProdukGrid> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Image with Badges ──
+            // ── Image with Badge ──
             ClipRRect(
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(17),
@@ -97,7 +87,7 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                     ),
                   ),
 
-                  // Top-Left Category Badge (Dummy)
+                  // Top-Left Category Badge
                   Positioned(
                     top: 8,
                     left: 8,
@@ -107,48 +97,15 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                         vertical: 3.5,
                       ),
                       decoration: BoxDecoration(
-                        color: badgeDummy == 'Eco Friendly'
-                            ? Colors.white.withValues(alpha: 0.9)
-                            : AppColors.darkGreen,
+                        color: Colors.white.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Text(
-                        badgeDummy,
+                        badgeLabel,
                         style: TextStyle(
                           fontSize: 9.5,
                           fontWeight: FontWeight.w800,
-                          color: badgeDummy == 'Eco Friendly'
-                              ? AppColors.darkGreen
-                              : AppColors.limeAccent,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Top-Right Favorite Button
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isFavorite = !_isFavorite;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          _isFavorite
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
-                          size: 16,
-                          color: _isFavorite
-                              ? Colors.redAccent
-                              : AppColors.darkGreen,
+                          color: AppColors.darkGreen,
                         ),
                       ),
                     ),
@@ -169,11 +126,9 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Material Tag
-                        // Material Tag
                         Wrap(
-                          spacing: 4, // Jarak horizontal antar badge
-                          runSpacing:
-                              4, // Jarak vertikal jika badge turun baris
+                          spacing: 4,
+                          runSpacing: 4,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Container(
@@ -195,7 +150,7 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                                   ),
                                   SizedBox(width: 3),
                                   Text(
-                                    materialDummy, // "Upcycled Material"
+                                    materialLabel,
                                     style: TextStyle(
                                       fontSize: 9.5,
                                       fontWeight: FontWeight.w700,
@@ -205,7 +160,6 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                                 ],
                               ),
                             ),
-                            // Tambahkan indikator diskon di katalog depan jika ada
                             if (diskonPersen > 0)
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -267,7 +221,6 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              // Jika ada diskon, tampilkan harga coret tipis di atasnya
                               if (diskonPersen > 0)
                                 Text(
                                   'Rp${_formatPrice(hargaAsli)}',
@@ -291,7 +244,7 @@ class _CardProdukGridState extends State<CardProdukGrid> {
                         ),
                         const SizedBox(width: 4),
                         GestureDetector(
-                          onTap: widget.onAddToCart,
+                          onTap: onAddToCart,
                           child: Container(
                             width: 30,
                             height: 30,
@@ -318,7 +271,6 @@ class _CardProdukGridState extends State<CardProdukGrid> {
     );
   }
 
-  // Fungsi bawaanmu tetap dipertahankan
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),

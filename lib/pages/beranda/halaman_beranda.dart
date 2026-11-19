@@ -4,6 +4,7 @@ import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
+import 'package:test23/pages/akun/halaman_notifikasi.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:test23/pages/beranda/halaman_peta_cabang.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
@@ -56,7 +57,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           message.isNotEmpty
               ? message
               : 'Akun Anda sedang diblokir atau dinonaktifkan oleh Administrator TR4SH.',
-          style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black87,
+            height: 1.4,
+          ),
         ),
         actions: [
           ElevatedButton(
@@ -70,9 +75,14 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text('Ke Halaman Login', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Ke Halaman Login',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -87,7 +97,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   }
 
   Future<void> _loadRiwayatSampah() async {
-    if (UserAccountData.isGuest || UserAccountData.isNewAccount) {
+    if (!UserAccountData.isLoggedIn || UserAccountData.isNewAccount) {
       if (mounted) {
         setState(() {
           _listSampah = [];
@@ -102,7 +112,8 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       final res = await ApiService.fetchRiwayatSetor();
       if (res.success && res.data is Map && mounted) {
         final dataMap = res.data as Map;
-        final items = (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
+        final items =
+            (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
         final totalKg = (dataMap['total_kg'] is num)
             ? (dataMap['total_kg'] as num).toDouble()
             : 0.0;
@@ -140,7 +151,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
         if (mounted) _showAccountBlockedDialog(res.message);
         return;
       }
-      if (res.success && res.data is Map && res.data['edukasi_terbaru'] is List) {
+      if (res.success &&
+          res.data is Map &&
+          res.data['edukasi_terbaru'] is List) {
         final list = res.data['edukasi_terbaru'] as List;
         if (mounted) {
           setState(() {
@@ -190,108 +203,22 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     );
   }
 
-  void _showNotificationSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Notifikasi',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.darkGreen,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            _buildNotificationItem(
-              icon: Icons.check_circle_rounded,
-              iconColor: Colors.green,
-              title: 'Penyetoran Sampah Berhasil!',
-              desc: 'Setoran 4.2 kg botol plastik telah diverifikasi (+Rp 14.700).',
-              time: '10 menit yang lalu',
-            ),
-            const SizedBox(height: 10),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNotificationItem({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String desc,
-    required String time,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.bgScreen,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2EFE7)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: iconColor.withValues(alpha: 0.15),
-            child: Icon(icon, color: iconColor, size: 18),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: AppColors.darkGreen,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  desc,
-                  style: const TextStyle(fontSize: 12, color: Colors.black87),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  time,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+  void _navigateToNotifikasi() {
+    if (!UserAccountData.isLoggedIn) {
+      AuthRequiredModal.show(
+        context,
+        title: 'Notifikasi Memerlukan Akun',
+        message: 'Silakan masuk terlebih dahulu untuk melihat notifikasi Anda.',
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
     );
   }
 
   void _navigateToTracking() {
-    if (UserAccountData.isGuest) {
+    if (!UserAccountData.isLoggedIn) {
       AuthRequiredModal.show(
         context,
         title: 'Fitur Setor Sampah Memerlukan Akun',
@@ -313,7 +240,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   }
 
   void _navigateToUploadKonten() {
-    if (UserAccountData.isGuest) {
+    if (!UserAccountData.isLoggedIn) {
       AuthRequiredModal.show(
         context,
         title: 'Upload Konten Memerlukan Akun',
@@ -378,7 +305,10 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               InkWell(
                 onTap: _navigateToMap,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.limeAccent,
                     borderRadius: BorderRadius.circular(10),
@@ -497,7 +427,10 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               final title = itemMap['title']?.toString() ?? 'Konten Edukasi';
               final mediaUrl = itemMap['media_url']?.toString() ?? '';
               final isVideo = KontenValidator.extractYoutubeId(mediaUrl) != null ||
-                  (itemMap['tipe_media']?.toString().toLowerCase().contains('video') ??
+                  (itemMap['tipe_media']
+                          ?.toString()
+                          .toLowerCase()
+                          .contains('video') ??
                       false);
               final imgUrl = _resolveMediaImageUrl(mediaUrl);
 
@@ -527,7 +460,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                                     height: 105,
                                     width: 220,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Container(
+                                    errorBuilder: (_, _, _) => Container(
                                       height: 105,
                                       width: 220,
                                       color: AppColors.darkGreen,
@@ -799,29 +732,13 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                       const Tr4shBrandLogo(subtitle: 'HOME'),
                       Row(
                         children: [
-                          Stack(
-                            children: [
-                              IconButton(
-                                onPressed: _showNotificationSheet,
-                                icon: const Icon(
-                                  Icons.notifications_outlined,
-                                  color: AppColors.darkGreen,
-                                  size: 24,
-                                ),
-                              ),
-                              Positioned(
-                                right: 10,
-                                top: 10,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.amber,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          IconButton(
+                            onPressed: _navigateToNotifikasi,
+                            icon: const Icon(
+                              Icons.notifications_outlined,
+                              color: AppColors.darkGreen,
+                              size: 24,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           GestureDetector(
@@ -852,21 +769,13 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 _buildCustomCardBankSampah(),
                 const SizedBox(height: 16),
                 CardRiwayatSampah(
-                  rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                      ? const []
-                      : _listSampah,
-                  totalWeight:
-                      (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                          ? '0.0'
-                          : (_totalKg > 0
-                              ? _totalKg.toStringAsFixed(1)
-                              : '14.8'),
-                  trendBadge:
-                      (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                          ? '+0 setoran'
-                          : (_totalCount > 0
-                              ? '+$_totalCount setoran'
-                              : '+28% minggu ini'),
+                  rawData: !UserAccountData.isLoggedIn ? const [] : _listSampah,
+                  totalWeight: !UserAccountData.isLoggedIn
+                      ? '0.0'
+                      : _totalKg.toStringAsFixed(1),
+                  trendBadge: !UserAccountData.isLoggedIn
+                      ? '+0 setoran'
+                      : '+$_totalCount setoran',
                 ),
                 const SizedBox(height: 22),
                 CardVideoTutorial(

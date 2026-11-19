@@ -43,9 +43,9 @@ class GridJenisSampah extends StatelessWidget {
     String subtitle,
     String description,
     IconData icon,
-  ) onCategoryTap;
+  )? onCategoryTap;
 
-  const GridJenisSampah({super.key, required this.onCategoryTap});
+  const GridJenisSampah({super.key, this.onCategoryTap});
 
   static const List<_SampahInfoData> _items = [
     _SampahInfoData(
@@ -151,14 +151,6 @@ class GridJenisSampah extends StatelessWidget {
   ];
 
   void _tampilkanPanduanNasabah(BuildContext context, _SampahInfoData item) {
-    onCategoryTap(
-      item.title,
-      item.badge,
-      item.subtitle,
-      item.description,
-      item.icon,
-    );
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -210,12 +202,16 @@ class GridJenisSampah extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text(
-                              item.title,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.darkGreen,
+                            Flexible(
+                              child: Text(
+                                item.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.darkGreen,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -324,7 +320,7 @@ class GridJenisSampah extends StatelessWidget {
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
-                    if (UserAccountData.isGuest) {
+                    if (!UserAccountData.isLoggedIn) {
                       AuthRequiredModal.show(
                         context,
                         title: 'Fitur Setor Sampah Memerlukan Akun',
@@ -335,7 +331,9 @@ class GridJenisSampah extends StatelessWidget {
                       return;
                     }
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HalamanTracking()),
+                      MaterialPageRoute(
+                        builder: (_) => const HalamanTracking(),
+                      ),
                     );
                   },
                   child: const Text(
@@ -417,11 +415,34 @@ class GridJenisSampah extends StatelessWidget {
     );
   }
 
+  Widget _buildCategoryRow(
+    BuildContext context,
+    List<_SampahInfoData> rowItems,
+  ) {
+    return Row(
+      children: rowItems
+          .asMap()
+          .entries
+          .map(
+            (entry) => Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: entry.key == 0 ? 6 : 0,
+                  left: entry.key == 1 ? 6 : 0,
+                ),
+                child: _CategoryCard(
+                  data: entry.value,
+                  onTap: () => _tampilkanPanduanNasabah(context, entry.value),
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final row1 = [_items[0], _items[1]];
-    final row2 = [_items[2], _items[3]];
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -456,70 +477,29 @@ class GridJenisSampah extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: row1
-                .asMap()
-                .entries
-                .map(
-                  (entry) => Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        right: entry.key == 0 ? 6 : 0,
-                        left: entry.key == 1 ? 6 : 0,
-                      ),
-                      child: CategoryCard(
-                        data: entry.value,
-                        onTap: () =>
-                            _tampilkanPanduanNasabah(context, entry.value),
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
+          _buildCategoryRow(context, [_items[0], _items[1]]),
           const SizedBox(height: 12),
-          Row(
-            children: row2
-                .asMap()
-                .entries
-                .map(
-                  (entry) => Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        right: entry.key == 0 ? 6 : 0,
-                        left: entry.key == 1 ? 6 : 0,
-                      ),
-                      child: CategoryCard(
-                        data: entry.value,
-                        onTap: () =>
-                            _tampilkanPanduanNasabah(context, entry.value),
-                      ),
-                    ),
-                  ),
-                )
-                .toList(),
-          ),
+          _buildCategoryRow(context, [_items[2], _items[3]]),
         ],
       ),
     );
   }
 }
 
-class CategoryCard extends StatefulWidget {
+class _CategoryCard extends StatefulWidget {
   final _SampahInfoData data;
   final VoidCallback onTap;
 
-  const CategoryCard({
-    super.key,
+  const _CategoryCard({
     required this.data,
     required this.onTap,
   });
 
   @override
-  State<CategoryCard> createState() => _CategoryCardState();
+  State<_CategoryCard> createState() => _CategoryCardState();
 }
 
-class _CategoryCardState extends State<CategoryCard> {
+class _CategoryCardState extends State<_CategoryCard> {
   bool _isHovered = false;
 
   @override

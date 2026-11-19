@@ -6,8 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test23/core/api_config.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/models/komentar_model.dart';
-export 'models/api_response.dart';
 import 'models/api_response.dart';
+export 'models/api_response.dart';
 
 class ApiService {
   ApiService._();
@@ -62,7 +62,7 @@ class ApiService {
     if (requireAuth) {
       final token = await getToken();
       if (token != null && token.isNotEmpty) {
-        headers['Authorization'] = 'Bearer \$token';
+        headers['Authorization'] = 'Bearer $token';
       }
     }
 
@@ -145,7 +145,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal terhubung ke server: \$e',
+        message: 'Gagal terhubung ke server: $e',
         statusCode: 500,
       );
     }
@@ -202,7 +202,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal mendaftar: \$e',
+        message: 'Gagal mendaftar: $e',
         statusCode: 500,
       );
     }
@@ -269,7 +269,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal mengirim setoran: \$e',
+        message: 'Gagal mengirim setoran: $e',
         statusCode: 500,
       );
     }
@@ -292,7 +292,7 @@ class ApiService {
 
       final token = await getToken();
       if (token != null && token.isNotEmpty) {
-        request.headers['Authorization'] = 'Bearer \$token';
+        request.headers['Authorization'] = 'Bearer $token';
       }
       request.headers['Accept'] = 'application/json';
 
@@ -314,7 +314,7 @@ class ApiService {
         final originalName = fotoFile.name ?? '';
         final filename = originalName.isNotEmpty && originalName.contains('.')
             ? originalName
-            : 'sampah_\${DateTime.now().millisecondsSinceEpoch}.jpg';
+            : 'sampah_${DateTime.now().millisecondsSinceEpoch}.jpg';
 
         request.files.add(
           http.MultipartFile.fromBytes(
@@ -347,7 +347,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Koneksi error saat upload foto: \$e',
+        message: 'Koneksi error saat upload foto: $e',
         statusCode: 500,
       );
     }
@@ -358,7 +358,7 @@ class ApiService {
       final effectiveUserId = idUser ?? UserAccountData.currentUserId;
       String url = ApiConfig.riwayatSetor;
       if (effectiveUserId != null) {
-        url += '?id_user=\$effectiveUserId';
+        url += '?id_user=$effectiveUserId';
       }
 
       final response = await http
@@ -385,7 +385,7 @@ class ApiService {
           final tanggalRaw = item['created_at']?.toString() ?? '';
 
           return RiwayatSetorModel(
-            id: 'SET-\$idSampah',
+            id: 'SET-$idSampah',
             tanggal: tanggalRaw.isNotEmpty ? tanggalRaw : 'Hari Ini',
             kategori: kategori,
             beratKg: berat,
@@ -394,7 +394,7 @@ class ApiService {
             status: item['status_verifikasi'] == 'accepted' 
                 ? 'Disetujui' 
                 : (item['status_verifikasi'] == 'denied' ? 'Ditolak' : 'Pending'),
-            estimasiCo2: '\${(berat * 1.5).toStringAsFixed(1)} kg CO2e',
+            estimasiCo2: '${(berat * 1.5).toStringAsFixed(1)} kg CO2e',
           );
         }).toList();
       }
@@ -408,7 +408,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat riwayat: \$e',
+        message: 'Gagal memuat riwayat: $e',
         statusCode: 500,
       );
     }
@@ -431,7 +431,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat kategori: \$e',
+        message: 'Gagal memuat kategori: $e',
         statusCode: 500,
       );
     }
@@ -441,7 +441,7 @@ class ApiService {
     try {
       String url = ApiConfig.listPrakarya;
       if (search != null && search.trim().isNotEmpty) {
-        url += '?search=\${Uri.encodeComponent(search.trim())}';
+        url += '?search=${Uri.encodeComponent(search.trim())}';
       }
 
       final response = await http
@@ -459,7 +459,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat produk: \$e',
+        message: 'Gagal memuat produk: $e',
         statusCode: 500,
       );
     }
@@ -482,7 +482,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat bank sampah dari server: \$e',
+        message: 'Gagal memuat bank sampah dari server: $e',
         statusCode: 500,
       );
     }
@@ -505,7 +505,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat broadcast dari server: \$e',
+        message: 'Gagal memuat broadcast dari server: $e',
         statusCode: 500,
       );
     }
@@ -537,7 +537,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat edukasi: \$e',
+        message: 'Gagal memuat edukasi: $e',
         statusCode: 500,
       );
     }
@@ -654,7 +654,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat konten saya: \$e',
+        message: 'Gagal memuat konten saya: $e',
         statusCode: 500,
       );
     }
@@ -682,7 +682,7 @@ class ApiService {
         statusCode: response.statusCode,
       );
     } catch (e) {
-      return ApiResponse(success: false, message: 'Gagal cek status: \$e', statusCode: 500);
+      return ApiResponse(success: false, message: 'Gagal cek status: $e', statusCode: 500);
     }
   }
 
@@ -706,7 +706,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat beranda: \$e',
+        message: 'Gagal memuat beranda: $e',
         statusCode: 500,
       );
     }
@@ -741,7 +741,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat komentar: \$e',
+        message: 'Gagal memuat komentar: $e',
         statusCode: 500,
       );
     }
@@ -782,7 +782,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal mengirim komentar: \$e',
+        message: 'Gagal mengirim komentar: $e',
         statusCode: 500,
       );
     }
@@ -815,7 +815,77 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal mengirim laporan: \$e',
+        message: 'Gagal mengirim laporan: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  // =========================================================================
+  // METHOD PEMULIHAN KATA SANDI 
+  // =========================================================================
+  static Future<ApiResponse> requestPasswordReset({
+    required String noWa,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/auth/forgot-password'),
+            headers: (await _getHeaders(requireAuth: false)).cast<String, String>(),
+            body: jsonEncode({'no_wa': noWa.trim()}),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      return ApiResponse(
+        success: response.statusCode == 200 && (body['success'] == true),
+        message: body['message']?.toString() ??
+            'Permintaan pemulihan kata sandi telah diproses.',
+        data: body,
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal terhubung ke server: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  static Future<ApiResponse> confirmPasswordReset({
+    required String noWa,
+    required String kode,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/auth/reset-password'),
+            headers: (await _getHeaders(requireAuth: false)).cast<String, String>(),
+            body: jsonEncode({
+              'no_wa': noWa.trim(),
+              'kode': kode.trim().toUpperCase(),
+              'password': newPassword,
+              'password_confirmation': confirmPassword,
+            }),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      return ApiResponse(
+        success: response.statusCode == 200 && (body['success'] == true),
+        message: body['message']?.toString() ?? 'Gagal mengatur ulang kata sandi.',
+        data: body,
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal terhubung ke server: $e',
         statusCode: 500,
       );
     }
@@ -910,6 +980,165 @@ class ApiService {
       return ApiResponse(
         success: false,
         message: 'Kesalahan jaringan: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  /// Ambil profil terbaru langsung dari database Laravel (`GET /api/auth/user/{id}`)
+  static Future<ApiResponse> fetchUserProfile({int? idUser}) async {
+    try {
+      final effectiveId = idUser ?? UserAccountData.currentUserId;
+      if (effectiveId == null) {
+        return const ApiResponse(
+          success: false,
+          message: 'Pengguna belum login.',
+          statusCode: 401,
+        );
+      }
+
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/auth/user/$effectiveId'),
+            headers: (await _getHeaders()).cast<String, String>(),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      if (response.statusCode == 200 && body['data'] is Map) {
+        final userData = Map<String, dynamic>.from(body['data'] as Map);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_keyUser, jsonEncode(userData));
+        UserAccountData.updateFromUserData(userData);
+
+        return ApiResponse(
+          success: true,
+          message: 'Profil berhasil dimuat.',
+          data: userData,
+          statusCode: response.statusCode,
+        );
+      }
+
+      return ApiResponse(
+        success: false,
+        message: body['message']?.toString() ?? 'Gagal memuat profil.',
+        data: body,
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal memuat profil: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  /// Simpan perubahan Nama Lengkap, No. WhatsApp, & Foto Profil (`POST /api/auth/update-profile`)
+  static Future<ApiResponse> updateProfile({
+    required int idUser,
+    required String namaLengkap,
+    required String noWa,
+    dynamic fotoFile,
+  }) async {
+    try {
+      final uri = Uri.parse('${ApiConfig.baseUrl}/auth/update-profile');
+      final request = http.MultipartRequest('POST', uri);
+
+      final token = await getToken();
+      if (token != null && token.isNotEmpty) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      request.headers['Accept'] = 'application/json';
+
+      request.fields['id_user'] = idUser.toString();
+      request.fields['nama_lengkap'] = namaLengkap.trim();
+      request.fields['no_wa'] = noWa.trim();
+
+      if (fotoFile != null) {
+        final bytes = await fotoFile.readAsBytes();
+        final originalName = (fotoFile.name ?? '').toString();
+        final filename = originalName.isNotEmpty && originalName.contains('.')
+            ? originalName
+            : 'profil_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'foto',
+            bytes,
+            filename: filename,
+          ),
+        );
+      }
+
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 20));
+      final response = await http.Response.fromStream(streamedResponse);
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      if (response.statusCode == 200 && body['success'] == true) {
+        if (body['data'] is Map) {
+          final userData = Map<String, dynamic>.from(body['data'] as Map);
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_keyUser, jsonEncode(userData));
+          UserAccountData.updateFromUserData(userData);
+        }
+
+        return ApiResponse(
+          success: true,
+          message: body['message']?.toString() ?? 'Profil berhasil diperbarui!',
+          data: body['data'],
+          statusCode: response.statusCode,
+        );
+      }
+
+      return ApiResponse(
+        success: false,
+        message: body['message']?.toString() ?? 'Gagal memperbarui profil.',
+        data: body,
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal terhubung ke server: $e',
+        statusCode: 500,
+      );
+    }
+  }
+  /// Ubah kata sandi akun yang sedang login (`POST /api/auth/change-password`)
+  static Future<ApiResponse> changePassword({
+    required int idUser,
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/auth/change-password'),
+            headers: (await _getHeaders()).cast<String, String>(),
+            body: jsonEncode({
+              'id_user': idUser,
+              'current_password': currentPassword,
+              'new_password': newPassword,
+              'new_password_confirmation': confirmPassword,
+            }),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      return ApiResponse(
+        success: response.statusCode == 200 && (body['success'] == true),
+        message: body['message']?.toString() ?? 'Gagal memperbarui kata sandi.',
+        data: body,
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal terhubung ke server: $e',
         statusCode: 500,
       );
     }

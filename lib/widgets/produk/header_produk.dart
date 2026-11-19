@@ -24,9 +24,9 @@ class HeaderProduk extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // ── TR4SH! ECO MARKETPLACE Branding ──
-         const Tr4shBrandLogo(subtitle: 'ECO MARKETPLACE'),
+          const Tr4shBrandLogo(subtitle: 'ECO MARKETPLACE'),
 
-          // ── Right Action Buttons (Notification Bell & Cart / Avatar) ──
+          // ── Right Action Buttons (Notification Bell & Cart) ──
           Row(
             children: [
               // Notification Bell with Badge
@@ -46,20 +46,23 @@ class HeaderProduk extends StatelessWidget {
                         color: AppColors.darkGreen,
                         size: 24,
                       ),
-                     if(adaNotifikasi)
-                      Positioned(
-                        top: 2,
-                        right: 2,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: AppColors.limeAccent,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 1.5),
+                      if (adaNotifikasi)
+                        Positioned(
+                          top: 2,
+                          right: 2,
+                          child: Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: AppColors.limeAccent,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 1.5,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -105,31 +108,6 @@ class HeaderProduk extends StatelessWidget {
                           ),
                         ),
                     ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 8),
-
-              // Avatar Circle
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFD6F3DD),
-                  border: Border.all(
-                    color: const Color(0xFFBFE7CA),
-                    width: 1.5,
-                  ),
-                ),
-                child: const ClipOval(
-                  child: Center(
-                    child: Icon(
-                      Icons.person_rounded,
-                      size: 20,
-                      color: AppColors.darkGreen,
-                    ),
                   ),
                 ),
               ),

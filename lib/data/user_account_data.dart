@@ -8,16 +8,18 @@ class UserAccountData {
   UserAccountData._();
 
   static int? currentUserId;
-  static String currentNama = 'Bintang Pratama';
-  static String currentUsername = 'bintang_eco';
-  static String currentPhone = '0812-3456-7890';
+  static String currentNama = 'Tamu';
+  static String currentUsername = '';
+  static String currentPhone = '';
   static String? currentFoto;
-  static String currentStatusAkun = 'aktif';
+  static String currentStatusAkun = 'tamu';
   static double totalSampahKg = 0.0;
   static int totalSetoran = 0;
   static bool isNewAccount = false;
-  static bool isGuest = false;
+  static bool isGuest = true;
   static List<dynamic> listKontenSaya = [];
+
+  static bool get isLoggedIn => !isGuest && currentUserId != null;
 
   static void setGuestMode() {
     isGuest = true;
@@ -26,6 +28,7 @@ class UserAccountData {
     currentUsername = '';
     currentPhone = '';
     currentFoto = null;
+    currentStatusAkun = 'tamu';
     totalSampahKg = 0.0;
     totalSetoran = 0;
     isNewAccount = false;
@@ -67,46 +70,45 @@ class UserAccountData {
     if (user['username'] != null && user['username'].toString().isNotEmpty) {
       currentUsername = user['username'].toString();
     }
-    if (user['foto'] != null) {
-      currentFoto = user['foto'].toString();
+
+    // Sinkronisasi nomor telepon dari kolom no_wa backend (plus fallback)
+    final rawPhone = user['no_wa'] ??
+        user['telepon'] ??
+        user['no_hp'] ??
+        user['phone'];
+    if (rawPhone != null && rawPhone.toString().trim().isNotEmpty) {
+      currentPhone = rawPhone.toString().trim();
     }
+
+    if (user.containsKey('foto')) {
+      final rawFoto = user['foto']?.toString().trim();
+      currentFoto = (rawFoto != null && rawFoto.isNotEmpty) ? rawFoto : null;
+    }
+
     if (user['status_akun'] != null) {
       currentStatusAkun = user['status_akun'].toString();
     }
 
-    // Mengambil data statistik (Total Kg & Setoran)
     final stats = user['statistik'];
     if (stats != null && stats is Map) {
-      totalSampahKg = double.tryParse(stats['total_sampah_kg'].toString()) ?? 0.0;
+      totalSampahKg =
+          double.tryParse(stats['total_sampah_kg'].toString()) ?? 0.0;
       totalSetoran = int.tryParse(stats['total_setoran'].toString()) ?? 0;
-    } else {
-      if (user['total_sampah_kg'] != null) {
-        totalSampahKg = double.tryParse(user['total_sampah_kg'].toString()) ?? 0.0;
-      }
-      if (user['total_setoran'] != null) {
-        totalSetoran = int.tryParse(user['total_setoran'].toString()) ?? 0;
-      }
+    } else if (user['total_sampah_kg'] != null ||
+        user['total_setoran'] != null) {
+      totalSampahKg =
+          double.tryParse((user['total_sampah_kg'] ?? '0').toString()) ?? 0.0;
+      totalSetoran =
+          int.tryParse((user['total_setoran'] ?? '0').toString()) ?? 0;
     }
-    
+
     isNewAccount = user['is_new'] == true;
   }
 
   static void resetSession() {
-    isGuest = true;
-    currentUserId = null;
-    currentNama = 'Tamu';
-    currentUsername = '';
-    currentFoto = null;
-    totalSampahKg = 0.0;
-    totalSetoran = 0;
-    isNewAccount = false;
-    listRiwayatSetor = [];
-    listKontenSaya = [];
-    listTransaksi = [];
+    setGuestMode();
   }
 
-  // List transaksi dan setoran masih menggunakan array kosong karena akan 
-  // diisi dinamis dari API di masing-masing halamannya.
   static List<TransaksiModel> listTransaksi = [];
   static List<RiwayatSetorModel> listRiwayatSetor = [];
 }

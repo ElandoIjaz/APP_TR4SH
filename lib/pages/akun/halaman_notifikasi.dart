@@ -11,13 +11,73 @@ import 'package:test23/pages/akun/halaman_riwayat_transaksi.dart';
 class HalamanNotifikasi extends StatefulWidget {
   const HalamanNotifikasi({super.key});
 
+  /// Kunci penyimpanan status baca terpisah per akun user
+  static String get _storageKey =>
+      'tr4sh_read_notification_ids_${UserAccountData.currentUserId ?? 'guest'}';
+
+  /// Dipakai oleh header halaman lain untuk menyalakan/mematikan titik lonceng
+  static Future<bool> hasUnreadNotifications() async {
+    if (!UserAccountData.isLoggedIn || UserAccountData.currentUserId == null) {
+      return false;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final readIds = (prefs.getStringList(_storageKey) ?? []).toSet();
+
+    // 1. Cek broadcast promo yang belum diklik
+    try {
+      final broadcastRes = await ApiService.fetchBroadcast();
+      if (broadcastRes.success && broadcastRes.data is List) {
+        for (final raw in broadcastRes.data) {
+          if (raw is! Map) continue;
+          final idBroadcast = raw['id_broadcast']?.toString() ?? '0';
+          if (!readIds.contains('promo-$idBroadcast')) {
+            return true;
+          }
+        }
+      }
+    } catch (_) {}
+
+    // 2. Cek notifikasi transaksi milik user yang belum diklik
+    try {
+      final token = await ApiService.getToken();
+      final url = Uri.parse(
+        '${ApiConfig.baseUrl}/transaksi/riwayat/${UserAccountData.currentUserId}',
+      );
+      final response = await http.get(
+        url,
+        headers: {
+          'Accept': 'application/json',
+          if (token != null && token.isNotEmpty)
+            'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 6));
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        if (decoded['success'] == true && decoded['data'] is List) {
+          for (final raw in decoded['data']) {
+            if (raw is! Map) continue;
+            final status = (raw['status_transaksi'] ?? 'pending')
+                .toString()
+                .toLowerCase();
+            final orderId = raw['order_id']?.toString() ?? '-';
+            if (!readIds.contains('trx-$orderId-$status')) {
+              return true;
+            }
+          }
+        }
+      }
+    } catch (_) {}
+
+    return false;
+  }
+
   @override
   State<HalamanNotifikasi> createState() => _HalamanNotifikasiState();
 }
 
 class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
-  static const String _keyReadNotifs = 'tr4sh_read_notification_ids';
-
   int _selectedFilterIndex = 0;
   final List<String> _filters = [
     'Semua',
@@ -38,14 +98,14 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
 
   Future<void> _initAndLoadNotifications() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedRead = prefs.getStringList(_keyReadNotifs) ?? [];
+    final savedRead = prefs.getStringList(HalamanNotifikasi._storageKey) ?? [];
     _readIds = savedRead.toSet();
     await _loadNotifications();
   }
 
   Future<void> _saveReadIds() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_keyReadNotifs, _readIds.toList());
+    await prefs.setStringList(HalamanNotifikasi._storageKey, _readIds.toList());
   }
 
   Future<void> _loadNotifications() async {
@@ -116,9 +176,7 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
             }
           }
         }
-      } catch (_) {
-        // Tetap lanjutkan memuat broadcast jika riwayat transaksi gagal dimuat
-      }
+      } catch (_) {}
     }
 
     // 2. Ambil Notifikasi Info & Promo dari Broadcast Admin (/api/broadcast)
@@ -143,9 +201,6 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
         }
       }
     } catch (_) {}
-
-    // 3. Bagian Notifikasi Setor Sampah
-    // (Disiapkan untuk diintegrasikan oleh rekan tim dari endpoint /api/sampah/riwayat)
 
     if (!mounted) return;
     setState(() {

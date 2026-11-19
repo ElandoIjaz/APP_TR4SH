@@ -234,7 +234,7 @@ class SectionWawasanKomunitas extends StatelessWidget {
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: _items.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final item = _items[index];
                   return Container(
@@ -335,7 +335,7 @@ class SectionWawasanKomunitas extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final item = _items[index];
               return InkWell(

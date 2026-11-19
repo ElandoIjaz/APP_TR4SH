@@ -54,7 +54,7 @@ class BannerKirimSampah extends StatelessWidget {
                   ),
                   SizedBox(height: 2),
                   Text(
-                    'Turunkan sampah pilah dengan poin belanja.',
+                    'Setor sampah terpilah ke Bank Sampah Sahabat Ibu.',
                     style: TextStyle(
                       fontSize: 10.5,
                       color: Color(0xFF4C6656),
