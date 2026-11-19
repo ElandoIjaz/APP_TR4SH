@@ -19,6 +19,7 @@ dependencies:
   flutter_map: ^6.1.0 # <-- Wajib ditambahkan untuk peta OpenStreetMap
   latlong2: ^0.9.0      # <-- Wajib ditambahkan untuk koordinat peta
   geolocator: ^13.0.2
+  youtube_player_flutter: ^9.1.1
 
 dev_dependencies:
   flutter_test:
@@ -31,3 +32,6 @@ flutter:
   assets:
     - assets/images/logo_trash.png
     - assets/images/logo_sampah.png
+
+dependency_overrides:
+  flutter_inappwebview: ^6.1.5

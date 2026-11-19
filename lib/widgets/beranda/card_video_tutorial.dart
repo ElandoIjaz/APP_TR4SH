@@ -16,7 +16,7 @@ class CardVideoTutorial extends StatefulWidget {
     super.key,
     required this.onPlayTap,
     required this.onSeeAllTap,
-    this.duration = '03:40 min',
+    this.duration = '',
     this.title = 'Panduan Pilah Sampah Rumah Tangga',
     this.subtitle = 'Langkah mudah memisahkan sampah organik & anorganik',
     this.sectionTitle = 'Cara Menabung Sampah',
@@ -34,62 +34,105 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
 
   @override
   Widget build(BuildContext context) {
+    final activeBadge = (widget.badgeText != null && widget.badgeText!.trim().isNotEmpty)
+        ? widget.badgeText!.trim()
+        : 'PANDUAN PILAH';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section Title & "Lihat Semua"
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                widget.sectionTitle,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.darkGreen,
-                ),
+              Row(
+                children: [
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.mintSoft,
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: const Icon(
+                      Icons.play_circle_fill_rounded,
+                      size: 17,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    widget.sectionTitle,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.darkGreen,
+                    ),
+                  ),
+                ],
               ),
               InkWell(
                 onTap: widget.onSeeAllTap,
-                child: const Text(
-                  'Lihat Semua',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1E8850),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.mintSoft.withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Lihat Semua',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1E8850),
+                        ),
+                      ),
+                      SizedBox(width: 2),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        size: 16,
+                        color: Color(0xFF1E8850),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 12),
-
-          // Video Container Card
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.cardBorder),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Color(0xFFF6FBF8)],
+              ),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: AppColors.darkGreen.withValues(alpha: 0.14),
+                width: 1.2,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
-                  blurRadius: 14,
-                  offset: const Offset(0, 6),
+                  color: AppColors.darkGreen.withValues(alpha: 0.06),
+                  blurRadius: 16,
+                  offset: const Offset(0, 7),
                 ),
               ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Thumbnail with Play Button
                 GestureDetector(
                   onTap: widget.onPlayTap,
                   child: ClipRRect(
                     borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
+                      top: Radius.circular(22),
                     ),
                     child: Stack(
                       alignment: Alignment.center,
@@ -98,7 +141,7 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                             widget.thumbnailUrl!.startsWith('http'))
                           Image.network(
                             widget.thumbnailUrl!,
-                            height: 180,
+                            height: 184,
                             width: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) =>
@@ -107,86 +150,122 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                         else
                           _buildFallbackThumbnail(),
 
-                        // Play Button
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: AppColors.limeAccent,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.25),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
+                        Positioned.fill(
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black.withValues(alpha: 0.12),
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.42),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.play_arrow_rounded,
-                            size: 32,
-                            color: AppColors.darkGreen,
+                            ),
                           ),
                         ),
 
-                        // Badge Top-Left if present
-                        if (widget.badgeText != null)
-                          Positioned(
-                            top: 12,
-                            left: 12,
+                        Container(
+                          width: 66,
+                          height: 66,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.limeAccent.withValues(alpha: 0.28),
+                          ),
+                          child: Center(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
+                              width: 52,
+                              height: 52,
                               decoration: BoxDecoration(
                                 color: AppColors.limeAccent,
-                                borderRadius: BorderRadius.circular(10),
+                                shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.2),
-                                    blurRadius: 6,
+                                    color: Colors.black.withValues(alpha: 0.25),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              child: Text(
-                                widget.badgeText!,
-                                style: const TextStyle(
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.darkGreen,
-                                ),
+                              child: const Icon(
+                                Icons.play_arrow_rounded,
+                                size: 32,
+                                color: AppColors.darkGreen,
                               ),
                             ),
                           ),
+                        ),
 
-                        // Duration Badge
                         Positioned(
-                          right: 12,
-                          bottom: 12,
+                          top: 12,
+                          left: 12,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
+                              horizontal: 10,
+                              vertical: 4.5,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(10),
+                              color: AppColors.limeAccent,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  blurRadius: 6,
+                                ),
+                              ],
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 const Icon(
-                                  Icons.schedule_rounded,
+                                  Icons.auto_awesome_rounded,
                                   size: 12,
-                                  color: Colors.white,
+                                  color: AppColors.darkGreen,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  widget.duration,
+                                  activeBadge,
                                   style: const TextStyle(
                                     fontSize: 10.5,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.darkGreen,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        Positioned(
+                          right: 12,
+                          bottom: 12,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.darkGreen.withValues(alpha: 0.85),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.limeAccent.withValues(alpha: 0.4),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.eco_rounded,
+                                  size: 13,
+                                  color: AppColors.limeAccent,
+                                ),
+                                SizedBox(width: 5),
+                                Text(
+                                  'Edukasi TR4SH',
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
                                     color: Colors.white,
                                   ),
                                 ),
@@ -199,7 +278,6 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                   ),
                 ),
 
-                // Video Info
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(
@@ -212,8 +290,8 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                             Text(
                               widget.title,
                               style: const TextStyle(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
                                 color: AppColors.darkGreen,
                               ),
                             ),
@@ -225,48 +303,82 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textMuted,
-                                height: 1.3,
+                                height: 1.35,
                               ),
                             ),
-                            if (widget.author != null &&
-                                widget.author!.isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                'Oleh: ${widget.author}',
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  color: Color(0xFF2E7D32),
-                                  fontWeight: FontWeight.w600,
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 6,
+                              runSpacing: 6,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.mintSoft,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Tap untuk memutar',
+                                    style: TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.darkGreen,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
+                                if (widget.author != null &&
+                                    widget.author!.isNotEmpty)
+                                  Text(
+                                    'Oleh: ${widget.author}',
+                                    style: const TextStyle(
+                                      fontSize: 11.5,
+                                      color: Color(0xFF2E7D32),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
-                      IconButton(
-                        icon: Icon(
-                          _isBookmarked
-                              ? Icons.bookmark_rounded
-                              : Icons.bookmark_border_rounded,
+                      const SizedBox(width: 6),
+                      Container(
+                        decoration: BoxDecoration(
                           color: _isBookmarked
-                              ? AppColors.darkGreen
-                              : AppColors.textMuted,
+                              ? AppColors.mintSoft
+                              : AppColors.bgScreen,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.cardBorder),
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _isBookmarked = !_isBookmarked;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                _isBookmarked
-                                    ? 'Video ditambahkan ke bookmark!'
-                                    : 'Bookmark dihapus',
+                        child: IconButton(
+                          icon: Icon(
+                            _isBookmarked
+                                ? Icons.bookmark_rounded
+                                : Icons.bookmark_border_rounded,
+                            color: _isBookmarked
+                                ? AppColors.darkGreen
+                                : AppColors.textMuted,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isBookmarked = !_isBookmarked;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  _isBookmarked
+                                      ? 'Video ditambahkan ke bookmark!'
+                                      : 'Bookmark dihapus',
+                                ),
+                                duration: const Duration(seconds: 1),
                               ),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -282,23 +394,41 @@ class _CardVideoTutorialState extends State<CardVideoTutorial> {
   Widget _buildFallbackThumbnail() {
     return Image.asset(
       'assets/images/waste_guide.jpg',
-      height: 180,
+      height: 184,
       width: double.infinity,
       fit: BoxFit.cover,
       errorBuilder: (context, error, stackTrace) {
         return Container(
-          height: 180,
+          height: 184,
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF25664B), Color(0xFF104A34)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF25664B), Color(0xFF104A34), Color(0xFF072B1C)],
             ),
           ),
-          child: const Center(
-            child: Icon(
-              Icons.recycling_rounded,
-              size: 60,
-              color: Colors.white38,
-            ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -20,
+                top: -20,
+                child: Container(
+                  width: 110,
+                  height: 110,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.limeAccent.withValues(alpha: 0.12),
+                  ),
+                ),
+              ),
+              const Center(
+                child: Icon(
+                  Icons.recycling_rounded,
+                  size: 62,
+                  color: Colors.white38,
+                ),
+              ),
+            ],
           ),
         );
       },
