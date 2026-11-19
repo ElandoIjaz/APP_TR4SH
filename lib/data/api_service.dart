@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test23/core/api_config.dart';
 import 'package:test23/data/user_account_data.dart';
-
+import 'package:test23/models/komentar_model.dart';
 export 'models/api_response.dart';
 import 'models/api_response.dart';
 
@@ -760,4 +760,83 @@ class ApiService {
       return {'message': source};
     }
   }
-}
+/// GET Komentar berdasarkan ID Edukasi
+  static Future<ApiResponse> fetchKomentar(int edukasiId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConfig.baseUrl}/edukasi/$edukasiId/komentar'),
+        headers: {'Accept': 'application/json'},
+      ).timeout(_timeoutDuration);
+
+      final body = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && body['success'] == true) {
+        final List items = body['data'] ?? [];
+        final listKomentar = items.map((e) => KomentarModel.fromJson(e)).toList();
+        return ApiResponse(
+          success: true,
+          message: 'Berhasil mengambil komentar',
+          data: listKomentar,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse(
+          success: false,
+          message: body['message'] ?? 'Gagal mengambil data komentar',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Kesalahan jaringan: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  /// POST Kirim Komentar Baru (Public/Guest)
+  static Future<ApiResponse> sendKomentar({
+    required int edukasiId,
+    required String nama,
+    required String isiKomentar,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConfig.baseUrl}/edukasi/$edukasiId/komentar'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'nama': nama.isEmpty ? 'Tamu TR4SH' : nama,
+          'isi_komentar': isiKomentar,
+        }),
+      ).timeout(_timeoutDuration);
+
+      final body = jsonDecode(response.body);
+
+      if ((response.statusCode == 200 || response.statusCode == 201) && body['success'] == true) {
+        final komentarBaru = KomentarModel.fromJson(body['data']);
+        return ApiResponse(
+          success: true,
+          message: 'Komentar berhasil dikirim',
+          data: komentarBaru,
+          statusCode: response.statusCode,
+        );
+      } else {
+        return ApiResponse(
+          success: false,
+          message: body['message'] ?? 'Gagal mengirim komentar',
+          statusCode: response.statusCode,
+        );
+      }
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Kesalahan jaringan: $e',
+        statusCode: 500,
+      );
+    }
+  }
+} // Penutup class ApiService
