@@ -86,11 +86,11 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
           final double jarak = _hitungJarakKm(_userPosition, pos);
 
           return {
-            'id': mapItem['id']?.toString() ?? mapItem['id_bank']?.toString() ?? '1',
-            'nama': mapItem['nama_cabang'] ?? mapItem['nama'] ?? 'Bank Sampah',
+            'id': mapItem['id']?.toString() ?? mapItem['id_bank']?.toString() ?? mapItem['id_bank_sampah']?.toString() ?? '1',
+            'nama': mapItem['nama_cabang'] ?? mapItem['nama'] ?? mapItem['nama_bank_sampah'] ?? 'Bank Sampah',
             'alamat': mapItem['alamat'] ?? '',
             'jam': mapItem['jam_operasional'] ?? '08:00 - 16:00 WIB',
-            'telp': mapItem['telepon'] ?? '-',
+            'telp': mapItem['telepon'] ?? mapItem['no_telp'] ?? '-',
             'latLng': pos,
             'jarak_km': jarak,
           };
@@ -119,8 +119,11 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
           return;
         }
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint("Gagal memuat dari API: $e");
+    }
 
+    // Fallback jika API gagal atau kosong
     final fallbackList = [
       {
         'id': '1',
@@ -130,24 +133,6 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
         'telp': '081234567890',
         'latLng': const LatLng(-8.165123, 113.716234),
         'jarak_km': _hitungJarakKm(_userPosition, const LatLng(-8.165123, 113.716234)),
-      },
-      {
-        'id': '2',
-        'nama': 'Unit Bank Sampah Patrang',
-        'alamat': 'Jl. Srikoyo No. 12, Patrang, Jember',
-        'jam': '08:00 - 14:00 WIB',
-        'telp': '082198765432',
-        'latLng': const LatLng(-8.152341, 113.698512),
-        'jarak_km': _hitungJarakKm(_userPosition, const LatLng(-8.152341, 113.698512)),
-      },
-      {
-        'id': '3',
-        'nama': 'Unit Bank Sampah Kaliwates',
-        'alamat': 'Jl. Sultan Agung No. 88, Kaliwates, Jember',
-        'jam': '08:30 - 15:00 WIB',
-        'telp': '085611223344',
-        'latLng': const LatLng(-8.173912, 113.678910),
-        'jarak_km': _hitungJarakKm(_userPosition, const LatLng(-8.173912, 113.678910)),
       },
     ];
 
@@ -296,7 +281,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.7),
+                          color: Colors.black.withOpacity(0.7),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: const Row(
@@ -335,7 +320,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2)),
+                        BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 2)),
                       ],
                     ),
                     child: Column(
@@ -366,7 +351,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                             ),
                           ),
                         DropdownButtonFormField<String>(
-                          initialValue: _selectedCabang?['id']?.toString(),
+                          value: _selectedCabang?['id']?.toString(),
                           isExpanded: true,
                           decoration: InputDecoration(
                             isDense: true,
@@ -409,7 +394,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 12, offset: const Offset(0, 4)),
+                          BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4)),
                         ],
                       ),
                       child: Column(

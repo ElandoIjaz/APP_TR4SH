@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
@@ -17,27 +20,41 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Form Controllers
   final TextEditingController _urlController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
 
-  final List<String> _kategoriList = [
-    'Edukasi Lingkungan',
-    'Daur Ulang (Recycle)',
-    'Pengurangan Sampah (Reduce)',
-    'Pemanfaatan Kembali (Reuse)',
-    'Prakarya Kreatif',
-    'Tips Kompos',
+  final List<Map<String, dynamic>> _kategoriOptions = [
+    {
+      'value': 'Reduce',
+      'label': 'Reduce',
+      'subtitle': 'Kurangi sampah',
+      'icon': Icons.eco_rounded,
+    },
+    {
+      'value': 'Recycle',
+      'label': 'Recycle',
+      'subtitle': 'Daur ulang',
+      'icon': Icons.autorenew_rounded,
+    },
+    {
+      'value': 'Reuse',
+      'label': 'Reuse',
+      'subtitle': 'Pakai kembali',
+      'icon': Icons.recycling_rounded,
+    },
   ];
-  String _selectedKategori = 'Edukasi Lingkungan';
+  String _selectedKategori = 'Reduce';
+  String _selectedTipeMedia = 'Video';
 
   bool _isLoading = false;
   String? _detectedYoutubeId;
+  XFile? _pickedImageFile;
 
-  // Riwayat State
   bool _isLoadingRiwayat = false;
   List<dynamic> _listKontenSaya = [];
+
+  bool get _isFotoMode => _selectedTipeMedia == 'Foto';
 
   @override
   void initState() {
@@ -48,7 +65,6 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
         _muatKontenSaya();
       }
     });
-
     _urlController.addListener(_onUrlChanged);
   }
 
@@ -63,18 +79,36 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
   }
 
   void _onUrlChanged() {
-    final rawUrl = _urlController.text;
-    final id = KontenValidator.extractYoutubeId(rawUrl);
+    if (_isFotoMode) return;
+    final id = KontenValidator.extractYoutubeId(_urlController.text);
     if (id != _detectedYoutubeId) {
-      setState(() {
-        _detectedYoutubeId = id;
-      });
+      setState(() => _detectedYoutubeId = id);
+    }
+  }
+
+  void _gantiTipeMedia(String tipe) {
+    if (_selectedTipeMedia == tipe) return;
+    setState(() {
+      _selectedTipeMedia = tipe;
+      _urlController.clear();
+      _detectedYoutubeId = null;
+      _pickedImageFile = null;
+    });
+  }
+
+  Future<void> _pilihFotoDariPerangkat() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (picked != null && mounted) {
+      setState(() => _pickedImageFile = picked);
     }
   }
 
   Future<void> _muatKontenSaya() async {
-    if (UserAccountData.isNewAccount &&
-        UserAccountData.listKontenSaya.isEmpty) {
+    if (UserAccountData.isNewAccount && UserAccountData.listKontenSaya.isEmpty) {
       if (mounted) {
         setState(() {
           _isLoadingRiwayat = false;
@@ -99,32 +133,51 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
       AuthRequiredModal.show(
         context,
         title: 'Upload Konten Memerlukan Akun',
-        message: 'Mode Tamu tidak dapat mengunggah konten. Silakan masuk atau daftar akun terlebih dahulu.',
+        message:
+            'Mode Tamu tidak dapat mengunggah konten. Silakan masuk atau daftar akun terlebih dahulu.',
         icon: Icons.video_collection_rounded,
       );
       return;
     }
 
-    final title = _titleController.text;
-    final url = _urlController.text;
-    final desc = _descController.text;
+    final title = _titleController.text.trim();
+    final desc = _descController.text.trim();
 
-    // Bersih dan rapi: Logic if-else form diekstrak ke KontenValidator
-    final error = KontenValidator.validateUploadForm(
-      rawUrl: url,
-      detectedYoutubeId: _detectedYoutubeId,
-      title: title,
-      description: desc,
-    );
-
-    if (error != null) {
-      _showSnackBar(error, Colors.redAccent);
+    if (title.isEmpty) {
+      _showSnackBar('Judul konten wajib diisi.', Colors.redAccent);
+      return;
+    }
+    if (title.length > 50) {
+      _showSnackBar('Judul konten maksimal 50 karakter.', Colors.redAccent);
+      return;
+    }
+    if (desc.isEmpty) {
+      _showSnackBar('Deskripsi konten wajib diisi.', Colors.redAccent);
       return;
     }
 
-    setState(() => _isLoading = true);
+    String normalizedUrl = '';
 
-    final normalizedUrl = KontenValidator.normalizeYoutubeUrl(url)!;
+    if (_isFotoMode) {
+      if (_pickedImageFile == null) {
+        _showSnackBar('Pilih foto dari perangkat terlebih dahulu.', Colors.redAccent);
+        return;
+      }
+    } else {
+      final error = KontenValidator.validateUploadForm(
+        rawUrl: _urlController.text,
+        detectedYoutubeId: _detectedYoutubeId,
+        title: title,
+        description: desc,
+      );
+      if (error != null) {
+        _showSnackBar(error, Colors.redAccent);
+        return;
+      }
+      normalizedUrl = KontenValidator.normalizeYoutubeUrl(_urlController.text)!;
+    }
+
+    setState(() => _isLoading = true);
 
     final res = await ApiService.uploadKonten(
       idUser: UserAccountData.currentUserId,
@@ -132,24 +185,29 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
       mediaUrl: normalizedUrl,
       description: desc,
       jenisEdukasi: _selectedKategori,
-      tipeMedia: 'Video YouTube',
+      tipeMedia: _selectedTipeMedia,
+      fotoFile: _isFotoMode ? _pickedImageFile : null,
     );
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
     if (res.success) {
+      final savedYoutubeId = _detectedYoutubeId;
+      final savedFotoPath = _pickedImageFile?.path;
       _tampilkanDialogSukses(
         title: title,
-        youtubeId: _detectedYoutubeId!,
+        youtubeId: savedYoutubeId,
+        localImagePath: savedFotoPath,
         kategori: _selectedKategori,
+        tipeMedia: _selectedTipeMedia,
       );
-      // Reset form
       _urlController.clear();
       _titleController.clear();
       _descController.clear();
       setState(() {
         _detectedYoutubeId = null;
+        _pickedImageFile = null;
       });
     } else {
       _showSnackBar(res.message, Colors.redAccent);
@@ -158,8 +216,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
 
   void _tampilkanDialogSukses({
     required String title,
-    required String youtubeId,
+    required String? youtubeId,
+    required String? localImagePath,
     required String kategori,
+    required String tipeMedia,
   }) {
     showDialog(
       context: context,
@@ -170,7 +230,6 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Status Icon & Badge
             Container(
               width: 72,
               height: 72,
@@ -186,8 +245,6 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               ),
             ),
             const SizedBox(height: 16),
-
-            // Tag status
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
@@ -211,9 +268,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                 ],
               ),
             ),
-
             const SizedBox(height: 14),
-
             const Text(
               'Konten Berhasil Terkirim!',
               textAlign: TextAlign.center,
@@ -224,9 +279,8 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               ),
             ),
             const SizedBox(height: 8),
-
             Text(
-              'Karya video Anda telah masuk ke sistem TR4SH dan saat ini sedang menunggu tinjauan dari tim Admin sebelum ditampilkan di katalog publik.',
+              'Konten $tipeMedia Anda telah masuk ke sistem TR4SH dan sedang menunggu tinjauan tim Admin sebelum ditampilkan ke publik.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12.5,
@@ -234,10 +288,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                 height: 1.4,
               ),
             ),
-
             const SizedBox(height: 16),
-
-            // Card Mini Preview
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -249,21 +300,22 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      'https://img.youtube.com/vi/$youtubeId/hqdefault.jpg',
-                      width: 70,
-                      height: 48,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        width: 70,
-                        height: 48,
-                        color: Colors.grey.shade300,
-                        child: const Icon(
-                          Icons.play_circle_outline,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
+                    child: youtubeId != null
+                        ? Image.network(
+                            'https://img.youtube.com/vi/$youtubeId/hqdefault.jpg',
+                            width: 70,
+                            height: 48,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _miniThumbFallback(true),
+                          )
+                        : (localImagePath != null
+                            ? Image.file(
+                                File(localImagePath),
+                                width: 70,
+                                height: 48,
+                                fit: BoxFit.cover,
+                              )
+                            : _miniThumbFallback(false)),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -282,7 +334,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          kategori,
+                          '$kategori • $tipeMedia',
                           style: const TextStyle(
                             fontSize: 11,
                             color: AppColors.textMuted,
@@ -294,10 +346,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                 ],
               ),
             ),
-
             const SizedBox(height: 24),
-
-            // Buttons
             SizedBox(
               width: double.infinity,
               height: 46,
@@ -331,6 +380,18 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _miniThumbFallback(bool isVideo) {
+    return Container(
+      width: 70,
+      height: 48,
+      color: Colors.grey.shade300,
+      child: Icon(
+        isVideo ? Icons.play_circle_outline : Icons.image_outlined,
+        color: Colors.grey,
       ),
     );
   }
@@ -387,7 +448,6 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
     );
   }
 
-  // ── TAB 1: FORM UPLOAD KONTEN ──
   Widget _buildFormUploadTab() {
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
@@ -455,7 +515,6 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
             ),
           ],
 
-          // Banner Info
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -474,7 +533,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Bagikan inspirasi daur ulang melalui tautan video YouTube Anda. Setelah dikirim, konten akan berstatus "Menunggu Konfirmasi Admin" sebelum dipublikasikan.',
+                    'Bagikan inspirasi daur ulang melalui tautan video YouTube atau foto dari perangkat Anda. Konten akan berstatus "Menunggu Konfirmasi Admin" sebelum dipublikasikan.',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.green.shade900,
@@ -487,70 +546,130 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
           ),
           const SizedBox(height: 20),
 
-          // 1. Link Video YouTube
           const Text(
-            'Link Video YouTube *',
+            'Tipe Media *',
             style: TextStyle(
               fontSize: 13.5,
               fontWeight: FontWeight.bold,
               color: AppColors.darkGreen,
             ),
           ),
-          const SizedBox(height: 6),
-          TextField(
-            controller: _urlController,
-            keyboardType: TextInputType.url,
-            style: const TextStyle(fontSize: 13.5),
-            decoration: InputDecoration(
-              hintText: 'https://www.youtube.com/watch?v=... atau youtu.be/...',
-              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5),
-              filled: true,
-              fillColor: Colors.white,
-              prefixIcon: const Icon(
-                Icons.smart_display_rounded,
-                color: Colors.redAccent,
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildTipeMediaChip(
+                  label: 'Video YouTube',
+                  value: 'Video',
+                  icon: Icons.smart_display_rounded,
+                ),
               ),
-              suffixIcon: _urlController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(
-                        Icons.clear,
-                        size: 18,
-                        color: Colors.grey,
-                      ),
-                      onPressed: () {
-                        _urlController.clear();
-                        setState(() => _detectedYoutubeId = null);
-                      },
-                    )
-                  : null,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 14,
-                vertical: 14,
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildTipeMediaChip(
+                  label: 'Foto Perangkat',
+                  value: 'Foto',
+                  icon: Icons.photo_library_rounded,
+                ),
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.cardBorder),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          if (_isFotoMode) ...[
+            const Text(
+              'Pilih Foto dari Perangkat *',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.bold,
+                color: AppColors.darkGreen,
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.cardBorder),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: AppColors.darkGreen,
+                side: const BorderSide(color: AppColors.cardBorder, width: 1.5),
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: AppColors.darkGreen,
-                  width: 1.8,
+              onPressed: _pilihFotoDariPerangkat,
+              icon: const Icon(Icons.upload_file_rounded),
+              label: Text(
+                _pickedImageFile == null
+                    ? 'Pilih Gambar dari Galeri / Perangkat'
+                    : 'Ganti Foto (${_pickedImageFile!.name})',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ] else ...[
+            const Text(
+              'Link Video YouTube *',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.bold,
+                color: AppColors.darkGreen,
+              ),
+            ),
+            const SizedBox(height: 6),
+            TextField(
+              controller: _urlController,
+              keyboardType: TextInputType.url,
+              style: const TextStyle(fontSize: 13.5),
+              decoration: InputDecoration(
+                hintText: 'https://www.youtube.com/watch?v=... atau youtu.be/...',
+                hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5),
+                filled: true,
+                fillColor: Colors.white,
+                prefixIcon: const Icon(
+                  Icons.smart_display_rounded,
+                  color: Colors.redAccent,
+                ),
+                suffixIcon: _urlController.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.clear,
+                          size: 18,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          _urlController.clear();
+                          setState(() => _detectedYoutubeId = null);
+                        },
+                      )
+                    : null,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.cardBorder),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.cardBorder),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: AppColors.darkGreen,
+                    width: 1.8,
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
           const SizedBox(height: 12),
 
-          // YouTube Thumbnail Live Preview
-          _buildLiveThumbnailPreview(),
+          _buildLiveMediaPreview(),
           const SizedBox(height: 20),
 
-          // 2. Judul Konten
           const Text(
             'Judul Konten Edukasi *',
             style: TextStyle(
@@ -562,6 +681,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
           const SizedBox(height: 6),
           TextField(
             controller: _titleController,
+            maxLength: 50,
             textCapitalization: TextCapitalization.sentences,
             style: const TextStyle(fontSize: 13.5),
             decoration: InputDecoration(
@@ -591,9 +711,8 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
 
-          // 3. Kategori Edukasi
           const Text(
             'Kategori Edukasi *',
             style: TextStyle(
@@ -602,45 +721,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               color: AppColors.darkGreen,
             ),
           ),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.cardBorder),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedKategori,
-                isExpanded: true,
-                icon: const Icon(
-                  Icons.arrow_drop_down,
-                  color: AppColors.darkGreen,
-                ),
-                items: _kategoriList.map((String k) {
-                  return DropdownMenuItem<String>(
-                    value: k,
-                    child: Text(
-                      k,
-                      style: const TextStyle(
-                        fontSize: 13.5,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  );
-                }).toList(),
-                onChanged: (String? val) {
-                  if (val != null) {
-                    setState(() => _selectedKategori = val);
-                  }
-                },
-              ),
-            ),
-          ),
+          const SizedBox(height: 8),
+          _buildKategoriSelector(),
           const SizedBox(height: 20),
 
-          // 4. Deskripsi Konten
           const Text(
             'Deskripsi Konten *',
             style: TextStyle(
@@ -655,7 +739,8 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
             maxLines: 5,
             style: const TextStyle(fontSize: 13.5),
             decoration: InputDecoration(
-              hintText: 'Tuliskan ringkasan video, alat/bahan yang dibutuhkan, atau poin penting yang bisa dipelajari penonton...',
+              hintText:
+                  'Tuliskan ringkasan konten, alat/bahan yang dibutuhkan, atau poin penting yang bisa dipelajari penonton...',
               hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 12.5),
               filled: true,
               fillColor: Colors.white,
@@ -679,7 +764,6 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
           ),
           const SizedBox(height: 30),
 
-          // Tombol Kirim Konten
           SizedBox(
             height: 50,
             child: ElevatedButton(
@@ -724,36 +808,189 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
     );
   }
 
-  // Preview YouTube Thumbnail
-  Widget _buildLiveThumbnailPreview() {
-    if (_detectedYoutubeId == null) {
-      return Container(
-        height: 120,
+  Widget _buildKategoriSelector() {
+    return Row(
+      children: List.generate(_kategoriOptions.length, (index) {
+        final option = _kategoriOptions[index];
+        final String value = option['value'] as String;
+        final String label = option['label'] as String;
+        final String subtitle = option['subtitle'] as String;
+        final IconData icon = option['icon'] as IconData;
+        final bool isSelected = _selectedKategori == value;
+
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(
+              right: index < _kategoriOptions.length - 1 ? 8 : 0,
+            ),
+            child: Material(
+              color: isSelected ? AppColors.darkGreen : Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(14),
+                onTap: () => setState(() => _selectedKategori = value),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.darkGreen
+                          : AppColors.cardBorder,
+                      width: isSelected ? 1.8 : 1.2,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        icon,
+                        size: 22,
+                        color: isSelected
+                            ? AppColors.limeAccent
+                            : AppColors.darkGreen,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? Colors.white : AppColors.darkGreen,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: isSelected
+                              ? Colors.white70
+                              : AppColors.textMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildTipeMediaChip({
+    required String label,
+    required String value,
+    required IconData icon,
+  }) {
+    final isSelected = _selectedTipeMedia == value;
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () => _gantiTipeMedia(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isSelected ? AppColors.darkGreen : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.cardBorder,
-            style: BorderStyle.solid,
+            color: isSelected ? AppColors.darkGreen : AppColors.cardBorder,
+            width: 1.5,
           ),
         ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.video_library_outlined,
-                size: 32,
-                color: Colors.grey.shade400,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? AppColors.limeAccent : AppColors.darkGreen,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : Colors.black87,
               ),
-              const SizedBox(height: 6),
-              Text(
-                'Pratinjau video YouTube akan muncul di sini',
-                style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLiveMediaPreview() {
+    if (_isFotoMode) {
+      if (_pickedImageFile == null) {
+        return _buildEmptyPreviewBox(
+          icon: Icons.photo_library_outlined,
+          label: 'Pratinjau foto dari perangkat akan muncul di sini',
+        );
+      }
+
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFFC8E6C9), width: 1.5),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ClipRRect(
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(13)),
+              child: Image.file(
+                File(_pickedImageFile!.path),
+                height: 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: Color(0xFF2E7D32),
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Foto Terpilih: ${_pickedImageFile!.name}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2E7D32),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_detectedYoutubeId == null) {
+      return _buildEmptyPreviewBox(
+        icon: Icons.video_library_outlined,
+        label: 'Pratinjau video YouTube akan muncul di sini',
       );
     }
 
@@ -765,13 +1002,6 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFC8E6C9), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -786,7 +1016,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                   height: 180,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
+                  errorBuilder: (_, __, ___) => Container(
                     height: 180,
                     color: Colors.black87,
                     child: const Center(
@@ -842,7 +1072,30 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
     );
   }
 
-  // ── TAB 2: RIWAYAT KONTEN SAYA & STATUS MODERASI ──
+  Widget _buildEmptyPreviewBox({required IconData icon, required String label}) {
+    return Container(
+      height: 120,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.cardBorder),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 32, color: Colors.grey.shade400),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildRiwayatKontenTab() {
     if (_isLoadingRiwayat) {
       return const Center(
@@ -881,7 +1134,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               ),
               const SizedBox(height: 8),
               const Text(
-                'Kirimkan video edukasi YouTube pertama Anda untuk menginspirasi komunitas TR4SH!',
+                'Kirimkan konten edukasi pertama Anda untuk menginspirasi komunitas TR4SH!',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
               ),
@@ -915,7 +1168,10 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
         itemCount: _listKontenSaya.length,
         separatorBuilder: (context, index) => const SizedBox(height: 14),
         itemBuilder: (context, index) {
-          final item = _listKontenSaya[index] as Map<String, dynamic>;
+          final rawItem = _listKontenSaya[index];
+          final item = rawItem is Map
+              ? Map<String, dynamic>.from(rawItem)
+              : <String, dynamic>{};
           return _buildKartuKontenUser(item);
         },
       ),
@@ -924,20 +1180,29 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
 
   Widget _buildKartuKontenUser(Map<String, dynamic> item) {
     final title = item['title']?.toString() ?? 'Konten Edukasi';
-    final status = (item['status_moderasi']?.toString() ?? 'pending')
-        .toLowerCase();
-    final kategori = item['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan';
+    final status =
+        (item['status_moderasi']?.toString() ?? 'pending').toLowerCase();
+    final kategori = item['jenis_edukasi']?.toString() ?? 'Reduce';
     final desc = item['description']?.toString() ?? '';
     final mediaUrl = item['media_url']?.toString() ?? '';
     final alasan = item['alasan_penolakan']?.toString();
     final youtubeId = KontenValidator.extractYoutubeId(mediaUrl);
+
+    String? thumbUrl;
+    if (youtubeId != null) {
+      thumbUrl = 'https://img.youtube.com/vi/$youtubeId/hqdefault.jpg';
+    } else if (mediaUrl.isNotEmpty) {
+      thumbUrl = (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://'))
+          ? mediaUrl
+          : 'http://127.0.0.1:8000/${mediaUrl.startsWith('/') ? mediaUrl.substring(1) : mediaUrl}';
+    }
 
     Color badgeBg;
     Color badgeText;
     IconData badgeIcon;
     String labelStatus;
 
-    if (status == 'approved') {
+    if (status == 'approved' || status == 'accepted') {
       badgeBg = const Color(0xFFD1FAE5);
       badgeText = const Color(0xFF065F46);
       badgeIcon = Icons.check_circle_outline;
@@ -971,7 +1236,6 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Row: Status Badge & Kategori
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -1010,47 +1274,47 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               ),
             ],
           ),
-
           const SizedBox(height: 12),
-
-          // Title & Thumbnail
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (youtubeId != null) ...[
+              if (thumbUrl != null && thumbUrl.isNotEmpty) ...[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
                       Image.network(
-                        'https://img.youtube.com/vi/$youtubeId/hqdefault.jpg',
+                        thumbUrl,
                         width: 80,
                         height: 56,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                        errorBuilder: (_, __, ___) => Container(
                           width: 80,
                           height: 56,
                           color: Colors.grey.shade300,
-                          child: const Icon(
-                            Icons.smart_display,
+                          child: Icon(
+                            youtubeId != null
+                                ? Icons.smart_display
+                                : Icons.image_outlined,
                             color: Colors.grey,
                           ),
                         ),
                       ),
-                      Container(
-                        width: 22,
-                        height: 22,
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
+                      if (youtubeId != null)
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow,
+                            size: 14,
+                            color: Colors.white,
+                          ),
                         ),
-                        child: const Icon(
-                          Icons.play_arrow,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -1084,8 +1348,6 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
               ),
             ],
           ),
-
-          // Alasan Penolakan jika ada
           if (status == 'rejected' && alasan != null && alasan.isNotEmpty) ...[
             const SizedBox(height: 10),
             Container(

@@ -51,7 +51,7 @@ class ApiService {
     UserAccountData.resetSession();
   }
 
-  static Future<Map<String, dynamic>> _getHeaders({
+  static Future<Map<String, String>> _getHeaders({
     bool requireAuth = true,
   }) async {
     final headers = <String, String>{
@@ -62,7 +62,7 @@ class ApiService {
     if (requireAuth) {
       final token = await getToken();
       if (token != null && token.isNotEmpty) {
-        headers['Authorization'] = 'Bearer $token';
+        headers['Authorization'] = 'Bearer \$token';
       }
     }
 
@@ -77,7 +77,6 @@ class ApiService {
       if (response.statusCode == 200) return true;
     } catch (_) {}
 
-    // Coba auto-deteksi host alternatif (misal emulator 10.0.2.2 atau IP WiFi baru)
     final recovered = await ApiConfig.autoDetectWorkingHost();
     if (recovered) {
       try {
@@ -146,7 +145,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal terhubung ke server: $e',
+        message: 'Gagal terhubung ke server: \$e',
         statusCode: 500,
       );
     }
@@ -203,7 +202,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal mendaftar: $e',
+        message: 'Gagal mendaftar: \$e',
         statusCode: 500,
       );
     }
@@ -270,7 +269,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal mengirim setoran: $e',
+        message: 'Gagal mengirim setoran: \$e',
         statusCode: 500,
       );
     }
@@ -293,7 +292,7 @@ class ApiService {
 
       final token = await getToken();
       if (token != null && token.isNotEmpty) {
-        request.headers['Authorization'] = 'Bearer $token';
+        request.headers['Authorization'] = 'Bearer \$token';
       }
       request.headers['Accept'] = 'application/json';
 
@@ -315,7 +314,7 @@ class ApiService {
         final originalName = fotoFile.name ?? '';
         final filename = originalName.isNotEmpty && originalName.contains('.')
             ? originalName
-            : 'sampah_${DateTime.now().millisecondsSinceEpoch}.jpg';
+            : 'sampah_\${DateTime.now().millisecondsSinceEpoch}.jpg';
 
         request.files.add(
           http.MultipartFile.fromBytes(
@@ -348,7 +347,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Koneksi error saat upload foto: $e',
+        message: 'Koneksi error saat upload foto: \$e',
         statusCode: 500,
       );
     }
@@ -359,7 +358,7 @@ class ApiService {
       final effectiveUserId = idUser ?? UserAccountData.currentUserId;
       String url = ApiConfig.riwayatSetor;
       if (effectiveUserId != null) {
-        url += '?id_user=$effectiveUserId';
+        url += '?id_user=\$effectiveUserId';
       }
 
       final response = await http
@@ -386,7 +385,7 @@ class ApiService {
           final tanggalRaw = item['created_at']?.toString() ?? '';
 
           return RiwayatSetorModel(
-            id: 'SET-$idSampah',
+            id: 'SET-\$idSampah',
             tanggal: tanggalRaw.isNotEmpty ? tanggalRaw : 'Hari Ini',
             kategori: kategori,
             beratKg: berat,
@@ -395,7 +394,7 @@ class ApiService {
             status: item['status_verifikasi'] == 'accepted' 
                 ? 'Disetujui' 
                 : (item['status_verifikasi'] == 'denied' ? 'Ditolak' : 'Pending'),
-            estimasiCo2: '${(berat * 1.5).toStringAsFixed(1)} kg CO2e',
+            estimasiCo2: '\${(berat * 1.5).toStringAsFixed(1)} kg CO2e',
           );
         }).toList();
       }
@@ -409,7 +408,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat riwayat: $e',
+        message: 'Gagal memuat riwayat: \$e',
         statusCode: 500,
       );
     }
@@ -432,20 +431,17 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat kategori: $e',
+        message: 'Gagal memuat kategori: \$e',
         statusCode: 500,
       );
     }
   }
 
-  // ── Katalog Produk Prakarya Daur Ulang ──
-
-  /// Ambil daftar produk prakarya dari `/api/prakarya`
   static Future<ApiResponse> fetchProduk({String? search}) async {
     try {
       String url = ApiConfig.listPrakarya;
       if (search != null && search.trim().isNotEmpty) {
-        url += '?search=${Uri.encodeComponent(search.trim())}';
+        url += '?search=\${Uri.encodeComponent(search.trim())}';
       }
 
       final response = await http
@@ -463,13 +459,12 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat produk: $e',
+        message: 'Gagal memuat produk: \$e',
         statusCode: 500,
       );
     }
   }
 
-  /// Ambil daftar bank sampah (beserta koordinat) dari `/api/bank-sampah`
   static Future<ApiResponse> fetchBankSampah() async {
     try {
       final response = await http
@@ -487,15 +482,12 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat bank sampah dari server: $e',
+        message: 'Gagal memuat bank sampah dari server: \$e',
         statusCode: 500,
       );
     }
   }
 
-  // ── Broadcast Promo (notifikasi in-app) ──
-
-  /// Ambil broadcast promo yang aktif dari `/api/broadcast`
   static Future<ApiResponse> fetchBroadcast() async {
     try {
       final response = await http
@@ -513,15 +505,12 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat broadcast dari server: $e',
+        message: 'Gagal memuat broadcast dari server: \$e',
         statusCode: 500,
       );
     }
   }
 
-  // ── Konten Edukasi Publik ──
-
-  /// Ambil konten edukasi publik dari `/api/edukasi`
   static Future<ApiResponse> fetchEdukasi({
     String? kategori,
     String? search,
@@ -548,7 +537,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat edukasi: $e',
+        message: 'Gagal memuat edukasi: \$e',
         statusCode: 500,
       );
     }
@@ -559,18 +548,65 @@ class ApiService {
     required String title,
     required String mediaUrl,
     required String description,
-    String jenisEdukasi = 'Edukasi Lingkungan',
-    String tipeMedia = 'Video YouTube',
+    String jenisEdukasi = 'Reduce',
+    String tipeMedia = 'Video',
+    dynamic fotoFile,
   }) async {
     try {
       final effectiveUserId = idUser ?? UserAccountData.currentUserId ?? 1;
+      final isFoto = tipeMedia.toLowerCase().contains('foto');
+
+      if (isFoto && fotoFile != null) {
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse(ApiConfig.uploadEdukasi),
+        );
+
+        final token = await getToken();
+        if (token != null && token.isNotEmpty) {
+          request.headers['Authorization'] = 'Bearer $token';
+        }
+        request.headers['Accept'] = 'application/json';
+
+        request.fields['id_user'] = effectiveUserId.toString();
+        request.fields['title'] = title;
+        request.fields['description'] = description;
+        request.fields['jenis_edukasi'] = jenisEdukasi;
+        request.fields['tipe_media'] = 'Foto';
+
+        final bytes = await fotoFile.readAsBytes();
+        final originalName = fotoFile.name?.toString() ?? '';
+        final filename = originalName.isNotEmpty && originalName.contains('.')
+            ? originalName
+            : 'konten_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'foto',
+            bytes,
+            filename: filename,
+          ),
+        );
+
+        final streamedResponse = await request.send().timeout(_timeoutDuration);
+        final response = await http.Response.fromStream(streamedResponse);
+        final Map<String, dynamic> body = _parseJson(response.body);
+
+        return ApiResponse(
+          success: response.statusCode == 200 || response.statusCode == 201,
+          message: body['message'] ?? 'Konten berhasil dikirim!',
+          data: body['data'] ?? body,
+          statusCode: response.statusCode,
+        );
+      }
+
       final payload = <String, dynamic>{
         'id_user': effectiveUserId,
         'title': title,
         'media_url': mediaUrl,
         'description': description,
         'jenis_edukasi': jenisEdukasi,
-        'tipe_media': tipeMedia,
+        'tipe_media': 'Video',
       };
 
       final response = await http
@@ -618,7 +654,7 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat konten saya: $e',
+        message: 'Gagal memuat konten saya: \$e',
         statusCode: 500,
       );
     }
@@ -646,7 +682,7 @@ class ApiService {
         statusCode: response.statusCode,
       );
     } catch (e) {
-      return ApiResponse(success: false, message: 'Gagal cek status: $e', statusCode: 500);
+      return ApiResponse(success: false, message: 'Gagal cek status: \$e', statusCode: 500);
     }
   }
 
@@ -670,7 +706,116 @@ class ApiService {
     } catch (e) {
       return ApiResponse(
         success: false,
-        message: 'Gagal memuat beranda: $e',
+        message: 'Gagal memuat beranda: \$e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  // ── Fitur Komentar & Report Konten Edukasi ──
+
+  static Future<ApiResponse> fetchComments(String contentId) async {
+    try {
+      final response = await http
+          .get(
+            Uri.parse('${ApiConfig.baseUrl}/comments/$contentId'),
+            headers: (await _getHeaders()).cast<String, String>(),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      if (response.statusCode == 200) {
+        return ApiResponse(
+          success: true,
+          message: body['message'] ?? 'Komentar berhasil dimuat.',
+          data: body['data'] ?? [],
+          statusCode: response.statusCode,
+        );
+      }
+      return ApiResponse(
+        success: false,
+        message: body['message'] ?? 'Gagal memuat komentar.',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal memuat komentar: \$e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  static Future<ApiResponse> postComment(String contentId, String comment) async {
+    try {
+      final currentUserId = UserAccountData.currentUserId ?? 1;
+
+      final payload = <String, dynamic>{
+        'id_user': currentUserId,
+        'comment': comment,
+      };
+
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/comments/$contentId'),
+            headers: (await _getHeaders()).cast<String, String>(),
+            body: jsonEncode(payload),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ApiResponse(
+          success: true,
+          message: body['message'] ?? 'Komentar berhasil dikirim.',
+          data: body['data'] ?? body,
+          statusCode: response.statusCode,
+        );
+      }
+      return ApiResponse(
+        success: false,
+        message: body['message'] ?? 'Gagal mengirim komentar.',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal mengirim komentar: \$e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  static Future<ApiResponse> reportComment(String idKomentar, String alasan) async {
+    try {
+      final currentUserId = UserAccountData.currentUserId ?? 1;
+
+      final payload = <String, dynamic>{
+        'id_user': currentUserId,
+        'alasan': alasan,
+      };
+
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/comments/$idKomentar/report'),
+            headers: (await _getHeaders()).cast<String, String>(),
+            body: jsonEncode(payload),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      return ApiResponse(
+        success: response.statusCode == 200 || response.statusCode == 201,
+        message: body['message'] ?? 'Laporan berhasil dikirim.',
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal mengirim laporan: \$e',
         statusCode: 500,
       );
     }
