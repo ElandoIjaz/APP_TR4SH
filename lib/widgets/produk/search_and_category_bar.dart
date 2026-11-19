@@ -24,7 +24,7 @@ class SearchAndCategoryBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Search Bar Manual ──
+        // ── Search Bar ──
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
@@ -54,6 +54,7 @@ class SearchAndCategoryBar extends StatelessWidget {
                   child: TextField(
                     controller: searchController,
                     onChanged: onSearchChanged,
+                    textInputAction: TextInputAction.search,
                     style: const TextStyle(
                       fontSize: 12.5,
                       color: AppColors.darkGreen,
@@ -73,7 +74,16 @@ class SearchAndCategoryBar extends StatelessWidget {
                 ),
                 if (searchController.text.isNotEmpty)
                   IconButton(
-                    icon: const Icon(Icons.clear_rounded, size: 18, color: Colors.grey),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                    icon: const Icon(
+                      Icons.clear_rounded,
+                      size: 18,
+                      color: Colors.grey,
+                    ),
                     onPressed: onClearSearch,
                   ),
               ],
@@ -98,40 +108,26 @@ class SearchAndCategoryBar extends StatelessWidget {
                 onTap: () => onCategorySelected(index),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.darkGreen : Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isSelected ? AppColors.darkGreen : AppColors.cardBorder,
+                      color: isSelected
+                          ? AppColors.darkGreen
+                          : AppColors.cardBorder,
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (isSelected) ...[
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: AppColors.limeAccent,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                      ],
-                      Text(
-                        categories[index],
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          color: isSelected ? Colors.white : const Color(0xFF4C6656),
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    categories[index],
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight:
+                          isSelected ? FontWeight.w800 : FontWeight.w600,
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF4C6656),
+                    ),
                   ),
                 ),
               );

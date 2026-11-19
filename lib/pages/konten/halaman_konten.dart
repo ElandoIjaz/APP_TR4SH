@@ -11,6 +11,7 @@ import 'package:test23/widgets/konten/header_konten.dart';
 import 'package:test23/widgets/konten/kategori_konten_tabs.dart';
 import 'package:test23/widgets/konten/search_konten_bar.dart';
 import 'package:test23/widgets/konten/section_wawasan_komunitas.dart';
+import 'package:test23/pages/akun/halaman_notifikasi.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
 
 class HalamanKonten extends StatefulWidget {
@@ -467,77 +468,19 @@ class _HalamanKontenState extends State<HalamanKonten> {
   }
 
   // ── 3. Notification Sheet ──
-  void _showNotificationSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(22),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Notifikasi Konten',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.darkGreen,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.bgScreen,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Color(0xFFD6F5E1),
-                    child: Icon(
-                      Icons.article_rounded,
-                      color: AppColors.darkGreen,
-                      size: 18,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      _listEdukasiPublik.isNotEmpty
-                          ? 'Konten baru "${_listEdukasiPublik.first['title']}" baru saja diterbitkan!'
-                          : 'Konten edukasi baru telah disetujui dan siap ditonton!',
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: AppColors.darkGreen,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
+  void _navigateToNotifikasi() {
+  if (!UserAccountData.isLoggedIn) {
+    AuthRequiredModal.show(
+      context,
+      title: 'Notifikasi Memerlukan Akun',
+      message: 'Silakan masuk terlebih dahulu untuk melihat notifikasi Anda.',
     );
+    return;
   }
+  Navigator.of(context).push(
+    MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
+  );
+}
 
   // ── 4. Comments Sheet (Tamu bisa baca komentar, tapi wajib login untuk mengirim komentar) ──
   void _showCommentsSheet() {
@@ -1204,7 +1147,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
                       ),
                     );
                   },
-                  onNotificationTap: _showNotificationSheet,
+                  onNotificationTap: _navigateToNotifikasi,
                 ),
                 const SizedBox(height: 6),
                 SearchKontenBar(

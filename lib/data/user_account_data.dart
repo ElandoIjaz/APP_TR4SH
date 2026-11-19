@@ -7,7 +7,6 @@ import 'models/riwayat_setor_model.dart';
 class UserAccountData {
   UserAccountData._();
 
-  // Default awal sebelum login: Mode Tamu (kosong & tidak terhubung ke user mana pun)
   static int? currentUserId;
   static String currentNama = 'Tamu';
   static String currentUsername = '';
@@ -71,14 +70,21 @@ class UserAccountData {
     if (user['username'] != null && user['username'].toString().isNotEmpty) {
       currentUsername = user['username'].toString();
     }
-    if (user['no_hp'] != null && user['no_hp'].toString().isNotEmpty) {
-      currentPhone = user['no_hp'].toString();
-    } else if (user['phone'] != null && user['phone'].toString().isNotEmpty) {
-      currentPhone = user['phone'].toString();
+
+    // Sinkronisasi nomor telepon dari kolom no_wa backend (plus fallback)
+    final rawPhone = user['no_wa'] ??
+        user['telepon'] ??
+        user['no_hp'] ??
+        user['phone'];
+    if (rawPhone != null && rawPhone.toString().trim().isNotEmpty) {
+      currentPhone = rawPhone.toString().trim();
     }
-    if (user['foto'] != null) {
-      currentFoto = user['foto'].toString();
+
+    if (user.containsKey('foto')) {
+      final rawFoto = user['foto']?.toString().trim();
+      currentFoto = (rawFoto != null && rawFoto.isNotEmpty) ? rawFoto : null;
     }
+
     if (user['status_akun'] != null) {
       currentStatusAkun = user['status_akun'].toString();
     }
@@ -88,7 +94,8 @@ class UserAccountData {
       totalSampahKg =
           double.tryParse(stats['total_sampah_kg'].toString()) ?? 0.0;
       totalSetoran = int.tryParse(stats['total_setoran'].toString()) ?? 0;
-    } else {
+    } else if (user['total_sampah_kg'] != null ||
+        user['total_setoran'] != null) {
       totalSampahKg =
           double.tryParse((user['total_sampah_kg'] ?? '0').toString()) ?? 0.0;
       totalSetoran =

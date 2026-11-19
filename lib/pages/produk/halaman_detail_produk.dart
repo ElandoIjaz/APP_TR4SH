@@ -1,12 +1,12 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/api_service.dart';
+import 'package:test23/data/cart_service.dart';
 import 'package:test23/data/models/bank_sampah_model.dart';
 import 'package:test23/pages/produk/halaman_keranjang.dart';
-import 'package:test23/widgets/produk/merchant_card.dart';
 import 'package:test23/widgets/produk/dampak_lingkungan_card.dart';
+import 'package:test23/widgets/produk/merchant_card.dart';
 import 'package:test23/widgets/produk/spesifikasi_card.dart';
-import 'package:test23/data/cart_service.dart';
 
 class HalamanDetailProduk extends StatefulWidget {
   final Map<String, dynamic> productData;
@@ -21,10 +21,6 @@ class HalamanDetailProduk extends StatefulWidget {
 }
 
 class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
-  bool _isFavorite = false;
-  final int _currentImageIndex = 1;
-
-  // Data bank sampah diambil sekali di sini, bukan di dalam build()
   late Future<ApiResponse> _futureBank;
 
   @override
@@ -45,7 +41,7 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildImageGallery(product['foto']),
+            _buildImageGallery(product['foto']?.toString()),
 
             Padding(
               padding: const EdgeInsets.all(20),
@@ -55,22 +51,18 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   _buildPricingAndTitle(product),
                   const SizedBox(height: 18),
 
-                  // Memanggil Widget Dampak Lingkungan
                   DampakLingkunganCard(
                     plastikPet: product['plastik_pet'] ?? '-',
                     jejakKarbon: product['jejak_karbon'] ?? '-',
                   ),
                   const SizedBox(height: 18),
 
-                  // Memanggil Widget Merchant/Toko (data dari API bank sampah)
                   _buildMerchantSection(),
                   const SizedBox(height: 20),
 
-                  // Memanggil Widget Spesifikasi
                   SpesifikasiCard(product: product),
                   const SizedBox(height: 20),
 
-                  // Deskripsi Koleksi
                   const Text(
                     'Tentang Koleksi Ini',
                     style: TextStyle(
@@ -82,7 +74,11 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   const SizedBox(height: 8),
                   Text(
                     product['tentang_koleksi'] ?? '-',
-                    style: const TextStyle(fontSize: 12.5, color: Color(0xFF4C6656), height: 1.45),
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF4C6656),
+                      height: 1.45,
+                    ),
                   ),
                   const SizedBox(height: 30),
                 ],
@@ -95,9 +91,6 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
     );
   }
 
-  // --- KOMPONEN LOKAL ---
-
-  /// Kartu merchant = Bank Sampah Ibu (baris dengan is_utama == true di database).
   Widget _buildMerchantSection() {
     return FutureBuilder<ApiResponse>(
       future: _futureBank,
@@ -132,46 +125,40 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
       ),
       title: const Text(
         'Detail Produk',
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w800,
+          color: AppColors.darkGreen,
+        ),
       ),
       centerTitle: true,
-      actions: [
-        IconButton(
-          icon: Icon(
-            _isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-            color: _isFavorite ? Colors.redAccent : AppColors.darkGreen,
-          ),
-          onPressed: () => setState(() => _isFavorite = !_isFavorite),
-        ),
-      ],
     );
   }
 
   Widget _buildImageGallery(String? imageUrl) {
-    return Stack(
-      children: [
-        AspectRatio(
-          aspectRatio: 1.08,
-          child: imageUrl != null
-              ? Image.network(imageUrl, fit: BoxFit.cover)
-              : Container(color: AppColors.mintSoft, child: const Icon(Icons.image, size: 60)),
-        ),
-        Positioned(
-          right: 14,
-          bottom: 14,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.darkGreen.withValues(alpha: 0.85),
-              borderRadius: BorderRadius.circular(12),
+    return AspectRatio(
+      aspectRatio: 1.08,
+      child: (imageUrl != null && imageUrl.isNotEmpty)
+          ? Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => Container(
+                color: AppColors.mintSoft,
+                child: const Icon(
+                  Icons.inventory_2_outlined,
+                  color: AppColors.darkGreen,
+                  size: 64,
+                ),
+              ),
+            )
+          : Container(
+              color: AppColors.mintSoft,
+              child: const Icon(
+                Icons.inventory_2_outlined,
+                color: AppColors.darkGreen,
+                size: 64,
+              ),
             ),
-            child: Text(
-              '● $_currentImageIndex/4',
-              style: const TextStyle(color: AppColors.limeAccent, fontSize: 11, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -183,18 +170,20 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
   }
 
   Widget _buildPricingAndTitle(Map<String, dynamic> product) {
-    // 1. Ekstraksi data
-    final int hargaAsli = int.tryParse(product['harga']?.toString() ?? '0') ?? 0;
-    final double diskonPersen = double.tryParse(product['diskon_persen']?.toString() ?? '0') ?? 0.0;
+    final int hargaAsli =
+        int.tryParse(product['harga']?.toString() ?? '0') ?? 0;
+    final double diskonPersen =
+        double.tryParse(product['diskon_persen']?.toString() ?? '0') ?? 0.0;
     final int hargaFinal = diskonPersen > 0
         ? (hargaAsli - (hargaAsli * (diskonPersen / 100))).round()
         : hargaAsli;
 
-    final String namaProduk = product['nama_product'] ?? product['nama_produk'] ?? 'Nama Produk';
+    final String namaProduk =
+        product['nama_product'] ?? product['nama_produk'] ?? 'Nama Produk';
     final List<dynamic> grosirList = product['grosir'] as List<dynamic>? ?? [];
-    
-    // 2. Ekstraksi Terjual & Stok dari API
-    final int terjual = int.tryParse(product['terjual']?.toString() ?? '0') ?? 0;
+
+    final int terjual =
+        int.tryParse(product['terjual']?.toString() ?? '0') ?? 0;
     final int stok = int.tryParse(product['jumlah']?.toString() ?? '0') ?? 0;
 
     return Column(
@@ -204,7 +193,11 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
           children: [
             Text(
               'Rp ${_formatRupiah(hargaFinal)}',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: AppColors.darkGreen),
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: AppColors.darkGreen,
+              ),
             ),
             if (diskonPersen > 0) ...[
               const SizedBox(width: 10),
@@ -238,16 +231,22 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
         const SizedBox(height: 8),
         Text(
           namaProduk,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.darkGreen, height: 1.3),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: AppColors.darkGreen,
+            height: 1.3,
+          ),
         ),
         const SizedBox(height: 8),
-        
-        // Menampilkan Info Terjual dan Stok Tersedia
         Text(
           'Terjual $terjual • $stok Produk Tersedia',
-          style: const TextStyle(fontSize: 12, color: AppColors.textMuted, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontSize: 12,
+            color: AppColors.textMuted,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-
         if (grosirList.isNotEmpty) ...[
           const SizedBox(height: 12),
           Wrap(
@@ -284,7 +283,13 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 10, offset: const Offset(0, -3))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Row(
@@ -295,20 +300,20 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.darkGreen,
                   padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 onPressed: () async {
-                  // 1. Masukkan produk ke keranjang (Panggil SATU KALI saja)
                   final bool berhasil = await CartService.tambahProduk(
                     product,
                     context: context,
                   );
-                  
-                  // 2. Gunakan pengecekan "mounted" sebelum menggunakan context
+
                   if (!mounted || !berhasil) return;
 
-                  // 3. Beri notifikasi singkat
-                  final nama = product['nama_product'] ?? product['nama_produk'] ?? 'Produk';
+                  final nama =
+                      product['nama_product'] ?? product['nama_produk'] ?? 'Produk';
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('$nama ditambahkan ke keranjang!'),
@@ -317,14 +322,23 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                     ),
                   );
 
-                  // 4. Pindah langsung ke halaman keranjang belanja
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const HalamanKeranjang()),
                   );
                 },
-                icon: const Icon(Icons.bolt_rounded, color: AppColors.limeAccent, size: 18),
-                label: const Text('Beli Sekarang', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white)),
+                icon: const Icon(
+                  Icons.bolt_rounded,
+                  color: AppColors.limeAccent,
+                  size: 18,
+                ),
+                label: const Text(
+                  'Beli Sekarang',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ],

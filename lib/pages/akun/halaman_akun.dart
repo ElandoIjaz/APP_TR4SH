@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/auth_validator.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_bantuan_faq.dart';
-import 'package:test23/pages/konten/halaman_upload_konten.dart';
-import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:test23/pages/akun/halaman_notifikasi.dart';
 import 'package:test23/pages/akun/halaman_pengaturan_akun.dart';
 import 'package:test23/pages/akun/halaman_riwayat_setor.dart';
 import 'package:test23/pages/akun/halaman_riwayat_transaksi.dart';
+import 'package:test23/pages/auth/halaman_login.dart';
+import 'package:test23/pages/konten/halaman_upload_konten.dart';
 import 'package:test23/widgets/akun/banner_dampak_positif.dart';
 import 'package:test23/widgets/akun/card_menu_akun.dart';
 import 'package:test23/widgets/akun/card_profil_user.dart';
@@ -28,16 +29,27 @@ class HalamanAkun extends StatefulWidget {
 
 class _HalamanAkunState extends State<HalamanAkun> {
   String _namaLengkap = 'Pengguna Tamu';
-  String _username = 'Belum masuk akun';
+  String _username = 'Silakan masuk untuk mengakses fitur akun';
   String _nomorTelepon = '';
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _syncStateFromAccountData();
+    if (UserAccountData.isLoggedIn) {
+      _fetchProfileDariAPI();
+    }
   }
 
-  void _loadUserData() {
+  String _formatPhoneForInput(String raw) {
+    final digits = raw.replaceAll(RegExp(r'\D'), '');
+    if (digits.startsWith('62') && digits.length >= 10) {
+      return '0${digits.substring(2)}';
+    }
+    return digits;
+  }
+
+  void _syncStateFromAccountData() {
     if (!UserAccountData.isLoggedIn) {
       _namaLengkap = 'Pengguna Tamu';
       _username = 'Silakan masuk untuk mengakses fitur akun';
@@ -51,25 +63,33 @@ class _HalamanAkunState extends State<HalamanAkun> {
               ? UserAccountData.currentUsername
               : '@${UserAccountData.currentUsername}')
           : '';
-      _nomorTelepon = UserAccountData.currentPhone;
-      _fetchProfileDariAPI();
+      _nomorTelepon = _formatPhoneForInput(UserAccountData.currentPhone);
     }
   }
 
-  // Mengambil statistik riil (kg dan setoran) dari backend
+  // Tarik profil terbaru (nama, no_wa, foto, statistik) langsung dari backend Laravel
   Future<void> _fetchProfileDariAPI() async {
     if (UserAccountData.currentUserId == null) return;
-    
+
     try {
-      final res = await ApiService.getUserSession();
-      if (res != null && mounted) {
-        // Memperbarui UI setelah data berhasil ditarik
+      await ApiService.getUserSession();
+      final res = await ApiService.fetchUserProfile(
+        idUser: UserAccountData.currentUserId,
+      );
+      if (mounted) {
         setState(() {
-          UserAccountData.updateFromUserData(res);
+          if (res.success && res.data is Map) {
+            UserAccountData.updateFromUserData(
+              Map<String, dynamic>.from(res.data as Map),
+            );
+          }
+          _syncStateFromAccountData();
         });
       }
     } catch (_) {
-      // Abaikan jika offline, biarkan memakai cache terakhir
+      if (mounted) {
+        setState(_syncStateFromAccountData);
+      }
     }
   }
 
@@ -77,148 +97,341 @@ class _HalamanAkunState extends State<HalamanAkun> {
     final nameCtrl = TextEditingController(text: _namaLengkap);
     final userCtrl = TextEditingController(text: _username);
     final phoneCtrl = TextEditingController(text: _nomorTelepon);
+    final picker = ImagePicker();
+
+    XFile? selectedPhoto;
+    Uint8List? selectedPhotoBytes;
+    bool isSaving = false;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (modalContext, setModalState) {
+          Future<void> pickProfilePhoto() async {
+            try {
+              final picked = await picker.pickImage(
+                source: ImageSource.gallery,
+                maxWidth: 800,
+                imageQuality: 80,
+              );
+              if (picked == null) return;
+              final bytes = await picked.readAsBytes();
+              setModalState(() {
+                selectedPhoto = picked;
+                selectedPhotoBytes = bytes;
+              });
+            } catch (e) {
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Gagal memilih foto: $e'),
+                  backgroundColor: Colors.redAccent,
                 ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Edit Profil',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.darkGreen,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: nameCtrl,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
-                  LengthLimitingTextInputFormatter(60),
-                ],
-                decoration: InputDecoration(
-                  labelText: 'Nama Lengkap',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: userCtrl,
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9._-]')),
-                  LengthLimitingTextInputFormatter(30),
-                ],
-                decoration: InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: phoneCtrl,
-                keyboardType: TextInputType.phone,
-                maxLength: 13,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(13),
-                ],
-                decoration: InputDecoration(
-                  labelText: 'Nomor Telepon',
-                  counterText: '',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 12,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 46,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.limeAccent,
-                    foregroundColor: AppColors.darkGreen,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  onPressed: () {
-                    final cleanPhone = phoneCtrl.text.trim();
-                    final hpError = AuthValidator.validateNomorHp(cleanPhone);
-                    if (hpError != null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(hpError),
-                          backgroundColor: Colors.redAccent,
-                        ),
-                      );
-                      return;
-                    }
+              );
+            }
+          }
 
-                    setState(() {
-                      _namaLengkap = nameCtrl.text.trim();
-                      _username = userCtrl.text.trim();
-                      _nomorTelepon = cleanPhone;
-                    });
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Profil berhasil diperbarui!'),
-                        backgroundColor: AppColors.darkGreen,
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    'Simpan Perubahan',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+          Widget buildPreviewAvatar() {
+            if (selectedPhotoBytes != null) {
+              return Image.memory(selectedPhotoBytes!, fit: BoxFit.cover);
+            }
+            final existingFoto = UserAccountData.currentFoto;
+            if (existingFoto != null && existingFoto.isNotEmpty) {
+              if (existingFoto.startsWith('http://') ||
+                  existingFoto.startsWith('https://')) {
+                return Image.network(
+                  existingFoto,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => const Icon(
+                    Icons.person_rounded,
+                    size: 40,
+                    color: AppColors.darkGreen,
                   ),
+                );
+              }
+            }
+            return const Icon(
+              Icons.person_rounded,
+              size: 40,
+              color: AppColors.darkGreen,
+            );
+          }
+
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
+            ),
+            child: SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Edit Profil',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.darkGreen,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Pemilih Foto Profil
+                    Center(
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: isSaving ? null : pickProfilePhoto,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
+                                  width: 84,
+                                  height: 84,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFFD6F3DD),
+                                    border: Border.all(
+                                      color: const Color(0xFFBFE7CA),
+                                      width: 2.5,
+                                    ),
+                                  ),
+                                  child: ClipOval(child: buildPreviewAvatar()),
+                                ),
+                                Positioned(
+                                  bottom: 0,
+                                  right: -2,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.darkGreen,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.camera_alt_rounded,
+                                      size: 14,
+                                      color: AppColors.limeAccent,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: isSaving ? null : pickProfilePhoto,
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.darkGreen,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            child: Text(
+                              selectedPhoto != null
+                                  ? 'Ganti Foto Terpilih'
+                                  : 'Ubah Foto Profil',
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Nama Lengkap
+                    TextField(
+                      controller: nameCtrl,
+                      enabled: !isSaving,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'[a-zA-Z\s]'),
+                        ),
+                        LengthLimitingTextInputFormatter(60),
+                      ],
+                      decoration: InputDecoration(
+                        labelText: 'Nama Lengkap',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Username (Dikunci, tidak dapat diubah)
+                    TextField(
+                      controller: userCtrl,
+                      readOnly: true,
+                      enabled: false,
+                      decoration: InputDecoration(
+                        labelText: 'Username',
+                        helperText: 'Username bersifat permanen dan tidak dapat diubah',
+                        filled: true,
+                        fillColor: const Color(0xFFF3F6F4),
+                        suffixIcon: const Icon(
+                          Icons.lock_outline_rounded,
+                          size: 18,
+                          color: AppColors.textMuted,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Nomor WhatsApp / Telepon
+                    TextField(
+                      controller: phoneCtrl,
+                      enabled: !isSaving,
+                      keyboardType: TextInputType.phone,
+                      maxLength: 15,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(15),
+                      ],
+                      decoration: InputDecoration(
+                        labelText: 'Nomor WhatsApp / Telepon',
+                        hintText: 'Contoh: 081234567890',
+                        counterText: '',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.limeAccent,
+                          foregroundColor: AppColors.darkGreen,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        onPressed: isSaving
+                            ? null
+                            : () async {
+                                final cleanName = nameCtrl.text.trim();
+                                final cleanPhone = phoneCtrl.text.trim();
+
+                                if (cleanName.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Nama lengkap wajib diisi.'),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final hpError =
+                                    AuthValidator.validateNomorHp(cleanPhone);
+                                if (hpError != null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(hpError),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                final userId = UserAccountData.currentUserId;
+                                if (userId == null) return;
+
+                                setModalState(() => isSaving = true);
+
+                                final res = await ApiService.updateProfile(
+                                  idUser: userId,
+                                  namaLengkap: cleanName,
+                                  noWa: cleanPhone,
+                                  fotoFile: selectedPhoto,
+                                );
+
+                                if (!mounted) return;
+                                setModalState(() => isSaving = false);
+
+                                if (res.success) {
+                                  setState(_syncStateFromAccountData);
+                                  if (sheetContext.mounted) {
+                                    Navigator.pop(sheetContext);
+                                  }
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(res.message),
+                                      backgroundColor: AppColors.darkGreen,
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(res.message),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                }
+                              },
+                        child: isSaving
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                  color: AppColors.darkGreen,
+                                ),
+                              )
+                            : const Text(
+                                'Simpan Perubahan',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -299,7 +512,8 @@ class _HalamanAkunState extends State<HalamanAkun> {
                       AuthRequiredModal.show(
                         context,
                         title: 'Notifikasi Memerlukan Akun',
-                        message: 'Silakan masuk terlebih dahulu untuk melihat notifikasi Anda.',
+                        message:
+                            'Silakan masuk terlebih dahulu untuk melihat notifikasi Anda.',
                       );
                       return;
                     }
@@ -314,7 +528,8 @@ class _HalamanAkunState extends State<HalamanAkun> {
                       AuthRequiredModal.show(
                         context,
                         title: 'Pengaturan Akun Memerlukan Login',
-                        message: 'Silakan masuk terlebih dahulu untuk mengatur akun Anda.',
+                        message:
+                            'Silakan masuk terlebih dahulu untuk mengatur akun Anda.',
                       );
                       return;
                     }
@@ -332,9 +547,6 @@ class _HalamanAkunState extends State<HalamanAkun> {
                 CardProfilUser(
                   name: _namaLengkap,
                   username: _username,
-                  status: UserAccountData.isGuest
-                      ? 'Mode Eksplorasi'
-                      : 'Anggota Aktif',
                   isGuest: UserAccountData.isGuest,
                   isVerified: !UserAccountData.isGuest,
                   avatarAsset: UserAccountData.isGuest
@@ -345,7 +557,8 @@ class _HalamanAkunState extends State<HalamanAkun> {
                       AuthRequiredModal.show(
                         context,
                         title: 'Masuk ke Akun',
-                        message: 'Mode Tamu tidak dapat mengubah profil. Silakan masuk atau buat akun terlebih dahulu.',
+                        message:
+                            'Mode Tamu tidak dapat mengubah profil. Silakan masuk atau buat akun terlebih dahulu.',
                       );
                     } else {
                       _showEditProfileModal();
@@ -476,8 +689,6 @@ class _HalamanAkunState extends State<HalamanAkun> {
           ),
         ),
       ),
-        );
+    );
   }
-  }
-
-      
+}

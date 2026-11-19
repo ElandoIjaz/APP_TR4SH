@@ -4,7 +4,7 @@ import 'package:test23/core/app_colors.dart';
 class CardProfilUser extends StatelessWidget {
   final String name;
   final String username;
-  final String status;
+  final String? status;
   final VoidCallback onEditTap;
   final String? avatarAsset;
   final bool isGuest;
@@ -15,7 +15,7 @@ class CardProfilUser extends StatelessWidget {
     super.key,
     required this.name,
     required this.username,
-    this.status = 'Anggota Aktif',
+    this.status,
     required this.onEditTap,
     this.avatarAsset,
     this.isGuest = false,
@@ -32,6 +32,27 @@ class CardProfilUser extends StatelessWidget {
         color: AppColors.darkGreen,
         size: 34,
       ),
+    );
+  }
+
+  Widget _buildAvatarImage() {
+    if (avatarAsset == null || avatarAsset!.isEmpty || isGuest) {
+      return _buildEmptyAvatar();
+    }
+
+    if (avatarAsset!.startsWith('http://') ||
+        avatarAsset!.startsWith('https://')) {
+      return Image.network(
+        avatarAsset!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildEmptyAvatar(),
+      );
+    }
+
+    return Image.asset(
+      avatarAsset!,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) => _buildEmptyAvatar(),
     );
   }
 
@@ -54,62 +75,21 @@ class CardProfilUser extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar with conditional verified badge (Profil Kosongan default)
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFD6F3DD),
-                  border: Border.all(color: const Color(0xFFBFE7CA), width: 2),
-                ),
-                child: ClipOval(
-                  child:
-                      (avatarAsset != null &&
-                          avatarAsset!.isNotEmpty &&
-                          !isGuest)
-                      ? Image.asset(
-                          avatarAsset!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _buildEmptyAvatar(),
-                        )
-                      : _buildEmptyAvatar(),
-                ),
-              ),
-              if (isVerified && !isGuest)
-                Positioned(
-                  bottom: 0,
-                  right: -2,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF137547),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check,
-                        size: 11,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
+          // Avatar
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFFD6F3DD),
+              border: Border.all(color: const Color(0xFFBFE7CA), width: 2),
+            ),
+            child: ClipOval(child: _buildAvatarImage()),
           ),
 
           const SizedBox(width: 14),
 
-          // User details (Name, Username, Status)
+          // Nama & Username (tanpa lencana dummy Anggota Aktif)
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +102,7 @@ class CardProfilUser extends StatelessWidget {
                     color: AppColors.darkGreen,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
                   username,
                   style: const TextStyle(
@@ -130,41 +110,11 @@ class CardProfilUser extends StatelessWidget {
                     color: AppColors.textMuted,
                   ),
                 ),
-                const SizedBox(height: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.mintSoft,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.circle,
-                        size: 7,
-                        color: Color(0xFF1E8850),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        status,
-                        style: const TextStyle(
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1E8850),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
 
-          // Action Button (Edit Profil)
+          // Tombol Edit Profil
           OutlinedButton(
             onPressed: onEditTap,
             style: OutlinedButton.styleFrom(

@@ -3,15 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
-import 'package:test23/data/api_service.dart';
+import 'package:test23/data/cart_service.dart';
 import 'package:test23/data/user_account_data.dart';
+import 'package:test23/pages/akun/halaman_notifikasi.dart';
 import 'package:test23/pages/produk/halaman_detail_produk.dart';
 import 'package:test23/pages/produk/halaman_keranjang.dart';
 import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:test23/widgets/produk/banner_kirim_sampah.dart';
-import 'package:test23/data/cart_service.dart';
 import 'package:test23/widgets/produk/card_produk_grid.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test23/widgets/produk/header_produk.dart';
 import 'package:test23/widgets/produk/search_and_category_bar.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
@@ -33,10 +32,10 @@ class _HalamanProdukState extends State<HalamanProduk> {
     'Dekorasi Rumah',
     'Fashion Upcycle',
     'Aksesoris',
+    'Setengah Jadi',
   ];
 
   late Future<List<dynamic>> _futureProduk;
-  static const String _keyBroadcastDilihat = 'broadcast_id_terakhir_dilihat';
   bool _adaBelumDibaca = false;
 
   @override
@@ -47,7 +46,6 @@ class _HalamanProdukState extends State<HalamanProduk> {
     _loadInitialCart();
   }
 
-  // 2. Fungsi baru untuk mengambil total item asli dari CartService
   Future<void> _loadInitialCart() async {
     await CartService.loadCart();
     if (!mounted) return;
@@ -58,7 +56,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
 
   @override
   void dispose() {
-    _searchController.dispose(); 
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -81,184 +79,27 @@ class _HalamanProdukState extends State<HalamanProduk> {
     }
   }
 
-  /// Mengambil nomor (id_broadcast) dari daftar data server.
-  List<int> _idBroadcast(List data) {
-    return data
-        .whereType<Map>()
-        .map((b) => int.tryParse('${b['id_broadcast']}') ?? 0)
-        .toList();
-  }
-
-  /// Dipanggil saat halaman dibuka: titik menyala kalau ada broadcast yang belum dilihat.
+  /// Titik hanya menyala saat sudah login dan masih ada notifikasi/broadcast belum diklik.
   Future<void> _loadBroadcast() async {
-    final res = await ApiService.fetchBroadcast();
-
-    var belumDibaca = false;
-    if (res.success && res.data is List) {
-      final prefs = await SharedPreferences.getInstance();
-      final terakhirDilihat = prefs.getInt(_keyBroadcastDilihat) ?? 0;
-      belumDibaca = _idBroadcast(res.data as List).any((id) => id > terakhirDilihat);
-    }
-
+    final belumDibaca = await HalamanNotifikasi.hasUnreadNotifications();
     if (!mounted) return;
     setState(() => _adaBelumDibaca = belumDibaca);
   }
 
-  /// Dipanggil saat daftar tampil di sheet: simpan nomor terbesar sebagai "sudah dilihat".
-  Future<void> _tandaiSudahDibaca(ApiResponse res) async {
-    if (!res.success || res.data is! List) return;
+  Future<void> _navigateToNotifikasi() async {
+    if (!UserAccountData.isLoggedIn) {
+      AuthRequiredModal.show(
+        context,
+        title: 'Notifikasi Memerlukan Akun',
+        message: 'Silakan masuk terlebih dahulu untuk melihat notifikasi Anda.',
+      );
+      return;
+    }
 
-    final ids = _idBroadcast(res.data as List);
-    if (ids.isEmpty) return;
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_keyBroadcastDilihat, ids.reduce((a, b) => a > b ? a : b));
-
-    if (!mounted) return;
-    setState(() => _adaBelumDibaca = false);
-  }
-
-  void _showNotificationSheet() {
-        final future = ApiService.fetchBroadcast().then((res) {
-      _tandaiSudahDibaca(res); // titik padam begitu daftar sudah sampai
-      return res;
-    });
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        padding: const EdgeInsets.all(22),
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(sheetContext).size.height * 0.7,
-        ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Notifikasi',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.darkGreen,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close_rounded),
-                  onPressed: () => Navigator.pop(sheetContext),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Flexible(
-              child: FutureBuilder<ApiResponse>(
-                future: future,
-                builder: (_, snapshot) {
-                  if (snapshot.connectionState != ConnectionState.done) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 28),
-                      child: Center(
-                        child: CircularProgressIndicator(color: AppColors.darkGreen),
-                      ),
-                    );
-                  }
-
-                  final res = snapshot.data;
-                  if (res == null || !res.success) {
-                    return _pesanKosongNotif('Gagal memuat notifikasi. Periksa koneksimu lalu coba lagi.');
-                  }
-
-                  final items = (res.data is List)
-                      ? (res.data as List).whereType().toList()
-                      : [];
-                  if (items.isEmpty) return _pesanKosongNotif('Belum ada notifikasi.');
-
-                  return ListView.separated(
-                    shrinkWrap: true,
-                    itemCount: items.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 10),
-                    itemBuilder: (_, i) => _kartuNotifikasi(items[i]),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
     );
-  }
-
-  Widget _pesanKosongNotif(String teks) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      child: Center(
-        child: Text(
-          teks,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 12.5, color: AppColors.textMuted),
-        ),
-      ),
-    );
-  }
-
-  Widget _kartuNotifikasi(Map item) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.bgScreen,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.cardBorder),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const CircleAvatar(
-            radius: 16,
-            backgroundColor: Color(0xFFD6F5E1),
-            child: Icon(Icons.local_offer_rounded, color: AppColors.darkGreen, size: 18),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${item['judul'] ?? ''}',
-                  style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w800, color: AppColors.darkGreen),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  '${item['pesan'] ?? ''}',
-                  style: const TextStyle(fontSize: 12.5, color: AppColors.darkGreen, height: 1.4),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _formatWaktu(item['dikirim_pada']?.toString()),
-                  style: const TextStyle(fontSize: 10.5, color: AppColors.textMuted),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatWaktu(String? iso) {
-    final t = DateTime.tryParse(iso ?? '')?.toLocal();
-    if (t == null) return '';
-    String dua(int n) => n.toString().padLeft(2, '0');
-    return '${dua(t.day)}/${dua(t.month)}/${t.year}  ${dua(t.hour)}:${dua(t.minute)}';
+    _loadBroadcast();
   }
 
   @override
@@ -275,12 +116,13 @@ class _HalamanProdukState extends State<HalamanProduk> {
               HeaderProduk(
                 cartItemCount: _cartItemCount,
                 adaNotifikasi: _adaBelumDibaca,
-                onNotificationTap: _showNotificationSheet,
-                onCartTap: () {
-                  Navigator.push(
+                onNotificationTap: _navigateToNotifikasi,
+                onCartTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const HalamanKeranjang()),
                   );
+                  _loadInitialCart();
                 },
               ),
 
@@ -304,9 +146,6 @@ class _HalamanProdukState extends State<HalamanProduk> {
                   });
                 },
               ),
-
-              const SizedBox(height: 16),
-
 
               const SizedBox(height: 20),
 
@@ -418,8 +257,10 @@ class _HalamanProdukState extends State<HalamanProduk> {
                       );
                     }
 
-                    final String selectedKategori = _categories[_selectedCategoryIndex];
-                    final String query = _searchController.text.trim().toLowerCase();
+                    final String selectedKategori =
+                        _categories[_selectedCategoryIndex];
+                    final String query =
+                        _searchController.text.trim().toLowerCase();
 
                     final listProdukApi = snapshot.data!.where((p) {
                       if (p is! Map) return false;
@@ -452,7 +293,8 @@ class _HalamanProdukState extends State<HalamanProduk> {
                       ).toString().toLowerCase();
 
                       if (selectedKategori != 'Semua') {
-                        final bool matchKategoriChip = kategoriAPI.contains(selectedKategori.toLowerCase()) ||
+                        final bool matchKategoriChip = kategoriAPI
+                                .contains(selectedKategori.toLowerCase()) ||
                             nama.contains(selectedKategori.toLowerCase());
                         if (!matchKategoriChip) {
                           return false;
@@ -469,7 +311,10 @@ class _HalamanProdukState extends State<HalamanProduk> {
                           return val.toString().toLowerCase().contains(query);
                         });
 
-                        if (!matchNama && !matchDeskripsi && !matchKategori && !matchAnyValue) {
+                        if (!matchNama &&
+                            !matchDeskripsi &&
+                            !matchKategori &&
+                            !matchAnyValue) {
                           return false;
                         }
                       }
@@ -483,18 +328,29 @@ class _HalamanProdukState extends State<HalamanProduk> {
                           padding: const EdgeInsets.all(36),
                           child: Column(
                             children: [
-                              Icon(Icons.search_off_rounded, size: 40, color: Colors.grey.shade400),
+                              Icon(
+                                Icons.search_off_rounded,
+                                size: 40,
+                                color: Colors.grey.shade400,
+                              ),
                               const SizedBox(height: 8),
                               const Text(
                                 'Tidak ada produk yang sesuai.',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.darkGreen),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: AppColors.darkGreen,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 query.isNotEmpty
                                     ? 'Tidak ada produk dengan kata kunci "$query"'
                                     : 'Belum ada produk untuk kategori ini.',
-                                style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textMuted,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
                             ],
@@ -507,7 +363,8 @@ class _HalamanProdukState extends State<HalamanProduk> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: listProdukApi.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 2,
                         crossAxisSpacing: 12,
                         mainAxisSpacing: 14,
@@ -518,69 +375,77 @@ class _HalamanProdukState extends State<HalamanProduk> {
                         return CardProdukGrid(
                           product: item,
                           onTap: () async {
-                            // 1) Tampilkan loading
                             showDialog(
                               context: context,
                               barrierDismissible: false,
                               builder: (_) => const Center(
-                                child: CircularProgressIndicator(color: AppColors.darkGreen),
+                                child: CircularProgressIndicator(
+                                  color: AppColors.darkGreen,
+                                ),
                               ),
                             );
 
-                            // 2) Ambil detail. Hasilnya disimpan di variabel, error ditangkap di sini
                             Map<String, dynamic>? detailData;
                             try {
                               final response = await http
-                                  .get(Uri.parse(ApiConfig.detailPrakarya(item['id_product'])))
+                                  .get(
+                                    Uri.parse(
+                                      ApiConfig.detailPrakarya(
+                                        item['id_product'],
+                                      ),
+                                    ),
+                                  )
                                   .timeout(const Duration(seconds: 10));
 
                               if (response.statusCode == 200) {
-                                detailData = Map<String, dynamic>.from(json.decode(response.body)['data']);
+                                detailData = Map<String, dynamic>.from(
+                                  json.decode(response.body)['data'],
+                                );
                               }
                             } catch (e) {
                               debugPrint('Gagal memuat detail produk: $e');
                             }
 
-                            // 3) Tutup loading TEPAT SATU KALI, apa pun hasilnya
                             if (!context.mounted) return;
                             Navigator.pop(context);
 
-                            // 4) Lanjut sesuai hasil
                             final detail = detailData;
                             if (detail == null) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Gagal mengambil data detail produk dari server.'),
+                                  content: Text(
+                                    'Gagal mengambil data detail produk dari server.',
+                                  ),
                                   backgroundColor: Colors.redAccent,
                                 ),
                               );
                               return;
                             }
 
-                            Navigator.push(
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => HalamanDetailProduk(productData: detail),
+                                builder: (_) =>
+                                    HalamanDetailProduk(productData: detail),
                               ),
                             );
+                            _loadInitialCart();
                           },
                           onAddToCart: () async {
-                            // 1. Eksekusi penambahan ke keranjang dengan context agar validasi jalan
                             final bool berhasil = await CartService.tambahProduk(
                               Map<String, dynamic>.from(item),
                               context: context,
                             );
 
-                            // 2. HENTIKAN eksekusi jika stok habis / keranjang penuh
                             if (!context.mounted || !berhasil) return;
 
-                            // 3. Perbarui tampilan badge di header atas JIKA BERHASIL
                             setState(() {
                               _cartItemCount = CartService.totalCount;
                             });
 
-                            // 4. Tampilkan snackbar sukses hijau
-                            final nama = item['nama_product'] ?? item['nama_produk'] ?? 'Produk';
+                            final nama = item['nama_product'] ??
+                                item['nama_produk'] ??
+                                'Produk';
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('$nama dimasukkan ke keranjang!'),
@@ -605,7 +470,8 @@ class _HalamanProdukState extends State<HalamanProduk> {
                     AuthRequiredModal.show(
                       context,
                       title: 'Fitur Setor Sampah Memerlukan Akun',
-                      message: 'Silakan masuk atau buat akun terlebih dahulu untuk menyetor sampah daur ulang dan mengumpulkan poin hadiah.',
+                      message:
+                          'Silakan masuk atau buat akun terlebih dahulu untuk menyetor sampah daur ulang dan mencatat riwayat setoran Anda.',
                       icon: Icons.recycling_rounded,
                     );
                     return;
@@ -618,11 +484,10 @@ class _HalamanProdukState extends State<HalamanProduk> {
               ),
 
               const SizedBox(height: 24),
-          const SizedBox(height: 24),
-        ], // Penutup children (Column / ListView)
-      ), 
-      ),  // Penutup Body Widget (Column / SingleChildScrollView / CustomScrollView)
-    ),
-         );     // Penutup Scaffold
-  }       // Penutup method build
-}         // Penutup class _HalamanProdukState
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
