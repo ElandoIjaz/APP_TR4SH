@@ -82,7 +82,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   }
 
   Future<void> _loadRiwayatSampah() async {
-    if (UserAccountData.isGuest || UserAccountData.isNewAccount) {
+    if (!UserAccountData.isLoggedIn || UserAccountData.isNewAccount) {
       if (mounted) {
         setState(() {
           _listSampah = [];
@@ -233,7 +233,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   }
 
   void _navigateToTracking() {
-    if (UserAccountData.isGuest) {
+    if (!UserAccountData.isLoggedIn) {
       AuthRequiredModal.show(
         context,
         title: 'Fitur Setor Sampah Memerlukan Akun',
@@ -671,10 +671,14 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 _buildCustomCardBankSampah(),
                 const SizedBox(height: 16),
                 CardRiwayatSampah(
-                  rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount) ? const [] : _listSampah,
-                  totalWeight: (UserAccountData.isGuest || UserAccountData.isNewAccount) ? '0.0' : (_totalKg > 0 ? _totalKg.toStringAsFixed(1) : '14.8'),
-                  trendBadge: (UserAccountData.isGuest || UserAccountData.isNewAccount) ? '+0 setoran' : (_totalCount > 0 ? '+$_totalCount setoran' : '+28% minggu ini'),
-                ),
+               rawData: !UserAccountData.isLoggedIn ? const [] : _listSampah,
+               totalWeight: !UserAccountData.isLoggedIn
+                   ? '0.0'
+                   : _totalKg.toStringAsFixed(1),
+               trendBadge: !UserAccountData.isLoggedIn
+                   ? '+0 setoran'
+                   : '+$_totalCount setoran',
+             ),
                 const SizedBox(height: 22),
                 CardVideoTutorial(
                   onPlayTap: () => _showVideoPlayerModal(_listEdukasi.isNotEmpty ? Map<String, dynamic>.from(_listEdukasi.first) : null),

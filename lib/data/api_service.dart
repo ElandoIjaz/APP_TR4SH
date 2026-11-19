@@ -676,6 +676,76 @@ class ApiService {
     }
   }
 
+  // =========================================================================
+  // METHOD PEMULIHAN KATA SANDI 
+  // =========================================================================
+  static Future<ApiResponse> requestPasswordReset({
+    required String noWa,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/auth/forgot-password'),
+            headers: (await _getHeaders(requireAuth: false)).cast<String, String>(),
+            body: jsonEncode({'no_wa': noWa.trim()}),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      return ApiResponse(
+        success: response.statusCode == 200 && (body['success'] == true),
+        message: body['message']?.toString() ??
+            'Permintaan pemulihan kata sandi telah diproses.',
+        data: body,
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal terhubung ke server: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
+  static Future<ApiResponse> confirmPasswordReset({
+    required String noWa,
+    required String kode,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('${ApiConfig.baseUrl}/auth/reset-password'),
+            headers: (await _getHeaders(requireAuth: false)).cast<String, String>(),
+            body: jsonEncode({
+              'no_wa': noWa.trim(),
+              'kode': kode.trim().toUpperCase(),
+              'password': newPassword,
+              'password_confirmation': confirmPassword,
+            }),
+          )
+          .timeout(_timeoutDuration);
+
+      final Map<String, dynamic> body = _parseJson(response.body);
+
+      return ApiResponse(
+        success: response.statusCode == 200 && (body['success'] == true),
+        message: body['message']?.toString() ?? 'Gagal mengatur ulang kata sandi.',
+        data: body,
+        statusCode: response.statusCode,
+      );
+    } catch (e) {
+      return ApiResponse(
+        success: false,
+        message: 'Gagal terhubung ke server: $e',
+        statusCode: 500,
+      );
+    }
+  }
+
   static Map<String, dynamic> _parseJson(String source) {
     if (source.trim().isEmpty) {
       return {'message': 'Gagal memproses respons server.'};

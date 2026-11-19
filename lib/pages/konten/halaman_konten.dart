@@ -21,7 +21,7 @@ class HalamanKonten extends StatefulWidget {
 }
 
 class _HalamanKontenState extends State<HalamanKonten> {
-  int _selectedCategoryIndex =0;
+  int _selectedCategoryIndex = 0;
   bool _isHeaderBookmarked = false;
   final TextEditingController _searchController = TextEditingController();
   List<dynamic> _listEdukasiPublik = [];
@@ -85,24 +85,20 @@ class _HalamanKontenState extends State<HalamanKonten> {
 
       // Category Tab filter
       if (_selectedCategoryIndex == 1) {
-        // Event
         return jenis.contains('event');
       } else if (_selectedCategoryIndex == 2) {
-        // Profil
         return jenis.contains('profil');
       } else if (_selectedCategoryIndex == 3) {
-        // Kategori Daur Ulang
         return jenis.contains('daur') ||
             jenis.contains('plastik') ||
             jenis.contains('reduce') ||
             jenis.contains('reuse') ||
             jenis.contains('recycle');
       } else if (_selectedCategoryIndex == 4) {
-        // Komunitas
         return jenis.contains('komunitas');
       }
 
-      return true; // 'Konten Terbaru' (Index 0) shows all
+      return true;
     }).toList();
   }
 
@@ -543,102 +539,162 @@ class _HalamanKontenState extends State<HalamanKonten> {
     );
   }
 
-  // ── 4. Comments Sheet ──
+  // ── 4. Comments Sheet (Tamu bisa baca komentar, tapi wajib login untuk mengirim komentar) ──
   void _showCommentsSheet() {
+    final commentCtrl = TextEditingController();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.65,
-        padding: const EdgeInsets.all(20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.65,
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Komentar (238)',
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: AppColors.darkGreen,
+              const SizedBox(height: 16),
+              const Text(
+                'Komentar (238)',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.darkGreen,
+                ),
               ),
-            ),
-            const SizedBox(height: 14),
-            Expanded(
-              child: ListView(
-                physics: const ClampingScrollPhysics(),
-                children: [
-                  _buildCommentItem(
-                    'Farhan Rizky',
-                    'Sangat inspiratif! Tutup botol HDPE juga bisa dijadikan tatakan cangkir teh yang estetik.',
-                  ),
-                  _buildCommentItem(
-                    'Siti Rahmawati',
-                    'Langkah pemilahannya sangat detail dan gampang diikuti di rumah tangga.',
-                  ),
-                  _buildCommentItem(
-                    'Dewi Lestari',
-                    'Terima kasih atas materi edukasinya, ilmunya sangat praktis untuk dipraktikkan!',
-                  ),
-                ],
+              const SizedBox(height: 14),
+              Expanded(
+                child: ListView(
+                  physics: const ClampingScrollPhysics(),
+                  children: [
+                    _buildCommentItem(
+                      'Farhan Rizky',
+                      'Sangat inspiratif! Tutup botol HDPE juga bisa dijadikan tatakan cangkir teh yang estetik.',
+                    ),
+                    _buildCommentItem(
+                      'Siti Rahmawati',
+                      'Langkah pemilahannya sangat detail dan gampang diikuti di rumah tangga.',
+                    ),
+                    _buildCommentItem(
+                      'Dewi Lestari',
+                      'Terima kasih atas materi edukasinya, ilmunya sangat praktis untuk dipraktikkan!',
+                    ),
+                  ],
+                ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                color: AppColors.bgScreen,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: 'Tulis komentar Anda...',
-                        border: InputBorder.none,
-                        hintStyle: TextStyle(
-                          fontSize: 12.5,
+              if (!UserAccountData.isLoggedIn)
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    AuthRequiredModal.show(
+                      context,
+                      title: 'Komentar Memerlukan Akun',
+                      message:
+                          'Silakan masuk atau daftar akun terlebih dahulu untuk menuliskan komentar pada konten edukasi ini.',
+                      icon: Icons.chat_bubble_outline_rounded,
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.bgScreen,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppColors.cardBorder),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.lock_outline_rounded,
+                          size: 18,
                           color: AppColors.textMuted,
                         ),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.send_rounded,
-                      color: AppColors.darkGreen,
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Komentar berhasil dikirim!'),
-                          backgroundColor: AppColors.darkGreen,
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Masuk ke akun untuk menulis komentar...',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: AppColors.textMuted,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                      );
-                    },
+                        Icon(
+                          Icons.login_rounded,
+                          color: AppColors.darkGreen,
+                          size: 20,
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
-          ],
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: AppColors.bgScreen,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.cardBorder),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: commentCtrl,
+                          decoration: const InputDecoration(
+                            hintText: 'Tulis komentar Anda...',
+                            border: InputBorder.none,
+                            hintStyle: TextStyle(
+                              fontSize: 12.5,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.send_rounded,
+                          color: AppColors.darkGreen,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          if (commentCtrl.text.trim().isEmpty) return;
+                          Navigator.pop(sheetContext);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Komentar berhasil dikirim!'),
+                              backgroundColor: AppColors.darkGreen,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -692,11 +748,12 @@ class _HalamanKontenState extends State<HalamanKonten> {
 
   // ── 5. Contributor Upload Navigation ──
   void _showContributorModal() async {
-    if (UserAccountData.isGuest) {
+    if (!UserAccountData.isLoggedIn) {
       AuthRequiredModal.show(
         context,
         title: 'Upload Konten Memerlukan Akun',
-        message: 'Silakan masuk atau daftar akun terlebih dahulu untuk mengunggah video edukasi dan tips daur ulang ke komunitas TR4SH!',
+        message:
+            'Silakan masuk atau daftar akun terlebih dahulu untuk mengunggah video edukasi dan tips daur ulang ke komunitas TR4SH!',
         icon: Icons.video_collection_rounded,
       );
       return;
@@ -1128,7 +1185,6 @@ class _HalamanKontenState extends State<HalamanKonten> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ── 1. Top Header (Logo TR4SH! & Actions) ──
                 HeaderKonten(
                   isBookmarked: _isHeaderBookmarked,
                   hasUnreadNotification: true,
@@ -1150,10 +1206,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
                   },
                   onNotificationTap: _showNotificationSheet,
                 ),
-
                 const SizedBox(height: 6),
-
-                // ── 2. Search Bar with Filter Button ──
                 SearchKontenBar(
                   controller: _searchController,
                   onFilterTap: _showFilterSheet,
@@ -1163,10 +1216,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
                     });
                   },
                 ),
-
                 const SizedBox(height: 12),
-
-                // ── 3. Category Filter Chips (Horizontal) ──
                 KategoriKontenTabs(
                   categories: _categories,
                   selectedIndex: _selectedCategoryIndex,
@@ -1176,10 +1226,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
                     });
                   },
                 ),
-
                 const SizedBox(height: 16),
-
-                // ── 4. Sorotan Utama (Featured Video Card) ──
                 Builder(
                   builder: (context) {
                     final featuredItem = _filteredEdukasi.isNotEmpty
@@ -1213,15 +1260,9 @@ class _HalamanKontenState extends State<HalamanKonten> {
                     );
                   },
                 ),
-
                 const SizedBox(height: 20),
-
-                // ── 5. Konten Baru Terupload (Terverifikasi Admin) ──
                 _buildSectionKontenBaruEdukasi(),
-
                 const SizedBox(height: 20),
-
-                // ── 6. Wawasan Komunitas (Q&A & DIY Coaster Cards) ──
                 SectionWawasanKomunitas(
                   onSeeAllTap: () {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -1247,20 +1288,14 @@ class _HalamanKontenState extends State<HalamanKonten> {
                     );
                   },
                 ),
-
                 const SizedBox(height: 20),
-
-                // ── 7. Contributor CTA Banner ──
                 BannerKontributorKonten(onBerbagiIdeTap: _showContributorModal),
-
                 const SizedBox(height: 24),
               ],
             ),
           ),
         ),
       ),
-
-      // ── 7. Floating Action Button: Upload Konten ──
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showContributorModal,
         backgroundColor: AppColors.limeAccent,
@@ -1271,7 +1306,6 @@ class _HalamanKontenState extends State<HalamanKonten> {
           style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
         ),
       ),
-
-    ); // Penutup Scaffold
-  } // Penutup method build
-} // Penutup class _HalamanKontenState
+    );
+  }
+}

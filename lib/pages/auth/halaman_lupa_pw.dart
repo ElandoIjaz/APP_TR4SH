@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/auth_validator.dart';
+import 'package:test23/data/api_service.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
+import 'package:test23/pages/auth/resetpw.dart';
 
 class HalamanLupaPw extends StatefulWidget {
   const HalamanLupaPw({super.key});
@@ -12,35 +14,44 @@ class HalamanLupaPw extends StatefulWidget {
 }
 
 class _HalamanLupaPwState extends State<HalamanLupaPw> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _waController = TextEditingController();
   bool _isLoading = false;
 
-  // Warna tema – hijau TR4SH
   static const Color _hijauUtama = AppColors.authPrimary;
   static const Color _hijauMuda = AppColors.authLightGreen;
   static const Color _abuLatar = AppColors.authBgGrey;
 
-  void _kirimKodeVerifikasi() async {
-    final input = _usernameController.text.trim();
+  Future<void> _kirimKodeWa() async {
+    final noWa = _waController.text.trim();
 
-    final error = AuthValidator.validateLupaPassword(input);
-    if (error != null) {
-      _showSnackBar(error, Colors.redAccent);
+    final hpError = AuthValidator.validateNomorHp(noWa);
+    if (hpError != null) {
+      _showSnackBar(hpError, Colors.redAccent);
       return;
     }
 
     setState(() => _isLoading = true);
 
-    // Simulasi pengiriman kode verifikasi
-    await Future.delayed(const Duration(seconds: 1));
+    final res = await ApiService.requestPasswordReset(noWa: noWa);
 
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    _showSnackBar('Kode verifikasi telah dikirim ke akun Anda.', _hijauUtama);
+    if (!res.success) {
+      _showSnackBar(res.message, Colors.redAccent);
+      return;
+    }
+
+    _showSnackBar(res.message, AppColors.darkGreen);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => HalamanResetPw(initialNoWa: noWa),
+      ),
+    );
   }
 
   void _showSnackBar(String message, Color color) {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -63,7 +74,7 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
 
   @override
   void dispose() {
-    _usernameController.dispose();
+    _waController.dispose();
     super.dispose();
   }
 
@@ -79,7 +90,7 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
           onPressed: _kembaliKeLogin,
         ),
         title: const Text(
-          'Forgot Password',
+          'Lupa Kata Sandi',
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w600,
@@ -95,8 +106,6 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 8),
-
-              // ── Judul Besar ──
               const Text(
                 'Lupa Kata Sandi?',
                 style: TextStyle(
@@ -106,21 +115,15 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
                 ),
               ),
               const SizedBox(height: 12),
-
-              // ── Deskripsi ──
               const Text(
-                'Masukkan username atau nama akun yang terdaftar '
-                'pada akun Anda untuk menerima kode verifikasi pemulihan '
-                'sandi.',
+                'Masukkan nomor WhatsApp yang terdaftar pada akun Anda. Sistem akan mengirimkan kode pemulihan 8 karakter secara otomatis ke WhatsApp Anda.',
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.grey,
                   height: 1.55,
                 ),
               ),
-              const SizedBox(height: 32),
-
-              // ── Card input ──
+              const SizedBox(height: 28),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -137,38 +140,32 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Label
                     const Text(
-                      'Username / Nama Akun',
+                      'Nomor WhatsApp Terdaftar',
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 10),
-
-                    // Field input
+                    const SizedBox(height: 8),
                     TextField(
-                      controller: _usernameController,
-                      keyboardType: TextInputType.text,
-                      maxLength: 50,
+                      controller: _waController,
+                      keyboardType: TextInputType.phone,
+                      maxLength: 15,
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
-                        LengthLimitingTextInputFormatter(50),
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(15),
                       ],
                       style: const TextStyle(fontSize: 14),
                       decoration: InputDecoration(
-                        hintText: 'Masukkan username / nama akun (huruf saja)',
-                        hintStyle: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 13,
-                        ),
+                        hintText: 'Contoh: 081234567890',
+                        hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
                         counterText: '',
                         prefixIcon: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Icon(
-                            Icons.manage_accounts_outlined,
+                            Icons.phone_android_rounded,
                             color: Colors.grey[600],
                             size: 20,
                           ),
@@ -180,10 +177,6 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
                           vertical: 14,
                         ),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
@@ -199,13 +192,11 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
                   ],
                 ),
               ),
-              const SizedBox(height: 28),
-
-              // ── Tombol Kirim Kode Verifikasi ──
+              const SizedBox(height: 24),
               SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _kirimKodeVerifikasi,
+                  onPressed: _isLoading ? null : _kirimKodeWa,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _hijauUtama,
                     foregroundColor: Colors.black87,
@@ -227,7 +218,7 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Kirim Kode Verifikasi',
+                              'Kirim Kode ke WhatsApp',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -239,9 +230,32 @@ class _HalamanLupaPwState extends State<HalamanLupaPw> {
                         ),
                 ),
               ),
-              const SizedBox(height: 28),
-
-              // ── Kembali ke Masuk ──
+              const SizedBox(height: 14),
+              OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => HalamanResetPw(
+                        initialNoWa: _waController.text.trim(),
+                      ),
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.darkGreen,
+                  side: const BorderSide(color: AppColors.darkGreen),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                icon: const Icon(Icons.vpn_key_outlined, size: 18),
+                label: const Text(
+                  'Sudah Terima Kode? Masukkan Kode',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                ),
+              ),
+              const SizedBox(height: 24),
               GestureDetector(
                 onTap: _kembaliKeLogin,
                 child: const Row(

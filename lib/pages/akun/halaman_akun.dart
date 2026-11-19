@@ -27,10 +27,9 @@ class HalamanAkun extends StatefulWidget {
 }
 
 class _HalamanAkunState extends State<HalamanAkun> {
-
-  String _namaLengkap = 'Bintang Pratama';
-  String _username = '@bintang_eco';
-  String _nomorTelepon = '081234567890';
+  String _namaLengkap = 'Pengguna Tamu';
+  String _username = 'Belum masuk akun';
+  String _nomorTelepon = '';
 
   @override
   void initState() {
@@ -39,18 +38,20 @@ class _HalamanAkunState extends State<HalamanAkun> {
   }
 
   void _loadUserData() {
-    if (UserAccountData.isGuest) {
-      _namaLengkap = 'Tamu';
-      _username = '@tamu_eco';
+    if (!UserAccountData.isLoggedIn) {
+      _namaLengkap = 'Pengguna Tamu';
+      _username = 'Silakan masuk untuk mengakses fitur akun';
+      _nomorTelepon = '';
     } else {
-      if (UserAccountData.currentNama.isNotEmpty) {
-        _namaLengkap = UserAccountData.currentNama;
-      }
-      if (UserAccountData.currentUsername.isNotEmpty) {
-        _username = UserAccountData.currentUsername.startsWith('@')
-            ? UserAccountData.currentUsername
-            : '@${UserAccountData.currentUsername}';
-      }
+      _namaLengkap = UserAccountData.currentNama.isNotEmpty
+          ? UserAccountData.currentNama
+          : 'Pengguna TR4SH';
+      _username = UserAccountData.currentUsername.isNotEmpty
+          ? (UserAccountData.currentUsername.startsWith('@')
+              ? UserAccountData.currentUsername
+              : '@${UserAccountData.currentUsername}')
+          : '';
+      _nomorTelepon = UserAccountData.currentPhone;
       _fetchProfileDariAPI();
     }
   }
@@ -294,6 +295,14 @@ class _HalamanAkunState extends State<HalamanAkun> {
                 // ── 1. Header (HeaderAkun) ──
                 HeaderAkun(
                   onNotificationTap: () {
+                    if (!UserAccountData.isLoggedIn) {
+                      AuthRequiredModal.show(
+                        context,
+                        title: 'Notifikasi Memerlukan Akun',
+                        message: 'Silakan masuk terlebih dahulu untuk melihat notifikasi Anda.',
+                      );
+                      return;
+                    }
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const HalamanNotifikasi(),
@@ -301,6 +310,14 @@ class _HalamanAkunState extends State<HalamanAkun> {
                     );
                   },
                   onSettingsTap: () {
+                    if (!UserAccountData.isLoggedIn) {
+                      AuthRequiredModal.show(
+                        context,
+                        title: 'Pengaturan Akun Memerlukan Login',
+                        message: 'Silakan masuk terlebih dahulu untuk mengatur akun Anda.',
+                      );
+                      return;
+                    }
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => const HalamanPengaturanAkun(),
