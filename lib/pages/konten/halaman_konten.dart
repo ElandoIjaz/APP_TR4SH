@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,10 +21,7 @@ import 'package:test23/widgets/umum/auth_required_modal.dart';
 class HalamanKonten extends StatefulWidget {
   final Map<String, dynamic>? initialSelectedKonten;
 
-  const HalamanKonten({
-    super.key,
-    this.initialSelectedKonten,
-  });
+  const HalamanKonten({super.key, this.initialSelectedKonten});
 
   @override
   State<HalamanKonten> createState() => _HalamanKontenState();
@@ -78,12 +76,22 @@ class _HalamanKontenState extends State<HalamanKonten> {
   }
 
   String _getItemSumber(Map<String, dynamic> itemMap) {
-    if (itemMap['sumber_konten'] != null) {
-      return itemMap['sumber_konten'].toString().toLowerCase() == 'user'
-          ? 'user'
-          : 'edukasi';
+    final sumberRaw =
+        (itemMap['sumber_konten'] ?? itemMap['sumber'])
+            ?.toString()
+            .toLowerCase() ??
+        '';
+    if (sumberRaw.isNotEmpty) {
+      return sumberRaw.contains('user') ? 'user' : 'edukasi';
     }
     if (itemMap['id_konten'] != null && itemMap['id_edukasi'] == null) {
+      return 'user';
+    }
+    if (itemMap['id_user'] != null && itemMap['id_edukasi'] == null) {
+      return 'user';
+    }
+    final penulis = itemMap['penulis']?.toString().toLowerCase() ?? '';
+    if (penulis.isNotEmpty && !penulis.contains('admin')) {
       return 'user';
     }
     return 'edukasi';
@@ -161,7 +169,10 @@ class _HalamanKontenState extends State<HalamanKonten> {
     }
   }
 
-  Future<void> _toggleSaveContent(Map<String, dynamic> itemMap) async {
+  Future<void> _toggleSaveContent(
+    Map<String, dynamic> itemMap, {
+    VoidCallback? onStateChanged,
+  }) async {
     final itemKey = _getItemKey(itemMap);
     final bool willSave = !_savedContentKeys.contains(itemKey);
 
@@ -172,6 +183,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
         _savedContentKeys.remove(itemKey);
       }
     });
+    onStateChanged?.call();
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(
@@ -209,6 +221,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 _savedContentKeys.remove(itemKey);
               }
             });
+            onStateChanged?.call();
             await prefs.setStringList(
               _getUserBookmarkPrefsKey(),
               _savedContentKeys.toList(),
@@ -223,7 +236,8 @@ class _HalamanKontenState extends State<HalamanKonten> {
     final target = widget.initialSelectedKonten;
     if (target == null) return null;
 
-    final targetId = target['id']?.toString() ??
+    final targetId =
+        target['id']?.toString() ??
         target['id_konten']?.toString() ??
         target['id_edukasi']?.toString();
     final targetUrl = target['media_url']?.toString().trim();
@@ -232,7 +246,8 @@ class _HalamanKontenState extends State<HalamanKonten> {
     for (final raw in _listEdukasiPublik) {
       if (raw is! Map) continue;
       final map = Map<String, dynamic>.from(raw);
-      final itemId = map['id']?.toString() ??
+      final itemId =
+          map['id']?.toString() ??
           map['id_konten']?.toString() ??
           map['id_edukasi']?.toString();
       if (targetId != null && targetId.isNotEmpty && itemId == targetId) {
@@ -279,10 +294,14 @@ class _HalamanKontenState extends State<HalamanKonten> {
           _isLoadingEdukasi = false;
         });
         for (var item in _listEdukasiPublik) {
-          final map =
-              item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+          final map = item is Map
+              ? Map<String, dynamic>.from(item)
+              : <String, dynamic>{};
           final key = _getItemKey(map);
-          _loadCommentCount(key);
+          final numericId = _getItemNumericId(map);
+          if (numericId != null) {
+            _loadCommentCount(key, numericId.toString());
+          }
         }
         _openInitialContentIfNeeded();
         return;
@@ -294,9 +313,9 @@ class _HalamanKontenState extends State<HalamanKonten> {
     }
   }
 
-  Future<void> _loadCommentCount(String itemKey) async {
+  Future<void> _loadCommentCount(String itemKey, String kontenId) async {
     try {
-      final res = await ApiService.fetchComments(itemKey);
+      final res = await ApiService.fetchComments(kontenId);
       if (res.success && res.data is List && mounted) {
         setState(() {
           _commentCounts[itemKey] = (res.data as List).length;
@@ -314,8 +333,9 @@ class _HalamanKontenState extends State<HalamanKonten> {
 
     if (_selectedCategoryIndex == 6) {
       list = list.where((item) {
-        final map =
-            item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+        final map = item is Map
+            ? Map<String, dynamic>.from(item)
+            : <String, dynamic>{};
         return _savedContentKeys.contains(_getItemKey(map));
       }).toList();
     }
@@ -323,8 +343,9 @@ class _HalamanKontenState extends State<HalamanKonten> {
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
       list = list.where((item) {
-        final map =
-            item is Map ? Map<String, dynamic>.from(item) : <String, dynamic>{};
+        final map = item is Map
+            ? Map<String, dynamic>.from(item)
+            : <String, dynamic>{};
         final title = (map['title'] ?? '').toString().toLowerCase();
         final desc = (map['description'] ?? '').toString().toLowerCase();
         final penulis = (map['penulis'] ?? '').toString().toLowerCase();
@@ -338,31 +359,39 @@ class _HalamanKontenState extends State<HalamanKonten> {
 
     if (_selectedCategoryIndex == 2) {
       list = list
-          .where((item) => (item['jenis_edukasi'] ?? '')
-              .toString()
-              .toLowerCase()
-              .contains('recycle'))
+          .where(
+            (item) => (item['jenis_edukasi'] ?? '')
+                .toString()
+                .toLowerCase()
+                .contains('recycle'),
+          )
           .toList();
     } else if (_selectedCategoryIndex == 3) {
       list = list
-          .where((item) => (item['jenis_edukasi'] ?? '')
-              .toString()
-              .toLowerCase()
-              .contains('reuse'))
+          .where(
+            (item) => (item['jenis_edukasi'] ?? '')
+                .toString()
+                .toLowerCase()
+                .contains('reuse'),
+          )
           .toList();
     } else if (_selectedCategoryIndex == 4) {
       list = list
-          .where((item) => (item['jenis_edukasi'] ?? '')
-              .toString()
-              .toLowerCase()
-              .contains('reduce'))
+          .where(
+            (item) => (item['jenis_edukasi'] ?? '')
+                .toString()
+                .toLowerCase()
+                .contains('reduce'),
+          )
           .toList();
     } else if (_selectedCategoryIndex == 5) {
       list = list
-          .where((item) => (item['jenis_edukasi'] ?? '')
-              .toString()
-              .toLowerCase()
-              .contains('resell'))
+          .where(
+            (item) => (item['jenis_edukasi'] ?? '')
+                .toString()
+                .toLowerCase()
+                .contains('resell'),
+          )
           .toList();
     }
 
@@ -384,9 +413,8 @@ class _HalamanKontenState extends State<HalamanKonten> {
       );
       return;
     }
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
-    );
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const HalamanNotifikasi()));
   }
 
   void _showFilterSheet() {
@@ -463,12 +491,16 @@ class _HalamanKontenState extends State<HalamanKonten> {
     final mediaUrl = itemMap['media_url']?.toString() ?? '';
     final tipeMedia = itemMap['tipe_media']?.toString() ?? 'Video YouTube';
 
-    final bool isVideo = tipeMedia.toLowerCase().contains('video') ||
+    final bool isVideo =
+        tipeMedia.toLowerCase().contains('video') ||
         mediaUrl.contains('youtube.com') ||
         mediaUrl.contains('youtu.be');
 
     final itemKey = _getItemKey(itemMap);
+    final commentKontenId = (_getItemNumericId(itemMap) ?? 0).toString();
     final TextEditingController commentController = TextEditingController();
+    Future<ApiResponse> commentsFuture =
+        ApiService.fetchComments(commentKontenId);
 
     showModalBottomSheet(
       context: context,
@@ -483,7 +515,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
               bottom: MediaQuery.of(sheetContext).viewInsets.bottom,
             ),
             child: Container(
-              height: MediaQuery.of(context).size.height * 0.9,
+              height: MediaQuery.of(sheetContext).size.height * 0.9,
               padding: const EdgeInsets.all(20),
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -529,11 +561,15 @@ class _HalamanKontenState extends State<HalamanKonten> {
                           isSaved ? Icons.bookmark : Icons.bookmark_border,
                           color: AppColors.darkGreen,
                         ),
-                        onPressed: () async {
-                          await _toggleSaveContent(itemMap);
-                          if (modalContext.mounted) {
-                            setModalState(() {});
-                          }
+                        onPressed: () {
+                          _toggleSaveContent(
+                            itemMap,
+                            onStateChanged: () {
+                              if (modalContext.mounted) {
+                                setModalState(() {});
+                              }
+                            },
+                          );
                         },
                       ),
                     ],
@@ -541,7 +577,7 @@ class _HalamanKontenState extends State<HalamanKonten> {
                   const SizedBox(height: 4),
                   Expanded(
                     child: FutureBuilder<ApiResponse>(
-                      future: ApiService.fetchComments(itemKey),
+                      future: commentsFuture,
                       builder: (context, snapshot) {
                         List<dynamic> commentsList = [];
                         bool isLoading =
@@ -579,16 +615,16 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) =>
                                       Container(
-                                    height: 170,
-                                    color: AppColors.darkGreen,
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.image_not_supported_rounded,
-                                        color: Colors.white,
-                                        size: 40,
+                                        height: 170,
+                                        color: AppColors.darkGreen,
+                                        child: const Center(
+                                          child: Icon(
+                                            Icons.image_not_supported_rounded,
+                                            color: Colors.white,
+                                            size: 40,
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
                                 ),
                               ),
                             const SizedBox(height: 10),
@@ -638,38 +674,37 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                     ),
                                   )
                                 : commentsList.isEmpty
-                                    ? const Padding(
-                                        padding:
-                                            EdgeInsets.symmetric(vertical: 10),
-                                        child: Text(
-                                          'Belum ada komentar. Jadilah yang pertama berkomentar!',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: AppColors.textMuted,
-                                          ),
-                                        ),
-                                      )
-                                    : Column(
-                                        children: commentsList.map((comm) {
-                                          final cMap = comm is Map
-                                              ? Map<String, dynamic>.from(comm)
-                                              : <String, dynamic>{};
-                                          final idKomentar =
-                                              cMap['id_komentar']?.toString() ??
-                                                  '0';
-                                          final authorName =
-                                              cMap['author']?.toString() ??
-                                                  'Pengguna';
-                                          final commentText =
-                                              cMap['comment']?.toString() ?? '';
-                                          return _buildCommentItem(
-                                            idKomentar,
-                                            authorName,
-                                            commentText,
-                                            setModalState,
-                                          );
-                                        }).toList(),
+                                ? const Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 10),
+                                    child: Text(
+                                      'Belum ada komentar. Jadilah yang pertama berkomentar!',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textMuted,
                                       ),
+                                    ),
+                                  )
+                                : Column(
+                                    children: commentsList.map((comm) {
+                                      final cMap = comm is Map
+                                          ? Map<String, dynamic>.from(comm)
+                                          : <String, dynamic>{};
+                                      final idKomentar =
+                                          cMap['id_komentar']?.toString() ??
+                                          '0';
+                                      final authorName =
+                                          cMap['author']?.toString() ??
+                                          'Pengguna';
+                                      final commentText =
+                                          cMap['comment']?.toString() ?? '';
+                                      return _buildCommentItem(
+                                        idKomentar,
+                                        authorName,
+                                        commentText,
+                                        setModalState,
+                                      );
+                                    }).toList(),
+                                  ),
                           ],
                         );
                       },
@@ -759,13 +794,19 @@ class _HalamanKontenState extends State<HalamanKonten> {
                               final text = commentController.text.trim();
                               if (text.isEmpty) return;
 
-                              final res =
-                                  await ApiService.postComment(itemKey, text);
+                              final res = await ApiService.postComment(
+                                commentKontenId,
+                                text,
+                              );
                               if (res.success) {
                                 commentController.clear();
-                                _loadCommentCount(itemKey);
+                                _loadCommentCount(itemKey, commentKontenId);
                                 if (modalContext.mounted) {
-                                  setModalState(() {});
+                                  setModalState(() {
+                                    commentsFuture = ApiService.fetchComments(
+                                      commentKontenId,
+                                    );
+                                  });
                                 }
                                 if (mounted) {
                                   setState(() {});
@@ -774,14 +815,14 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                 if (modalContext.mounted) {
                                   ScaffoldMessenger.of(modalContext)
                                       .showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        res.message.isNotEmpty
-    ? res.message
-    : 'Gagal mengirim komentar',
-                                      ),
-                                    ),
-                                  );
+                                        SnackBar(
+                                          content: Text(
+                                            res.message.isNotEmpty
+                                                ? res.message
+                                                : 'Gagal mengirim komentar',
+                                          ),
+                                        ),
+                                      );
                                 }
                               }
                             },
@@ -796,7 +837,9 @@ class _HalamanKontenState extends State<HalamanKonten> {
         },
       ),
     ).whenComplete(() {
-      commentController.dispose();
+      Future.delayed(const Duration(milliseconds: 500), () {
+        commentController.dispose();
+      });
     });
   }
 
@@ -931,12 +974,18 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 ),
                 onTap: () async {
                   Navigator.pop(context);
-                  final res =
-                      await ApiService.reportComment(idKomentar, alasan);
+                  final res = await ApiService.reportComment(
+                    idKomentar,
+                    alasan,
+                  );
                   if (mounted) {
                     ScaffoldMessenger.of(this.context).showSnackBar(
                       SnackBar(
-                        content: Text(res.message.isNotEmpty ? res.message : 'Laporan terkirim'),
+                        content: Text(
+                          res.message.isNotEmpty
+                              ? res.message
+                              : 'Laporan terkirim',
+                        ),
                       ),
                     );
                   }
@@ -1164,18 +1213,20 @@ class _HalamanKontenState extends State<HalamanKonten> {
                 final author =
                     itemMap['penulis']?.toString() ?? 'Komunitas TR4SH';
                 final jenis =
-                    itemMap['jenis_edukasi']?.toString() ?? 'Edukasi Lingkungan';
+                    itemMap['jenis_edukasi']?.toString() ??
+                    'Edukasi Lingkungan';
                 final mediaUrl = itemMap['media_url']?.toString() ?? '';
                 final tipeMedia =
                     itemMap['tipe_media']?.toString() ?? 'Video YouTube';
 
                 final bool isVideo =
                     tipeMedia.toLowerCase().contains('video') ||
-                        mediaUrl.contains('youtube.com') ||
-                        mediaUrl.contains('youtu.be');
+                    mediaUrl.contains('youtube.com') ||
+                    mediaUrl.contains('youtu.be');
 
-                final thumb =
-                    isVideo ? _getYoutubeThumbnail(mediaUrl) : mediaUrl;
+                final thumb = isVideo
+                    ? _getYoutubeThumbnail(mediaUrl)
+                    : mediaUrl;
                 final itemKey = _getItemKey(itemMap);
                 final isSaved = _savedContentKeys.contains(itemKey);
                 final commentsCount = _commentCounts[itemKey] ?? 0;
@@ -1213,17 +1264,17 @@ class _HalamanKontenState extends State<HalamanKonten> {
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stack) =>
                                       Container(
-                                    width: 100,
-                                    height: 75,
-                                    color: AppColors.darkGreen,
-                                    child: Icon(
-                                      isVideo
-                                          ? Icons.videocam_rounded
-                                          : Icons.image_rounded,
-                                      color: Colors.white,
-                                      size: 26,
-                                    ),
-                                  ),
+                                        width: 100,
+                                        height: 75,
+                                        color: AppColors.darkGreen,
+                                        child: Icon(
+                                          isVideo
+                                              ? Icons.videocam_rounded
+                                              : Icons.image_rounded,
+                                          color: Colors.white,
+                                          size: 26,
+                                        ),
+                                      ),
                                 )
                               else
                                 Container(
