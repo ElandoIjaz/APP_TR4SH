@@ -4,6 +4,7 @@ import 'package:test23/core/app_colors.dart';
 
 class YoutubePlayerSection extends StatefulWidget {
   final String mediaUrl;
+
   const YoutubePlayerSection({super.key, required this.mediaUrl});
 
   @override
@@ -11,39 +12,68 @@ class YoutubePlayerSection extends StatefulWidget {
 }
 
 class _YoutubePlayerSectionState extends State<YoutubePlayerSection> {
-  late YoutubePlayerController _ytController;
-  bool _hasValidVideo = false;
+  YoutubePlayerController? _ytController;
 
   @override
   void initState() {
     super.initState();
-    final videoId = YoutubePlayer.convertUrlToId(widget.mediaUrl) ?? '';
-    _hasValidVideo = videoId.isNotEmpty;
-    if (_hasValidVideo) {
-      _ytController = YoutubePlayerController(
-        initialVideoId: videoId,
-        flags: const YoutubePlayerFlags(
-          autoPlay: false,
-          mute: false,
-        ),
-      );
+    _initController(widget.mediaUrl);
+  }
+
+  void _initController(String url) {
+    final videoId = YoutubePlayerController.convertUrlToId(url);
+    if (videoId == null || videoId.isEmpty) {
+      _ytController = null;
+      return;
+    }
+
+    _ytController = YoutubePlayerController.fromVideoId(
+      videoId: videoId,
+      autoPlay: false,
+      params: const YoutubePlayerParams(
+        showControls: true,
+        showFullscreenButton: true,
+        mute: false,
+      ),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant YoutubePlayerSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.mediaUrl != widget.mediaUrl) {
+      final newVideoId =
+          YoutubePlayerController.convertUrlToId(widget.mediaUrl);
+      if (newVideoId != null && newVideoId.isNotEmpty) {
+        if (_ytController != null) {
+          _ytController!.loadVideoById(videoId: newVideoId);
+        } else {
+          setState(() => _initController(widget.mediaUrl));
+        }
+      } else {
+        _ytController?.close();
+        setState(() => _ytController = null);
+      }
     }
   }
 
   @override
   void dispose() {
-    if (_hasValidVideo) {
-      _ytController.dispose(); // Membersihkan memori & mencegah memory leak/lag
-    }
+    _ytController?.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_hasValidVideo) {
+    final controller = _ytController;
+    if (controller == null) {
       return Container(
+        width: double.infinity,
         height: 170,
-        color: AppColors.darkGreen,
+        decoration: BoxDecoration(
+          color: AppColors.darkGreen,
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: const Center(
           child: Icon(Icons.videocam_rounded, size: 40, color: Colors.white),
         ),
@@ -53,13 +83,8 @@ class _YoutubePlayerSectionState extends State<YoutubePlayerSection> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: YoutubePlayer(
-        controller: _ytController,
-        showVideoProgressIndicator: true,
-        progressIndicatorColor: AppColors.limeAccent,
-        progressColors: const ProgressBarColors(
-          playedColor: AppColors.darkGreen,
-          handleColor: AppColors.limeAccent,
-        ),
+        controller: controller,
+        aspectRatio: 16 / 9,
       ),
     );
   }
