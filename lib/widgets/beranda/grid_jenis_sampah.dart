@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/user_account_data.dart';
-import 'package:test23/pages/tracking/halaman_tracking.dart';
+import 'package:test23/pages/main_navigation.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
 
 class _SampahInfoData {
@@ -330,11 +330,7 @@ class GridJenisSampah extends StatelessWidget {
                       );
                       return;
                     }
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const HalamanTracking(),
-                      ),
-                    );
+                    MainNavigationPage.jumpToTab(context, 3);
                   },
                   child: const Text(
                     'Siap Setor',

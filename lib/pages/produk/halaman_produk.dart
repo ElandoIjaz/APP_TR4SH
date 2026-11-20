@@ -6,9 +6,9 @@ import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/cart_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_notifikasi.dart';
+import 'package:test23/pages/main_navigation.dart';
 import 'package:test23/pages/produk/halaman_detail_produk.dart';
 import 'package:test23/pages/produk/halaman_keranjang.dart';
-import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:test23/widgets/produk/banner_kirim_sampah.dart';
 import 'package:test23/widgets/produk/card_produk_grid.dart';
 import 'package:test23/widgets/produk/header_produk.dart';
@@ -476,10 +476,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
                     );
                     return;
                   }
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => const HalamanTracking()),
-                  );
+                  MainNavigationPage.jumpToTab(context, 3);
                 },
               ),
 

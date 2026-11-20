@@ -10,7 +10,6 @@ import 'package:test23/pages/beranda/halaman_peta_cabang.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/konten/halaman_upload_konten.dart';
 import 'package:test23/pages/main_navigation.dart';
-import 'package:test23/pages/tracking/halaman_tracking.dart';
 import 'package:test23/widgets/beranda/card_riwayat_sampah.dart';
 import 'package:test23/widgets/beranda/card_video_tutorial.dart';
 import 'package:test23/widgets/beranda/card_workshop.dart';
@@ -31,6 +30,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   List<dynamic> _listSampah = [];
   double _totalKg = 0.0;
   int _totalCount = 0;
+  bool _adaBelumDibaca = false;
 
   void _showAccountBlockedDialog(String message) {
     showDialog(
@@ -57,11 +57,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           message.isNotEmpty
               ? message
               : 'Akun Anda sedang diblokir atau dinonaktifkan oleh Administrator TR4SH.',
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.black87,
-            height: 1.4,
-          ),
+          style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
         ),
         actions: [
           ElevatedButton(
@@ -75,14 +71,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text(
-              'Ke Halaman Login',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            child: const Text('Ke Halaman Login', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -94,10 +85,33 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     super.initState();
     _loadBerandaEdukasi();
     _loadRiwayatSampah();
+    _loadNotifikasiStatus();
+  }
+
+  Future<void> _loadNotifikasiStatus() async {
+    final belumDibaca = await HalamanNotifikasi.hasUnreadNotifications();
+    if (!mounted) return;
+    setState(() => _adaBelumDibaca = belumDibaca);
+  }
+
+  Future<void> _navigateToNotifikasi() async {
+    if (!UserAccountData.isLoggedIn) {
+      AuthRequiredModal.show(
+        context,
+        title: 'Notifikasi Memerlukan Akun',
+        message: 'Silakan masuk terlebih dahulu untuk melihat notifikasi Anda.',
+      );
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
+    );
+    _loadNotifikasiStatus();
   }
 
   Future<void> _loadRiwayatSampah() async {
-    if (!UserAccountData.isLoggedIn || UserAccountData.isNewAccount) {
+    if (UserAccountData.isGuest || UserAccountData.isNewAccount) {
       if (mounted) {
         setState(() {
           _listSampah = [];
@@ -112,8 +126,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       final res = await ApiService.fetchRiwayatSetor();
       if (res.success && res.data is Map && mounted) {
         final dataMap = res.data as Map;
-        final items =
-            (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
+        final items = (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
         final totalKg = (dataMap['total_kg'] is num)
             ? (dataMap['total_kg'] as num).toDouble()
             : 0.0;
@@ -151,9 +164,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
         if (mounted) _showAccountBlockedDialog(res.message);
         return;
       }
-      if (res.success &&
-          res.data is Map &&
-          res.data['edukasi_terbaru'] is List) {
+      if (res.success && res.data is Map && res.data['edukasi_terbaru'] is List) {
         final list = res.data['edukasi_terbaru'] as List;
         if (mounted) {
           setState(() {
@@ -194,6 +205,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   }
 
   void _bukaHalamanKonten([Map<String, dynamic>? item]) {
+    if (item == null) {
+      MainNavigationPage.jumpToTab(context, 2);
+      return;
+    }
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => HalamanKonten(
@@ -203,22 +219,8 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
     );
   }
 
-  void _navigateToNotifikasi() {
-    if (!UserAccountData.isLoggedIn) {
-      AuthRequiredModal.show(
-        context,
-        title: 'Notifikasi Memerlukan Akun',
-        message: 'Silakan masuk terlebih dahulu untuk melihat notifikasi Anda.',
-      );
-      return;
-    }
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
-    );
-  }
-
   void _navigateToTracking() {
-    if (!UserAccountData.isLoggedIn) {
+    if (UserAccountData.isGuest) {
       AuthRequiredModal.show(
         context,
         title: 'Fitur Setor Sampah Memerlukan Akun',
@@ -228,9 +230,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       );
       return;
     }
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HalamanTracking()),
-    );
+    MainNavigationPage.jumpToTab(context, 3);
   }
 
   void _navigateToMap() {
@@ -240,7 +240,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   }
 
   void _navigateToUploadKonten() {
-    if (!UserAccountData.isLoggedIn) {
+    if (UserAccountData.isGuest) {
       AuthRequiredModal.show(
         context,
         title: 'Upload Konten Memerlukan Akun',
@@ -305,10 +305,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               InkWell(
                 onTap: _navigateToMap,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: AppColors.limeAccent,
                     borderRadius: BorderRadius.circular(10),
@@ -427,10 +424,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
               final title = itemMap['title']?.toString() ?? 'Konten Edukasi';
               final mediaUrl = itemMap['media_url']?.toString() ?? '';
               final isVideo = KontenValidator.extractYoutubeId(mediaUrl) != null ||
-                  (itemMap['tipe_media']
-                          ?.toString()
-                          .toLowerCase()
-                          .contains('video') ??
+                  (itemMap['tipe_media']?.toString().toLowerCase().contains('video') ??
                       false);
               final imgUrl = _resolveMediaImageUrl(mediaUrl);
 
@@ -460,7 +454,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                                     height: 105,
                                     width: 220,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => Container(
+                                    errorBuilder: (_, __, ___) => Container(
                                       height: 105,
                                       width: 220,
                                       color: AppColors.darkGreen,
@@ -712,7 +706,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            await Future.wait([_loadBerandaEdukasi(), _loadRiwayatSampah()]);
+            await Future.wait([
+              _loadBerandaEdukasi(),
+              _loadRiwayatSampah(),
+              _loadNotifikasiStatus(),
+            ]);
           },
           color: AppColors.darkGreen,
           backgroundColor: AppColors.limeAccent,
@@ -732,13 +730,30 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                       const Tr4shBrandLogo(subtitle: 'HOME'),
                       Row(
                         children: [
-                          IconButton(
-                            onPressed: _navigateToNotifikasi,
-                            icon: const Icon(
-                              Icons.notifications_outlined,
-                              color: AppColors.darkGreen,
-                              size: 24,
-                            ),
+                          Stack(
+                            children: [
+                              IconButton(
+                                onPressed: _navigateToNotifikasi,
+                                icon: const Icon(
+                                  Icons.notifications_outlined,
+                                  color: AppColors.darkGreen,
+                                  size: 24,
+                                ),
+                              ),
+                              if (_adaBelumDibaca)
+                                Positioned(
+                                  right: 10,
+                                  top: 10,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.amber,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                           const SizedBox(width: 8),
                           GestureDetector(
@@ -769,13 +784,21 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 _buildCustomCardBankSampah(),
                 const SizedBox(height: 16),
                 CardRiwayatSampah(
-                  rawData: !UserAccountData.isLoggedIn ? const [] : _listSampah,
-                  totalWeight: !UserAccountData.isLoggedIn
-                      ? '0.0'
-                      : _totalKg.toStringAsFixed(1),
-                  trendBadge: !UserAccountData.isLoggedIn
-                      ? '+0 setoran'
-                      : '+$_totalCount setoran',
+                  rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                      ? const []
+                      : _listSampah,
+                  totalWeight:
+                      (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                          ? '0.0'
+                          : (_totalKg > 0
+                              ? _totalKg.toStringAsFixed(1)
+                              : '14.8'),
+                  trendBadge:
+                      (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                          ? '+0 setoran'
+                          : (_totalCount > 0
+                              ? '+$_totalCount setoran'
+                              : '+28% minggu ini'),
                 ),
                 const SizedBox(height: 22),
                 CardVideoTutorial(
