@@ -22,7 +22,7 @@ class KategoriKontenTabs extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         physics: const ClampingScrollPhysics(),
         itemCount: categories.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final bool isSelected = selectedIndex == index;
           return GestureDetector(
