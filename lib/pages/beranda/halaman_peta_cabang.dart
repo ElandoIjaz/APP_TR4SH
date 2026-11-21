@@ -23,7 +23,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   static const LatLng _initialPosition = LatLng(-8.184487, 113.705886);
   LatLng _userPosition = _initialPosition;
 
-  var _daftarCabang = [];
+   List<Map<String, dynamic>> _daftarCabang = [];
   bool _isLoading = true;
   Map<String, dynamic>? _selectedCabang;
   Map<String, dynamic>? _cabangTerdekat;
@@ -38,7 +38,8 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   }
 
   Future<void> _initializeLocationAndData() async {
-    setState(() => _isLoading = true);
+    if (mounted) setState(() => _isLoading = true);
+
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (serviceEnabled) {
@@ -61,6 +62,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
       debugPrint("Gagal mendeteksi lokasi GPS: $e");
     }
 
+    if (!mounted) return;
     await _loadLokasiCabangFromDatabase();
   }
 
@@ -80,9 +82,11 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   Future<void> _loadLokasiCabangFromDatabase() async {
     try {
       final res = await ApiService.fetchBankSampah();
+      if (!mounted) return;
+
       if (res.success && res.data is List) {
         final rawList = res.data as List;
-        final formattedList = rawList.map((item) {
+        final  List<Map<String, dynamic>> formattedList = rawList.map((item) {
           final mapItem = Map<String, dynamic>.from(item);
 
           final double lat =
@@ -97,33 +101,33 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
 
           return {
             'id':
-                mapItem['id']?.toString() ??
-                mapItem['id_bank']?.toString() ??
                 mapItem['id_bank_sampah']?.toString() ??
+                mapItem['id']?.toString() ??
                 '1',
             'nama':
+                mapItem['nama_bank_sampah'] ??
                 mapItem['nama_cabang'] ??
                 mapItem['nama'] ??
-                mapItem['nama_bank_sampah'] ??
                 'Bank Sampah',
-            'alamat': mapItem['alamat'] ?? '',
-            'jam': mapItem['jam_operasional'] ?? '08:00 - 16:00 WIB',
-            'telp': mapItem['telepon'] ?? mapItem['no_telp'] ?? '-',
+            'alamat': mapItem['alamat']?.toString() ?? '',
+            'jam': mapItem['jam_operasional']?.toString() ?? '-',
+            'telp':
+                mapItem['no_telp']?.toString() ??
+                mapItem['telepon']?.toString() ??
+                '-',
             'latLng': pos,
             'jarak_km': jarak,
           };
         }).toList();
 
         if (formattedList.isNotEmpty) {
-          Map<String, dynamic>? terdekat;
-          double minJarak = double.infinity;
-          for (var c in formattedList) {
-            final double j = c['jarak_km'];
-            if (j < minJarak) {
-              minJarak = j;
-              terdekat = c;
-            }
-          }
+          // Urutkan dari cabang terdekat ke terjauh
+          formattedList.sort(
+            (a, b) =>
+                (a['jarak_km'] as double).compareTo(b['jarak_km'] as double),
+          );
+
+          final terdekat = formattedList.first;
 
           setState(() {
             _daftarCabang = formattedList;
@@ -131,9 +135,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
             _isLoading = false;
           });
 
-          if (terdekat != null) {
-            _pilihCabang(terdekat);
-          }
+          _pilihCabang(terdekat);
           return;
         }
       }
@@ -141,19 +143,20 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
       debugPrint("Gagal memuat dari API: $e");
     }
 
+    if (!mounted) return;
+
     // Fallback jika API gagal atau kosong
-    final fallbackList = [
+    const fallbackPos = LatLng(-8.200710207165347, 113.7090619023833);
+    final  List<Map<String, dynamic>> fallbackList = [
       {
         'id': '1',
-        'nama': 'Bank Sampah Pusat Sahabat Ibu',
-        'alamat': 'Jl. Kalimantan No. 37, Tegalboto, Jember',
-        'jam': '08:00 - 16:00 WIB',
-        'telp': '081234567890',
-        'latLng': const LatLng(-8.165123, 113.716234),
-        'jarak_km': _hitungJarakKm(
-          _userPosition,
-          const LatLng(-8.165123, 113.716234),
-        ),
+        'nama': 'Bank Sampah Sahabat Ibu',
+        'alamat':
+            'Perumahan Taman Gading, Tumpengsari, Tegal Besar, Kec. Kaliwates, Jember',
+        'jam': '08:00 - 17:00 WIB',
+        'telp': '082141055879',
+        'latLng': fallbackPos,
+        'jarak_km': _hitungJarakKm(_userPosition, fallbackPos),
       },
     ];
 
@@ -166,13 +169,15 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
   }
 
   Future<void> _fetchRoute(LatLng tujuan) async {
-    setState(() => _isLoadingRoute = true);
+    if (mounted) setState(() => _isLoadingRoute = true);
     try {
       final url = Uri.parse(
         'https://router.project-osrm.org/route/v1/driving/${_userPosition.longitude},${_userPosition.latitude};${tujuan.longitude},${tujuan.latitude}?overview=full&geometries=geojson',
       );
 
       final response = await http.get(url);
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         final routes = data['routes'] as List;
@@ -182,7 +187,10 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
 
           setState(() {
             _routePoints = coords.map<LatLng>((coord) {
-              return LatLng(coord[1] as double, coord[0] as double);
+              return LatLng(
+                (coord[1] as num).toDouble(),
+                (coord[0] as num).toDouble(),
+              );
             }).toList();
             _isLoadingRoute = false;
           });
@@ -191,6 +199,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
       }
     } catch (_) {}
 
+    if (!mounted) return;
     setState(() {
       _routePoints = [_userPosition, tujuan];
       _isLoadingRoute = false;
@@ -215,7 +224,14 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
     if (jarak > 5) targetZoom = 13.5;
     if (jarak > 10) targetZoom = 12.0;
 
-    _mapController.move(LatLng(centerLat, centerLng), targetZoom);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      try {
+        _mapController.move(LatLng(centerLat, centerLng), targetZoom);
+      } catch (e) {
+        debugPrint("Peta belum siap digerakkan: $e");
+      }
+    });
   }
 
   Future<void> _bukaNavigasiEksternal(double lat, double lng) async {
@@ -225,6 +241,121 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     }
+  }
+
+  void _tampilkanDaftarCabang() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 10),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(20, 14, 20, 8),
+                child: Row(
+                  children: [
+                    Text(
+                      'Pilih Cabang Bank Sampah',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.darkGreen,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: _daftarCabang.length,
+                  separatorBuilder: (_, _) =>
+                      Divider(height: 1, color: Colors.grey.shade100),
+                  itemBuilder: (context, index) {
+                    final cabang = _daftarCabang[index];
+                    final double jarak = cabang['jarak_km'] as double;
+                    final bool isSelected =
+                        _selectedCabang?['id'] == cabang['id'];
+                    final bool isTerdekat =
+                        _cabangTerdekat?['id'] == cabang['id'];
+
+                    return ListTile(
+                      selected: isSelected,
+                      selectedTileColor: const Color(0xFFF0F9F4),
+                      leading: Icon(
+                        Icons.location_on_rounded,
+                        color: isSelected
+                            ? AppColors.darkGreen
+                            : Colors.grey.shade500,
+                      ),
+                      title: Text(
+                        cabang['nama'].toString(),
+                        style: TextStyle(
+                          fontSize: 13.5,
+                          fontWeight:
+                              isSelected ? FontWeight.w700 : FontWeight.w500,
+                          color: isSelected
+                              ? AppColors.darkGreen
+                              : Colors.black87,
+                        ),
+                      ),
+                      subtitle: Text(
+                        cabang['alamat'].toString(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 11.5),
+                      ),
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isTerdekat
+                              ? const Color(0xFFD6F5E1)
+                              : const Color(0xFFF1F5F3),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${jarak.toStringAsFixed(1)} km',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: isTerdekat
+                                ? const Color(0xFF15803D)
+                                : const Color(0xFF406354),
+                          ),
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _pilihCabang(cabang);
+                      },
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -311,7 +442,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
 
                 if (_isLoadingRoute)
                   Positioned(
-                    top: 90,
+                    top: 135,
                     left: 0,
                     right: 0,
                     child: Center(
@@ -349,9 +480,10 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                     ),
                   ),
 
+                // Tombol Fokus ke Lokasi Pengguna
                 Positioned(
                   right: 16,
-                  bottom: _selectedCabang != null ? 220 : 30,
+                  bottom: _selectedCabang != null ? 250 : 30,
                   child: FloatingActionButton(
                     mini: true,
                     backgroundColor: AppColors.darkGreen,
@@ -363,6 +495,7 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                   ),
                 ),
 
+                // Panel Atas: Rekomendasi Terdekat & Tombol Pilih Cabang
                 Positioned(
                   top: 16,
                   left: 16,
@@ -415,49 +548,58 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                               ],
                             ),
                           ),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedCabang?['id']?.toString(),
-                          isExpanded: true,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(
+                        InkWell(
+                          onTap: _tampilkanDaftarCabang,
+                          borderRadius: BorderRadius.circular(10),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
                               horizontal: 12,
-                              vertical: 8,
+                              vertical: 11,
                             ),
-                            labelText: 'Pilih Cabang Bank Sampah',
-                            labelStyle: const TextStyle(
-                              fontSize: 13,
-                              color: AppColors.darkGreen,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF6FAF7),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: AppColors.darkGreen.withValues(
+                                  alpha: 0.2,
+                                ),
+                              ),
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.storefront_rounded,
+                                  size: 18,
+                                  color: AppColors.darkGreen,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    _selectedCabang != null
+                                        ? '${_selectedCabang!['nama']} (${(_selectedCabang!['jarak_km'] as double).toStringAsFixed(1)} km)'
+                                        : 'Pilih Cabang Bank Sampah',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.darkGreen,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.keyboard_arrow_down_rounded,
+                                  color: AppColors.darkGreen,
+                                ),
+                              ],
                             ),
                           ),
-                          items: _daftarCabang.map((cabang) {
-                            final double jarak = cabang['jarak_km'];
-                            return DropdownMenuItem<String>(
-                              value: cabang['id'].toString(),
-                              child: Text(
-                                '${cabang['nama']} (${jarak.toStringAsFixed(1)} km)',
-                                style: const TextStyle(fontSize: 12.5),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              final dipilih = _daftarCabang.firstWhere(
-                                (c) => c['id'].toString() == val,
-                              );
-                              _pilihCabang(dipilih);
-                            }
-                          },
                         ),
                       ],
                     ),
                   ),
                 ),
 
+                // Kartu Informasi Cabang Terpilih
                 if (_selectedCabang != null)
                   Positioned(
                     bottom: 24,
@@ -495,13 +637,16 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                               ),
                               IconButton(
                                 icon: const Icon(Icons.close, size: 20),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
                                 onPressed: () =>
                                     setState(() => _selectedCabang = null),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Icon(
                                 Icons.location_on_rounded,
@@ -516,11 +661,34 @@ class _HalamanPetaCabangState extends State<HalamanPetaCabang> {
                                     fontSize: 12.5,
                                     color: Colors.black87,
                                   ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 5),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.access_time_rounded,
+                                size: 14,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  'Jam: ${_selectedCabang!['jam']}  •  Telp: ${_selectedCabang!['telp']}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black54,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
                           Row(
                             children: [
                               const Icon(

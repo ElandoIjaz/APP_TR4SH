@@ -22,16 +22,19 @@ class BankSampah {
   });
 
   factory BankSampah.fromJson(Map<String, dynamic> json) {
+    final rawId = json['id_bank_sampah'] ?? json['id'];
+    final rawIsUtama = json['is_utama'];
+
     return BankSampah(
-      id: json['id_bank_sampah'] as int,
-      nama: json['nama_bank_sampah'] as String,
-      alamat: json['alamat'] as String?,
-      kecamatan: json['kecamatan'] as String?,
-      noTelp: json['no_telp'] as String?,
-      jamOperasional: json['jam_operasional'] as String?,
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
-      isUtama: json['is_utama'] as bool? ?? false,
+      id: int.tryParse(rawId?.toString() ?? '') ?? 0,
+      nama: (json['nama_bank_sampah'] ?? json['nama'] ?? 'Bank Sampah').toString(),
+      alamat: json['alamat']?.toString(),
+      kecamatan: json['kecamatan']?.toString(),
+      noTelp: json['no_telp']?.toString(),
+      jamOperasional: json['jam_operasional']?.toString(),
+      latitude: double.tryParse(json['latitude']?.toString() ?? '') ?? 0.0,
+      longitude: double.tryParse(json['longitude']?.toString() ?? '') ?? 0.0,
+      isUtama: rawIsUtama == true || rawIsUtama == 1 || rawIsUtama == '1',
     );
   }
 }

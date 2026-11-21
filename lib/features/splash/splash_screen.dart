@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:test23/core/painters/green_corner_painter.dart';
+import 'package:test23/data/api_service.dart';
+import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/main_navigation.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -13,6 +15,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _waveController;
+  Timer? _navTimer;
 
   @override
   void initState() {
@@ -23,19 +26,33 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
 
-    Timer(const Duration(seconds: 3), () {
+    _restoreSession();
+
+    _navTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(builder: (context) => const MainNavigationPage()), // ✅ Wajib ke pembungkus PageView
-);
-    
+          context,
+          MaterialPageRoute(builder: (context) => const MainNavigationPage()),
+        );
       }
     });
   }
 
+  Future<void> _restoreSession() async {
+    try {
+      final token = await ApiService.getToken();
+      final user = await ApiService.getUserSession();
+      if (token != null && token.isNotEmpty && user != null) {
+        UserAccountData.updateFromUserData(user);
+        return;
+      }
+    } catch (_) {}
+    UserAccountData.setGuestMode();
+  }
+
   @override
   void dispose() {
+    _navTimer?.cancel();
     _waveController.dispose();
     super.dispose();
   }

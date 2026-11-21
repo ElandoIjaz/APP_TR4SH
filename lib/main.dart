@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: AppColors.bgScreen,
       ),
       // Gerbang autentikasi: sebelum masuk ke aplikasi harus login atau daftar akun
-      home: const SplashScreen(), //panggil splashscreen
+      home: initialHome ?? const SplashScreen(), //panggil splashscreen
     );
   }
 }
