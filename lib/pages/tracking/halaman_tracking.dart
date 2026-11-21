@@ -7,11 +7,12 @@ import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/auth/halaman_login.dart';
 import 'package:test23/pages/beranda/halaman_peta_cabang.dart';
-import 'package:test23/pages/main_navigation.dart'; // Diperlukan untuk mengakses MainNavigationPage.jumpToTab
+import 'package:test23/pages/main_navigation.dart';
 import 'package:test23/widgets/tracking/card_estimasi_berat.dart';
 import 'package:test23/widgets/tracking/card_tracking_chart.dart';
 import 'package:test23/widgets/tracking/grid_kategori_setor.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
+import 'package:test23/widgets/umum/tr4sh_brand_logo.dart';
 
 class HalamanTracking extends StatefulWidget {
   const HalamanTracking({super.key});
@@ -261,7 +262,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   itemBuilder: (context, idx) {
                     final item = Map<String, dynamic>.from(_keranjangSetor[idx] as Map);
                     final double itemWeight = (item['jumlah'] as num).toDouble();
-                    
+
                     return Container(
                       margin: const EdgeInsets.only(bottom: 10),
                       padding: const EdgeInsets.all(12),
@@ -303,7 +304,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                                       child: const Icon(Icons.remove, size: 14),
                                     ),
                                   ),
-                                  
+
                                   GestureDetector(
                                     onTap: () {
                                       final TextEditingController editCtrl = TextEditingController(
@@ -764,56 +765,13 @@ class _HalamanTrackingState extends State<HalamanTracking> {
               children: [
                 const SizedBox(height: 14),
 
-                // HEADER TR4SH! TRACKING
+                // HEADER TR4SH TRACKING
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 38,
-                            height: 38,
-                            decoration: BoxDecoration(
-                              color: AppColors.darkGreen,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Center(
-                              child: Icon(
-                                Icons.eco_rounded,
-                                color: AppColors.limeAccent,
-                                size: 22,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'TR4SH!',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.darkGreen,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              Text(
-                                'TRACKING',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.textMuted,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-
+                      const Tr4shBrandLogo(subtitle: 'TRACKING'),
                       Row(
                         children: [
                           Stack(
@@ -841,9 +799,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                             ],
                           ),
                           const SizedBox(width: 8),
-
-                          // DIPERBAIKI: Menggunakan MainNavigationPage.jumpToTab(context, 4) 
-                          // agar Halaman Akun terbuka di PageView tanpa menghilangkan footer.
                           GestureDetector(
                             onTap: () {
                               MainNavigationPage.jumpToTab(context, 4);
@@ -919,7 +874,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                   ),
                   const SizedBox(height: 16),
                 ],
-                
+
                 // KARTU PETA CABANG INTERAKTIF
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -1180,7 +1135,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                     final jenisSampah = item['jenis_sampah']?.toString() ?? 'Setoran';
                     final jumlah = item['jumlah']?.toString() ?? '0';
                     final satuan = item['satuan']?.toString() ?? 'kg';
-                    
+
                     final totalRupiah = item['total_rupiah'] != null 
                         ? double.tryParse(item['total_rupiah'].toString()) ?? 0.0 
                         : 0.0;
@@ -1306,7 +1261,7 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                           const SizedBox(height: 10),
                           Divider(height: 1, color: Colors.grey.shade200),
                           const SizedBox(height: 8),
-                          
+
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
