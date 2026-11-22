@@ -28,6 +28,7 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
   ];
 
   bool _isLoading = true;
+  bool _isCancelling = false;
   String? _errorMessage;
   List<Map<String, dynamic>> _transactions = [];
 
@@ -92,7 +93,7 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
     }
   }
 
-    List<Map<String, dynamic>> get _filteredList {
+  List<Map<String, dynamic>> get _filteredList {
     if (_selectedFilterIndex == 0) return _transactions;
     final filter = _filters[_selectedFilterIndex];
 
@@ -116,9 +117,97 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
         builder: (_) => HalamanPembayaran(dataTransaksi: trx),
       ),
     ).then((_) {
-      // Refresh otomatis setelah kembali dari layar pembayaran
       _fetchRiwayatTransaksi();
     });
+  }
+
+  Future<void> _batalkanPesanan(Map<String, dynamic> trx) async {
+    if (_isCancelling) return;
+    final orderId = trx['order_id']?.toString() ?? '';
+    if (orderId.isEmpty) return;
+
+    final konfirmasi = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Batalkan Pesanan?',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: AppColors.darkGreen,
+          ),
+        ),
+        content: Text(
+          'Pesanan $orderId akan dibatalkan dan kode pembayaran tidak bisa digunakan lagi.',
+          style: const TextStyle(fontSize: 13, color: Colors.black87),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Kembali', style: TextStyle(color: AppColors.textMuted)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Ya, Batalkan', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (konfirmasi != true) return;
+
+    setState(() => _isCancelling = true);
+
+    try {
+      final token = await ApiService.getToken();
+      final url = Uri.parse('${ApiConfig.baseUrl}/transaksi/cancel/$orderId');
+      final response = await http.post(
+        url,
+        headers: {
+          'Accept': 'application/json',
+          if (token != null && token.isNotEmpty)
+            'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 10));
+
+      final data = jsonDecode(response.body);
+      if (!mounted) return;
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Pesanan berhasil dibatalkan.'),
+            backgroundColor: const Color(0xFF1E8850),
+          ),
+        );
+        _fetchRiwayatTransaksi();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? 'Gagal membatalkan pesanan.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        _fetchRiwayatTransaksi();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal terhubung ke server: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isCancelling = false);
+    }
   }
 
   void _showBuktiOrderModal(Map<String, dynamic> trx) {
@@ -780,7 +869,31 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
               ),
               Row(
                 children: [
-                  if (isPending)
+                  if (isPending) ...[
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.redAccent),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      onPressed: _isCancelling ? null : () => _batalkanPesanan(trx),
+                      child: const Text(
+                        'Batal',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE65100),
@@ -798,14 +911,14 @@ class _HalamanRiwayatTransaksiState extends State<HalamanRiwayatTransaksi> {
                       onPressed: () => _lanjutkanPembayaran(trx),
                       icon: const Icon(Icons.qr_code_2_rounded, size: 14),
                       label: const Text(
-                        'Lanjutkan Pembayaran',
+                        'Bayar',
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    )
-                  else if (isSelesai) ...[
+                    ),
+                  ] else if (isSelesai) ...[
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF98CCA8)),
