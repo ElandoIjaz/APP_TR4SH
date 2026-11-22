@@ -121,64 +121,6 @@ class _HalamanTrackingState extends State<HalamanTracking> {
     } catch (_) {}
   }
 
-  void _showNotificationSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(22),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'Notifikasi Pengantaran & Verifikasi',
-                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: AppColors.darkGreen),
-                ),
-                IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(context)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.bgScreen,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: Row(
-                children: [
-                  const CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Color(0xFFD6F5E1),
-                    child: Icon(Icons.verified_user_rounded, color: AppColors.darkGreen, size: 18),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      _listSampah.isNotEmpty
-                          ? 'Terdapat ${_listSampah.length} pengajuan jual sampah tercatat di sistem.'
-                          : 'Belum ada pengajuan jual sampah yang dikirim.',
-                      style: const TextStyle(fontSize: 12.5, color: AppColors.darkGreen),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _handleInputSampah(double initialWeight, double initialRupiah) async {
     if (UserAccountData.isGuest) {
       AuthRequiredModal.show(
@@ -772,53 +714,24 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Tr4shBrandLogo(subtitle: 'TRACKING'),
-                      Row(
-                        children: [
-                          Stack(
-                            children: [
-                              IconButton(
-                                onPressed: _showNotificationSheet,
-                                icon: const Icon(
-                                  Icons.notifications_outlined,
-                                  color: AppColors.darkGreen,
-                                  size: 24,
-                                ),
-                              ),
-                              Positioned(
-                                right: 10,
-                                top: 10,
-                                child: Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.amber,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-                            ],
+                      GestureDetector(
+                        onTap: () {
+                          MainNavigationPage.jumpToTab(context, 4);
+                        },
+                        child: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFD6F3DD),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.cardBorder),
                           ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () {
-                              MainNavigationPage.jumpToTab(context, 4);
-                            },
-                            child: Container(
-                              width: 38,
-                              height: 38,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD6F3DD),
-                                shape: BoxShape.circle,
-                                border: Border.all(color: AppColors.cardBorder),
-                              ),
-                              child: const Icon(
-                                Icons.person_rounded,
-                                color: AppColors.darkGreen,
-                                size: 20,
-                              ),
-                            ),
+                          child: const Icon(
+                            Icons.person_rounded,
+                            color: AppColors.darkGreen,
+                            size: 20,
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
@@ -1136,8 +1049,8 @@ class _HalamanTrackingState extends State<HalamanTracking> {
                     final jumlah = item['jumlah']?.toString() ?? '0';
                     final satuan = item['satuan']?.toString() ?? 'kg';
 
-                    final totalRupiah = item['total_rupiah'] != null 
-                        ? double.tryParse(item['total_rupiah'].toString()) ?? 0.0 
+                    final totalRupiah = item['total_rupiah'] != null
+                        ? double.tryParse(item['total_rupiah'].toString()) ?? 0.0
                         : 0.0;
                     final formattedRupiah = 'Rp ${totalRupiah.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}';
 

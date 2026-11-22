@@ -82,7 +82,6 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
   final List<String> _filters = [
     'Semua',
     'Transaksi',
-    'Setor Sampah',
     'Info & Promo',
   ];
 
@@ -160,7 +159,7 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
               } else {
                 title = 'Pesanan Kedaluwarsa / Dibatalkan ($orderId)';
                 desc =
-                    'Transaksi $orderId sebesar Rp ${_formatPrice(totalBayar)} telah dibatalkan atau melewati batas waktu pembayaran.';
+                    'Transaksi $orderId sebesar Rp${_formatPrice(totalBayar)} telah dibatalkan atau melewati batas waktu pembayaran.';
                 icon = Icons.cancel_rounded;
               }
 
@@ -532,6 +531,6 @@ class _HalamanNotifikasiState extends State<HalamanNotifikasi> {
     ];
     final hh = dt.hour.toString().padLeft(2, '0');
     final mm = dt.minute.toString().padLeft(2, '0');
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}, $hh:$mm WIB';
+    return '${dt.day} ${months[dt.month - 1]}${dt.year}, $hh:$mm WIB';
   }
 }
