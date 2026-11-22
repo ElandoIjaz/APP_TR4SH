@@ -15,7 +15,7 @@ import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
 
-  // ⚠️ Wajib ada: Helper static agar halaman anak bisa memicu perpindahan tab utama
+  // Helper static agar halaman anak bisa memicu perpindahan tab utama
   static void jumpToTab(BuildContext context, int index) {
     final state = context.findAncestorStateOfType<_MainNavigationPageState>();
     state?.switchToTab(index);
@@ -28,6 +28,15 @@ class MainNavigationPage extends StatefulWidget {
 class _MainNavigationPageState extends State<MainNavigationPage> {
   late final PageController _pageController;
   int _currentIndex = 0;
+
+  // Simpan instance halaman sekali saja agar tidak dibuat ulang
+  final List<Widget> _pages = const [
+    _KeepAlivePage(child: HalamanBeranda()),  // Index 0
+    _KeepAlivePage(child: HalamanProduk()),   // Index 1
+    _KeepAlivePage(child: HalamanKonten()),   // Index 2
+    _KeepAlivePage(child: HalamanTracking()), // Index 3
+    _KeepAlivePage(child: HalamanAkun()),     // Index 4
+  ];
 
   @override
   void initState() {
@@ -56,22 +65,30 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     return true;
   }
 
-  // ⚠️ Wajib ada: Method publik untuk mengontrol perpindahan halaman dari luar/dalam
+  // Method publik untuk mengontrol perpindahan halaman dari luar/dalam
   void switchToTab(int index) {
+    if (index == _currentIndex) return;
     if (!_canNavigateToTab(index)) return;
+
+    final int distance = (index - _currentIndex).abs();
 
     setState(() {
       _currentIndex = index;
     });
 
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    // Jika lompat lebih dari 1 tab (misal Akun -> Beranda), langsung jumpToPage
+    // agar tidak tersendat melewati halaman berat di tengahnya
+    if (distance > 1) {
+      _pageController.jumpToPage(index);
+    } else {
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+      );
+    }
   }
 
-  // Dipanggil saat ikon menu di TrashBottomNav ditekan
   void _onNavTapped(int index) {
     switchToTab(index);
   }
@@ -81,31 +98,46 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     return Scaffold(
       body: PageView(
         controller: _pageController,
-        physics: const PageScrollPhysics(), // Pemaksaan gestur swipe PageView tetap aktif
+        physics: const PageScrollPhysics(),
         onPageChanged: (index) {
-          // Membatasi swipe jika user Guest mencoba masuk ke Tracking (Index 3)
           if (!_canNavigateToTab(index)) {
             _pageController.jumpToPage(_currentIndex);
             return;
           }
 
-          setState(() {
-            _currentIndex = index;
-          });
+          if (_currentIndex != index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
         },
-        children: const [
-          HalamanBeranda(),  // Index 0
-          HalamanProduk(),   // Index 1
-          HalamanKonten(),   // Index 2
-          HalamanTracking(), // Index 3
-          HalamanAkun(),     // Index 4
-        ],
+        children: _pages,
       ),
-
       bottomNavigationBar: TrashBottomNav(
         currentIndex: _currentIndex,
         onTap: _onNavTapped,
       ),
     );
+  }
+}
+
+/// Wrapper agar setiap tab di dalam PageView tetap hidup di memori (tidak rebuild/glitch)
+class _KeepAlivePage extends StatefulWidget {
+  final Widget child;
+  const _KeepAlivePage({required this.child});
+
+  @override
+  State<_KeepAlivePage> createState() => _KeepAlivePageState();
+}
+
+class _KeepAlivePageState extends State<_KeepAlivePage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }

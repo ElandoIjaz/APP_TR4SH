@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:test23/core/api_config.dart';
+import 'package:test23/data/api_service.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/cart_service.dart';
 import 'package:test23/data/user_account_data.dart';
@@ -105,11 +106,14 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
             .toList(),
       };
 
+      final token = await ApiService.getToken();
       final response = await http.post(
         url,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          if (token != null && token.isNotEmpty)
+            'Authorization': 'Bearer $token',
         },
         body: jsonEncode(payload),
       );
@@ -135,7 +139,7 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
       );
-    }
+    } 
   }
 
   @override

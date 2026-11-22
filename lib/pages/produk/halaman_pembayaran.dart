@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:test23/core/api_config.dart';
+import 'package:test23/data/api_service.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/cart_service.dart';
 
@@ -66,7 +67,15 @@ class _HalamanPembayaranState extends State<HalamanPembayaran> {
       final orderId = widget.dataTransaksi['order_id'];
       final url =
           Uri.parse('${ApiConfig.baseUrl}/transaksi/cek-status/$orderId');
-      final res = await http.get(url).timeout(const Duration(seconds: 8));
+      final token = await ApiService.getToken();
+      final res = await http.get(
+        url,
+        headers: {
+          'Accept': 'application/json',
+          if (token != null && token.isNotEmpty)
+            'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 8));
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);

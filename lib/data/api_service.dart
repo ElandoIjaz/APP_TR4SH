@@ -110,7 +110,7 @@ class ApiService {
       final response = await http
           .post(
             Uri.parse(ApiConfig.login),
-            headers: (await _getHeaders()).cast<String, String>(),
+            headers: (await _getHeaders(requireAuth: false)).cast<String, String>(),
             body: jsonEncode({'username': userIdentifier, 'password': password}),
           )
           .timeout(_timeoutDuration);
@@ -168,7 +168,7 @@ class ApiService {
       final response = await http
           .post(
             Uri.parse(ApiConfig.register),
-            headers: (await _getHeaders()).cast<String, String>(),
+            headers: (await _getHeaders(requireAuth: false)).cast<String, String>(),
             body: jsonEncode(payload),
           )
           .timeout(_timeoutDuration);
@@ -949,10 +949,7 @@ class ApiService {
     try {
       final response = await http.post(
         Uri.parse('${ApiConfig.baseUrl}/edukasi/$edukasiId/komentar'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers: (await _getHeaders()).cast<String, String>(),
         body: jsonEncode({
           'nama': nama.isEmpty ? 'Tamu TR4SH' : nama,
           'isi_komentar': isiKomentar,

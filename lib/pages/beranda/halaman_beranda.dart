@@ -25,11 +25,17 @@ class HalamanBeranda extends StatefulWidget {
 }
 
 class _HalamanBerandaState extends State<HalamanBeranda> {
-  List<dynamic> _listEdukasi = [];
-  bool _isLoadingEdukasi = true;
-  List<dynamic> _listSampah = [];
-  double _totalKg = 0.0;
-  int _totalCount = 0;
+  // Cache in-memory agar saat rebuild tidak kedip ke 0.0 kg
+  static List<dynamic> _cacheEdukasi = [];
+  static List<dynamic> _cacheSampah = [];
+  static double _cacheTotalKg = 0.0;
+  static int _cacheTotalCount = 0;
+
+  late List<dynamic> _listEdukasi = _cacheEdukasi;
+  late bool _isLoadingEdukasi = _cacheEdukasi.isEmpty;
+  late List<dynamic> _listSampah = _cacheSampah;
+  late double _totalKg = _cacheTotalKg;
+  late int _totalCount = _cacheTotalCount;
   bool _adaBelumDibaca = false;
 
   void _showAccountBlockedDialog(String message) {
@@ -91,7 +97,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   Future<void> _loadNotifikasiStatus() async {
     final belumDibaca = await HalamanNotifikasi.hasUnreadNotifications();
     if (!mounted) return;
-    setState(() => _adaBelumDibaca = belumDibaca);
+    if (_adaBelumDibaca != belumDibaca) {
+      setState(() => _adaBelumDibaca = belumDibaca);
+    }
   }
 
   Future<void> _navigateToNotifikasi() async {
@@ -112,6 +120,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
   Future<void> _loadRiwayatSampah() async {
     if (UserAccountData.isGuest || UserAccountData.isNewAccount) {
+      _cacheSampah = [];
+      _cacheTotalKg = 0.0;
+      _cacheTotalCount = 0;
       if (mounted) {
         setState(() {
           _listSampah = [];
@@ -126,17 +137,36 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       final res = await ApiService.fetchRiwayatSetor();
       if (res.success && res.data is Map && mounted) {
         final dataMap = res.data as Map;
-        final items = (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
-        final totalKg = (dataMap['total_kg'] is num)
-            ? (dataMap['total_kg'] as num).toDouble()
-            : 0.0;
-        final totalCount =
-            (dataMap['total'] is int) ? (dataMap['total'] as int) : items.length;
+        final rawItems =
+            (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
+
+        // Filter hanya setoran yang sudah diverifikasi (accepted)
+        final acceptedItems = rawItems.where((item) {
+          if (item is! Map) return false;
+          final status =
+              (item['status_verifikasi'] ?? '').toString().toLowerCase();
+          return status == 'accepted';
+        }).toList();
+
+        // Hitung total kg langsung dari item yang berstatus accepted
+        double totalKg = 0.0;
+        for (final item in acceptedItems) {
+          if (item is Map) {
+            totalKg += double.tryParse(
+                  (item['jumlah'] ?? item['bobot'] ?? '0').toString(),
+                ) ??
+                0.0;
+          }
+        }
+
+        _cacheSampah = acceptedItems;
+        _cacheTotalKg = totalKg;
+        _cacheTotalCount = acceptedItems.length;
 
         setState(() {
-          _listSampah = items;
+          _listSampah = acceptedItems;
           _totalKg = totalKg;
-          _totalCount = totalCount;
+          _totalCount = acceptedItems.length;
         });
         return;
       }
@@ -166,6 +196,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       }
       if (res.success && res.data is Map && res.data['edukasi_terbaru'] is List) {
         final list = res.data['edukasi_terbaru'] as List;
+        _cacheEdukasi = list;
         if (mounted) {
           setState(() {
             _listEdukasi = list;
@@ -176,14 +207,18 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       }
       final edukasiRes = await ApiService.fetchEdukasi();
       if (edukasiRes.success && edukasiRes.data is List && mounted) {
+        final list = edukasiRes.data as List;
+        _cacheEdukasi = list;
         setState(() {
-          _listEdukasi = edukasiRes.data as List;
+          _listEdukasi = list;
           _isLoadingEdukasi = false;
         });
         return;
       }
     } catch (_) {}
-    if (mounted) setState(() => _isLoadingEdukasi = false);
+    if (mounted && _isLoadingEdukasi) {
+      setState(() => _isLoadingEdukasi = false);
+    }
   }
 
   String? _getYoutubeThumbnail(String? url) =>
@@ -454,7 +489,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                                     height: 105,
                                     width: 220,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Container(
+                                    errorBuilder: (_, _, _) => Container(
                                       height: 105,
                                       width: 220,
                                       color: AppColors.darkGreen,
@@ -783,22 +818,20 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                 const SizedBox(height: 16),
                 _buildCustomCardBankSampah(),
                 const SizedBox(height: 16),
-                CardRiwayatSampah(
-                  rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                      ? const []
-                      : _listSampah,
-                  totalWeight:
-                      (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                          ? '0.0'
-                          : (_totalKg > 0
-                              ? _totalKg.toStringAsFixed(1)
-                              : '14.8'),
-                  trendBadge:
-                      (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                          ? '+0 setoran'
-                          : (_totalCount > 0
-                              ? '+$_totalCount setoran'
-                              : '+28% minggu ini'),
+                RepaintBoundary(
+                  child: CardRiwayatSampah(
+                    rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                        ? const []
+                        : _listSampah,
+                    totalWeight:
+                        (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                            ? '0.0'
+                            : _totalKg.toStringAsFixed(1),
+                    trendBadge:
+                        (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                            ? '+0 setoran'
+                            : '+$_totalCount setoran',
+                  ),
                 ),
                 const SizedBox(height: 22),
                 CardVideoTutorial(
