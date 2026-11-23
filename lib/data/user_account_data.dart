@@ -1,7 +1,5 @@
-export 'models/transaksi_model.dart';
 export 'models/riwayat_setor_model.dart';
 
-import 'models/transaksi_model.dart';
 import 'models/riwayat_setor_model.dart';
 
 class UserAccountData {
@@ -34,7 +32,6 @@ class UserAccountData {
     isNewAccount = false;
     listRiwayatSetor = [];
     listKontenSaya = [];
-    listTransaksi = [];
   }
 
   static void initNewUser({
@@ -55,7 +52,6 @@ class UserAccountData {
     isNewAccount = true;
     listRiwayatSetor = [];
     listKontenSaya = [];
-    listTransaksi = [];
   }
 
   static void updateFromUserData(Map<String, dynamic> user) {
@@ -109,6 +105,5 @@ class UserAccountData {
     setGuestMode();
   }
 
-  static List<TransaksiModel> listTransaksi = [];
   static List<RiwayatSetorModel> listRiwayatSetor = [];
 }

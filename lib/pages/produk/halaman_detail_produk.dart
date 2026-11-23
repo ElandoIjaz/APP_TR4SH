@@ -3,13 +3,14 @@ import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/cart_service.dart';
 import 'package:test23/data/models/bank_sampah_model.dart';
+import 'package:test23/data/models/produk_model.dart';
 import 'package:test23/pages/produk/halaman_keranjang.dart';
 import 'package:test23/widgets/produk/dampak_lingkungan_card.dart';
 import 'package:test23/widgets/produk/merchant_card.dart';
 import 'package:test23/widgets/produk/spesifikasi_card.dart';
 
 class HalamanDetailProduk extends StatefulWidget {
-  final Map<String, dynamic> productData;
+  final ProdukModel productData;
 
   const HalamanDetailProduk({
     super.key,
@@ -41,7 +42,7 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildImageGallery(product['foto']?.toString()),
+            _buildImageGallery(product.foto),
 
             Padding(
               padding: const EdgeInsets.all(20),
@@ -52,8 +53,8 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   const SizedBox(height: 18),
 
                   DampakLingkunganCard(
-                    plastikPet: product['plastik_pet'] ?? '-',
-                    jejakKarbon: product['jejak_karbon'] ?? '-',
+                    plastikPet: product.plastikPet,
+                    jejakKarbon: product.jejakKarbon,
                   ),
                   const SizedBox(height: 18),
 
@@ -73,7 +74,7 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    product['tentang_koleksi'] ?? '-',
+                    product.tentangKoleksi,
                     style: const TextStyle(
                       fontSize: 12.5,
                       color: Color(0xFF4C6656),
@@ -135,10 +136,10 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
     );
   }
 
-  Widget _buildImageGallery(String? imageUrl) {
+  Widget _buildImageGallery(String imageUrl) {
     return AspectRatio(
       aspectRatio: 1.08,
-      child: (imageUrl != null && imageUrl.isNotEmpty)
+      child: imageUrl.isNotEmpty
           ? Image.network(
               imageUrl,
               fit: BoxFit.cover,
@@ -169,40 +170,24 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
     );
   }
 
-  Widget _buildPricingAndTitle(Map<String, dynamic> product) {
-    final int hargaAsli =
-        int.tryParse(product['harga']?.toString() ?? '0') ?? 0;
-    final double diskonPersen =
-        double.tryParse(product['diskon_persen']?.toString() ?? '0') ?? 0.0;
-    final int hargaFinal = diskonPersen > 0
-        ? (hargaAsli - (hargaAsli * (diskonPersen / 100))).round()
-        : hargaAsli;
-
-    final String namaProduk =
-        product['nama_product'] ?? product['nama_produk'] ?? 'Nama Produk';
-    final List<dynamic> grosirList = product['grosir'] as List<dynamic>? ?? [];
-
-    final int terjual =
-        int.tryParse(product['terjual']?.toString() ?? '0') ?? 0;
-    final int stok = int.tryParse(product['jumlah']?.toString() ?? '0') ?? 0;
-
+  Widget _buildPricingAndTitle(ProdukModel product) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
             Text(
-              'Rp ${_formatRupiah(hargaFinal)}',
+              'Rp ${_formatRupiah(product.hargaFinal)}',
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
                 color: AppColors.darkGreen,
               ),
             ),
-            if (diskonPersen > 0) ...[
+            if (product.adaDiskon) ...[
               const SizedBox(width: 10),
               Text(
-                'Rp ${_formatRupiah(hargaAsli)}',
+                'Rp ${_formatRupiah(product.harga)}',
                 style: const TextStyle(
                   fontSize: 13,
                   color: AppColors.textMuted,
@@ -217,7 +202,7 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  '${diskonPersen.toInt()}% OFF',
+                  '${product.diskonPersen.toInt()}% OFF',
                   style: const TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.w800,
@@ -230,7 +215,7 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
         ),
         const SizedBox(height: 8),
         Text(
-          namaProduk,
+          product.namaProduk,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,
@@ -240,21 +225,22 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Terjual $terjual • $stok Produk Tersedia',
+          'Terjual ${product.terjual} • ${product.stok} Produk Tersedia',
           style: const TextStyle(
             fontSize: 12,
             color: AppColors.textMuted,
             fontWeight: FontWeight.w600,
           ),
         ),
-        if (grosirList.isNotEmpty) ...[
+        if (product.grosir.isNotEmpty) ...[
           const SizedBox(height: 12),
           Wrap(
             spacing: 6,
             runSpacing: 6,
-            children: grosirList.map((g) {
-              final minQty = g['min_qty'] ?? 0;
-              final disc = g['diskon_persen'] ?? 0;
+            children: product.grosir.map((g) {
+              final discText = g.diskonPersen % 1 == 0
+                  ? '${g.diskonPersen.toInt()}'
+                  : '${g.diskonPersen}';
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
@@ -263,7 +249,7 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                   border: Border.all(color: const Color(0xFFFFCC80)),
                 ),
                 child: Text(
-                  'Beli $minQty+ Disc $disc%',
+                  'Beli ${g.minQty}+ Disc $discText%',
                   style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
@@ -278,7 +264,7 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
     );
   }
 
-  Widget _buildBottomActionBar(Map<String, dynamic> product) {
+  Widget _buildBottomActionBar(ProdukModel product) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -306,17 +292,17 @@ class _HalamanDetailProdukState extends State<HalamanDetailProduk> {
                 ),
                 onPressed: () async {
                   final bool berhasil = await CartService.tambahProduk(
-                    product,
+                    product.toCartMap(),
                     context: context,
                   );
 
                   if (!mounted || !berhasil) return;
 
-                  final nama =
-                      product['nama_product'] ?? product['nama_produk'] ?? 'Produk';
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('$nama ditambahkan ke keranjang!'),
+                      content: Text(
+                        '${product.namaProduk} ditambahkan ke keranjang!',
+                      ),
                       duration: const Duration(milliseconds: 800),
                       backgroundColor: AppColors.darkGreen,
                     ),

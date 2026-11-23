@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/cart_service.dart';
+import 'package:test23/data/models/produk_model.dart';
 import 'package:test23/data/user_account_data.dart';
 import 'package:test23/pages/akun/halaman_notifikasi.dart';
 import 'package:test23/pages/main_navigation.dart';
@@ -35,7 +36,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
     'Setengah Jadi',
   ];
 
-  late Future<List<dynamic>> _futureProduk;
+  late Future<List<ProdukModel>> _futureProduk;
   bool _adaBelumDibaca = false;
 
   @override
@@ -60,7 +61,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
     super.dispose();
   }
 
-  Future<List<dynamic>> fetchProdukApi() async {
+  Future<List<ProdukModel>> fetchProdukApi() async {
     try {
       final response = await http
           .get(Uri.parse(ApiConfig.listPrakarya))
@@ -69,14 +70,64 @@ class _HalamanProdukState extends State<HalamanProduk> {
         final Map<String, dynamic> data = json.decode(response.body);
         final list = data['data'] as List?;
         if (list != null && list.isNotEmpty) {
-          return list;
+          return list
+              .whereType()
+              .map((e) => ProdukModel.fromJson(Map<String, dynamic>.from(e)))
+              .toList();
         }
       }
       throw Exception('Server error: ${response.statusCode}');
     } catch (e) {
-      debugPrint("Error Koneksi API: $e");
+      debugPrint('Error Koneksi API: $e');
       throw Exception('Gagal menghubungi server API.');
     }
+  }
+
+  Future<void> _bukaDetailProduk(ProdukModel item) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: AppColors.darkGreen),
+      ),
+    );
+
+    ProdukModel? detailProduk;
+    try {
+      final response = await http
+          .get(Uri.parse(ApiConfig.detailPrakarya(item.idProduct)))
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final rawData = Map<String, dynamic>.from(
+          json.decode(response.body)['data'] as Map,
+        );
+        detailProduk = ProdukModel.fromJson(rawData);
+      }
+    } catch (e) {
+      debugPrint('Gagal memuat detail produk: $e');
+    }
+
+    if (!mounted) return;
+    Navigator.pop(context);
+
+    if (detailProduk == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Gagal mengambil data detail produk dari server.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => HalamanDetailProduk(productData: detailProduk!),
+      ),
+    );
+    _loadInitialCart();
   }
 
   /// Titik hanya menyala saat sudah login dan masih ada notifikasi/broadcast belum diklik.
@@ -188,7 +239,7 @@ class _HalamanProdukState extends State<HalamanProduk> {
               // ── 5. 2-Column Product Grid ──
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: FutureBuilder<List<dynamic>>(
+                child: FutureBuilder<List<ProdukModel>>(
                   future: _futureProduk,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
@@ -262,65 +313,14 @@ class _HalamanProdukState extends State<HalamanProduk> {
                     final String query =
                         _searchController.text.trim().toLowerCase();
 
-                    final listProdukApi = snapshot.data!.where((p) {
-                      if (p is! Map) return false;
-                      final item = Map<String, dynamic>.from(p);
-
-                      final String nama = (
-                        item['nama_produk'] ??
-                        item['nama_prakarya'] ??
-                        item['nama'] ??
-                        item['nama_barang'] ??
-                        item['title'] ??
-                        item['name'] ??
-                        item['judul'] ??
-                        ''
-                      ).toString().toLowerCase();
-
-                      final String deskripsi = (
-                        item['deskripsi'] ??
-                        item['keterangan'] ??
-                        item['detail'] ??
-                        item['description'] ??
-                        ''
-                      ).toString().toLowerCase();
-
-                      final String kategoriAPI = (
-                        item['kategori'] ??
-                        item['kategori_produk'] ??
-                        item['category'] ??
-                        ''
-                      ).toString().toLowerCase();
-
-                      if (selectedKategori != 'Semua') {
-                        final bool matchKategoriChip = kategoriAPI
-                                .contains(selectedKategori.toLowerCase()) ||
-                            nama.contains(selectedKategori.toLowerCase());
-                        if (!matchKategoriChip) {
-                          return false;
-                        }
-                      }
-
-                      if (query.isNotEmpty) {
-                        final bool matchNama = nama.contains(query);
-                        final bool matchDeskripsi = deskripsi.contains(query);
-                        final bool matchKategori = kategoriAPI.contains(query);
-
-                        final bool matchAnyValue = item.values.any((val) {
-                          if (val == null) return false;
-                          return val.toString().toLowerCase().contains(query);
-                        });
-
-                        if (!matchNama &&
-                            !matchDeskripsi &&
-                            !matchKategori &&
-                            !matchAnyValue) {
-                          return false;
-                        }
-                      }
-
-                      return true;
-                    }).toList();
+                    final listProdukApi = snapshot.data!
+                        .where(
+                          (p) => p.matchesFilter(
+                            selectedKategori: selectedKategori,
+                            query: query,
+                          ),
+                        )
+                        .toList();
 
                     if (listProdukApi.isEmpty) {
                       return Center(
@@ -374,66 +374,10 @@ class _HalamanProdukState extends State<HalamanProduk> {
                         final item = listProdukApi[index];
                         return CardProdukGrid(
                           product: item,
-                          onTap: () async {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (_) => const Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.darkGreen,
-                                ),
-                              ),
-                            );
-
-                            Map<String, dynamic>? detailData;
-                            try {
-                              final response = await http
-                                  .get(
-                                    Uri.parse(
-                                      ApiConfig.detailPrakarya(
-                                        item['id_product'],
-                                      ),
-                                    ),
-                                  )
-                                  .timeout(const Duration(seconds: 10));
-
-                              if (response.statusCode == 200) {
-                                detailData = Map<String, dynamic>.from(
-                                  json.decode(response.body)['data'],
-                                );
-                              }
-                            } catch (e) {
-                              debugPrint('Gagal memuat detail produk: $e');
-                            }
-
-                            if (!context.mounted) return;
-                            Navigator.pop(context);
-
-                            final detail = detailData;
-                            if (detail == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Gagal mengambil data detail produk dari server.',
-                                  ),
-                                  backgroundColor: Colors.redAccent,
-                                ),
-                              );
-                              return;
-                            }
-
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    HalamanDetailProduk(productData: detail),
-                              ),
-                            );
-                            _loadInitialCart();
-                          },
+                          onTap: () => _bukaDetailProduk(item),
                           onAddToCart: () async {
                             final bool berhasil = await CartService.tambahProduk(
-                              Map<String, dynamic>.from(item),
+                              item.toCartMap(),
                               context: context,
                             );
 
@@ -443,12 +387,11 @@ class _HalamanProdukState extends State<HalamanProduk> {
                               _cartItemCount = CartService.totalCount;
                             });
 
-                            final nama = item['nama_product'] ??
-                                item['nama_produk'] ??
-                                'Produk';
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: Text('$nama dimasukkan ke keranjang!'),
+                                content: Text(
+                                  '${item.namaProduk} dimasukkan ke keranjang!',
+                                ),
                                 duration: const Duration(milliseconds: 900),
                                 backgroundColor: AppColors.darkGreen,
                               ),
