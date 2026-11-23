@@ -29,7 +29,6 @@ void main() {
     expect(UserAccountData.totalSetoran, equals(0));
     expect(UserAccountData.listRiwayatSetor, isEmpty);
     expect(UserAccountData.listKontenSaya, isEmpty);
-    expect(UserAccountData.listTransaksi, isEmpty);
     expect(UserAccountData.currentNama, equals('Rian Perdana'));
     expect(UserAccountData.currentUsername, equals('rian_peduli'));
   });

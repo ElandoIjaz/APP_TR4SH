@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/data/models/produk_model.dart';
 
 class CardProdukGrid extends StatelessWidget {
-  final Map<String, dynamic> product; // Menerima data JSON dari API
+  final ProdukModel product;
   final VoidCallback onTap;
   final VoidCallback onAddToCart;
 
@@ -15,33 +16,6 @@ class CardProdukGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Ekstraksi data dari API Laravel
-    final String namaProduk =
-        product['nama_product'] ??
-        product['nama_produk'] ??
-        product['title'] ??
-        'Tanpa Nama';
-
-    // Penanganan Harga Normal vs Harga Final (Diskon)
-    final int hargaAsli =
-        int.tryParse(product['harga']?.toString() ?? '0') ?? 0;
-    final double diskonPersen =
-        double.tryParse(product['diskon_persen']?.toString() ?? '0') ?? 0.0;
-    final int hargaFinal = diskonPersen > 0
-        ? (hargaAsli - (hargaAsli * (diskonPersen / 100))).round()
-        : hargaAsli;
-
-    // Terjual Riil
-    final int terjualRiil =
-        int.tryParse(product['terjual']?.toString() ?? '0') ?? 0;
-
-    // Penanganan URL Gambar yang aman
-    final String fotoUrl =
-        product['foto'] ??
-        product['gambar'] ??
-        product['image'] ??
-        'https://via.placeholder.com/150';
-
     const String badgeLabel = 'Eco Friendly';
     const String materialLabel = 'Upcycled Material';
 
@@ -73,18 +47,28 @@ class CardProdukGrid extends StatelessWidget {
                 children: [
                   AspectRatio(
                     aspectRatio: 1.15,
-                    child: Image.network(
-                      fotoUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: AppColors.mintSoft,
-                        child: const Icon(
-                          Icons.inventory_2_outlined,
-                          color: AppColors.darkGreen,
-                          size: 36,
-                        ),
-                      ),
-                    ),
+                    child: product.foto.isNotEmpty
+                        ? Image.network(
+                            product.foto,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                              color: AppColors.mintSoft,
+                              child: const Icon(
+                                Icons.inventory_2_outlined,
+                                color: AppColors.darkGreen,
+                                size: 36,
+                              ),
+                            ),
+                          )
+                        : Container(
+                            color: AppColors.mintSoft,
+                            child: const Icon(
+                              Icons.inventory_2_outlined,
+                              color: AppColors.darkGreen,
+                              size: 36,
+                            ),
+                          ),
                   ),
 
                   // Top-Left Category Badge
@@ -160,7 +144,7 @@ class CardProdukGrid extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            if (diskonPersen > 0)
+                            if (product.adaDiskon)
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 5,
@@ -171,7 +155,7 @@ class CardProdukGrid extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: Text(
-                                  '${diskonPersen.toInt()}% OFF',
+                                  '${product.diskonPersen.toInt()}% OFF',
                                   style: const TextStyle(
                                     fontSize: 8.5,
                                     fontWeight: FontWeight.w800,
@@ -186,7 +170,7 @@ class CardProdukGrid extends StatelessWidget {
 
                         // Status Terjual Menggunakan Data API Riil
                         Text(
-                          'Terjual $terjualRiil',
+                          'Terjual ${product.terjual}',
                           style: const TextStyle(
                             fontSize: 10.5,
                             color: AppColors.textMuted,
@@ -198,7 +182,7 @@ class CardProdukGrid extends StatelessWidget {
 
                         // Title dari API
                         Text(
-                          namaProduk,
+                          product.namaProduk,
                           style: const TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w800,
@@ -221,9 +205,9 @@ class CardProdukGrid extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (diskonPersen > 0)
+                              if (product.adaDiskon)
                                 Text(
-                                  'Rp${_formatPrice(hargaAsli)}',
+                                  'Rp${_formatPrice(product.harga)}',
                                   style: const TextStyle(
                                     fontSize: 9.5,
                                     color: AppColors.textMuted,
@@ -231,7 +215,7 @@ class CardProdukGrid extends StatelessWidget {
                                   ),
                                 ),
                               Text(
-                                'Rp${_formatPrice(hargaFinal)}',
+                                'Rp${_formatPrice(product.hargaFinal)}',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w900,

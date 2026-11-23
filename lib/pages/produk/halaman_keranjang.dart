@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:test23/core/api_config.dart';
-import 'package:test23/data/api_service.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/data/api_service.dart';
 import 'package:test23/data/cart_service.dart';
 import 'package:test23/data/user_account_data.dart';
-import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/pages/produk/halaman_pembayaran.dart';
+import 'package:test23/widgets/produk/card_item_keranjang.dart';
+import 'package:test23/widgets/produk/card_metode_pembayaran.dart';
+import 'package:test23/widgets/umum/auth_required_modal.dart';
 
 class HalamanKeranjang extends StatefulWidget {
   const HalamanKeranjang({super.key});
@@ -139,7 +141,7 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.redAccent),
       );
-    } 
+    }
   }
 
   @override
@@ -329,7 +331,14 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   const SizedBox(height: 16),
 
                   // ── 3. Kartu Pilihan Metode Pembayaran ──
-                  _buildPaymentMethodSection(),
+                  CardMetodePembayaran(
+                    selectedMethod: _selectedMethod,
+                    selectedBank: _selectedBank,
+                    onMethodChanged: (val) =>
+                        setState(() => _selectedMethod = val),
+                    onBankChanged: (bank) =>
+                        setState(() => _selectedBank = bank),
+                  ),
 
                   const SizedBox(height: 16),
 
@@ -512,227 +521,6 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
     );
   }
 
-  // ── Widget Pilihan Pembayaran Native ──
-  Widget _buildPaymentMethodSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.cardBorder, width: 1.2),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(
-                  Icons.payment_rounded,
-                  size: 16,
-                  color: AppColors.darkGreen,
-                ),
-                SizedBox(width: 6),
-                Text(
-                  'Metode Pembayaran',
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.darkGreen,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Bungkus kedua pilihan dengan RadioGroup
-            RadioGroup<String>(
-              groupValue: _selectedMethod,
-              onChanged: (val) {
-                if (val != null) {
-                  setState(() => _selectedMethod = val);
-                }
-              },
-              child: Column(
-                children: [
-                  // Opsi 1: QRIS
-                  InkWell(
-                    onTap: () => setState(() => _selectedMethod = 'qris'),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _selectedMethod == 'qris'
-                            ? const Color(0xFFE8F6EE)
-                            : AppColors.bgScreen,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: _selectedMethod == 'qris'
-                              ? AppColors.darkGreen
-                              : AppColors.cardBorder,
-                          width: _selectedMethod == 'qris' ? 1.5 : 1,
-                        ),
-                      ),
-                      child: const Row(
-                        children: [
-                          Icon(
-                            Icons.qr_code_2_rounded,
-                            color: AppColors.darkGreen,
-                            size: 22,
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'QRIS (Instant)',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.darkGreen,
-                                  ),
-                                ),
-                                Text(
-                                  'GoPay, ShopeePay, Dana, & Semua M-Banking',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: AppColors.textMuted,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Radio<String>(
-                            value: 'qris',
-                            activeColor: AppColors.darkGreen,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Opsi 2: Bank Transfer VA
-                  InkWell(
-                    onTap: () =>
-                        setState(() => _selectedMethod = 'bank_transfer'),
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _selectedMethod == 'bank_transfer'
-                            ? const Color(0xFFE8F6EE)
-                            : AppColors.bgScreen,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: _selectedMethod == 'bank_transfer'
-                              ? AppColors.darkGreen
-                              : AppColors.cardBorder,
-                          width: _selectedMethod == 'bank_transfer' ? 1.5 : 1,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(
-                                Icons.account_balance_rounded,
-                                color: AppColors.darkGreen,
-                                size: 20,
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Transfer Virtual Account',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w800,
-                                        color: AppColors.darkGreen,
-                                      ),
-                                    ),
-                                    Text(
-                                      'BCA, BNI, BRI, Mandiri',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        color: AppColors.textMuted,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Radio<String>(
-                                value: 'bank_transfer',
-                                activeColor: AppColors.darkGreen,
-                              ),
-                            ],
-                          ),
-
-                          // Jika bank_transfer dipilih, tampilkan opsi pilihan bank
-                          if (_selectedMethod == 'bank_transfer') ...[
-                            const Divider(height: 16, color: Color(0xFFC7E2D1)),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: ['bca', 'bni', 'bri', 'mandiri'].map((
-                                bank,
-                              ) {
-                                final isBankActive = _selectedBank == bank;
-                                return InkWell(
-                                  onTap: () =>
-                                      setState(() => _selectedBank = bank),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isBankActive
-                                          ? AppColors.darkGreen
-                                          : Colors.white,
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(
-                                        color: AppColors.darkGreen,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      bank.toUpperCase(),
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: isBankActive
-                                            ? Colors.white
-                                            : AppColors.darkGreen,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildMerchantSection({
     required String merchantName,
     required String location,
@@ -826,243 +614,41 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
               ],
             ),
             const Divider(height: 16, color: Color(0xFFE2EFE7)),
-            ...items.map((item) => _buildCartItemTile(item)),
+            ...items.map(
+              (item) => CardItemKeranjang(
+                item: item,
+                onSelectChanged: (val) async {
+                  setState(() {
+                    item.isSelected = val ?? false;
+                  });
+                  await CartService.updateItem();
+                },
+                onRemove: () => _removeItem(item.idProduct),
+                onDecrement: () async {
+                  if (item.quantity > 1) {
+                    setState(() => item.quantity--);
+                    await CartService.updateItem();
+                  }
+                },
+                onIncrement: () async {
+                  if (item.quantity < item.stokMaksimal) {
+                    setState(() => item.quantity++);
+                    await CartService.updateItem();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Maksimal stok tercapai! Sisa stok hanya ${item.stokMaksimal} unit.',
+                        ),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildCartItemTile(ItemKeranjangModel item) {
-    final int hargaAsli = item.harga;
-    final double diskonAktif = item.diskonBerlaku(item.quantity);
-    final int hargaFinal = item.hargaFinal;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Checkbox(
-            value: item.isSelected,
-            activeColor: AppColors.darkGreen,
-            checkColor: AppColors.limeAccent,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-            onChanged: (val) async {
-              setState(() {
-                item.isSelected = val ?? false;
-              });
-              await CartService.updateItem();
-            },
-          ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: item.foto.isNotEmpty
-                ? Image.network(
-                    item.foto,
-                    width: 68,
-                    height: 68,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      width: 68,
-                      height: 68,
-                      color: AppColors.mintSoft,
-                      child: const Icon(
-                        Icons.inventory_2_outlined,
-                        color: AppColors.darkGreen,
-                      ),
-                    ),
-                  )
-                : Container(
-                    width: 68,
-                    height: 68,
-                    color: AppColors.mintSoft,
-                    child: const Icon(
-                      Icons.inventory_2_outlined,
-                      color: AppColors.darkGreen,
-                    ),
-                  ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.namaProduk,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.darkGreen,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => _removeItem(item.idProduct),
-                      child: const Icon(
-                        Icons.close_rounded,
-                        size: 16,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 3),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8F6EE),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        'Upcycled Material',
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E8850),
-                        ),
-                      ),
-                    ),
-                    if (diskonAktif > 0) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 1.5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFEBEE),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '${diskonAktif.toInt()}% OFF',
-                          style: const TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.redAccent,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Rp ${_formatPrice(hargaFinal)}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w900,
-                            color: AppColors.darkGreen,
-                          ),
-                        ),
-                        if (diskonAktif > 0)
-                          Text(
-                            'Rp ${_formatPrice(hargaAsli)}',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: AppColors.textMuted,
-                              decoration: TextDecoration.lineThrough,
-                            ),
-                          ),
-                      ],
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.cardBorder),
-                      ),
-                      child: Row(
-                        children: [
-                          InkWell(
-                            onTap: () async {
-                              if (item.quantity > 1) {
-                                setState(() => item.quantity--);
-                                await CartService.updateItem();
-                              }
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              child: Text(
-                                '-',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.darkGreen,
-                                ),
-                              ),
-                            ),
-                          ),
-                          Text(
-                            '${item.quantity}',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.darkGreen,
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () async {
-                              if (item.quantity < item.stokMaksimal) {
-                                // [BARU] Cek batas stok
-                                setState(() => item.quantity++);
-                                await CartService.updateItem();
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Maksimal stok tercapai! Sisa stok hanya ${item.stokMaksimal} unit.',
-                                    ),
-                                    duration: const Duration(seconds: 1),
-                                  ),
-                                );
-                              }
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              child: Text(
-                                '+',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.darkGreen,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
