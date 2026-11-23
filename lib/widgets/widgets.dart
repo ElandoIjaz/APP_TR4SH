@@ -10,7 +10,6 @@ export 'akun/tombol_keluar.dart';
 
 // Beranda
 export 'beranda/card_bank_sampah.dart';
-export 'beranda/card_riwayat_sampah.dart';
 export 'beranda/card_video_tutorial.dart';
 export 'beranda/card_workshop.dart';
 export 'beranda/grid_jenis_sampah.dart';
