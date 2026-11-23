@@ -660,6 +660,41 @@ class ApiService {
     }
   }
 
+   static Future<ApiResponse> deleteKonten({
+  required dynamic kontenId,
+  int? idUser,
+}) async {
+  try {
+    final effectiveUserId = idUser ?? UserAccountData.currentUserId ?? 1;
+    final uri = Uri.parse(ApiConfig.deleteEdukasi(kontenId)).replace(
+      queryParameters: {'id_user': effectiveUserId.toString()},
+    );
+
+    final response = await http
+        .delete(
+          uri,
+          headers: (await _getHeaders()).cast<String, String>(),
+          body: jsonEncode({'id_user': effectiveUserId}),
+        )
+        .timeout(_timeoutDuration);
+
+    final Map<String, dynamic> body = _parseJson(response.body);
+
+    return ApiResponse(
+      success: response.statusCode == 200 || response.statusCode == 204,
+      message: body['message'] ?? 'Konten berhasil dihapus.',
+      data: body['data'],
+      statusCode: response.statusCode,
+    );
+  } catch (e) {
+    return ApiResponse(
+      success: false,
+      message: 'Gagal menghapus konten: $e',
+      statusCode: 500,
+    );
+  }
+}
+
   static Future<ApiResponse> checkUserStatus(dynamic userId) async {
     try {
       if (userId == null) {

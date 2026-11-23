@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/core/validators/konten_validator.dart';
 import 'package:test23/data/api_service.dart';
@@ -53,6 +54,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
 
   bool _isLoadingRiwayat = false;
   List<dynamic> _listKontenSaya = [];
+  final Set<String> _deletingIds = {};
 
   bool get _isFotoMode => _selectedTipeMedia == 'Foto';
 
@@ -100,7 +102,9 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: ImageSource.gallery,
-      imageQuality: 85,
+      maxWidth: 1280,
+      maxHeight: 1280,
+      imageQuality: 80,
     );
     if (picked != null && mounted) {
       setState(() => _pickedImageFile = picked);
@@ -126,6 +130,112 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
         _listKontenSaya = res.data as List;
       }
     });
+  }
+
+  Future<void> _konfirmasiHapusKonten(
+    Map<String, dynamic> item,
+    String kontenId,
+  ) async {
+    if (UserAccountData.isGuest) {
+      AuthRequiredModal.show(
+        context,
+        title: 'Hapus Konten Memerlukan Akun',
+        message: 'Silakan masuk terlebih dahulu untuk mengelola konten Anda.',
+        icon: Icons.delete_outline_rounded,
+      );
+      return;
+    }
+
+    final title = item['title']?.toString() ?? 'konten ini';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626), size: 26),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Hapus Konten Terbit?',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Konten "$title" yang sudah disetujui akan dihapus secara permanen dan tidak lagi tampil di halaman Edukasi.',
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey.shade700,
+            height: 1.4,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text(
+              'Batal',
+              style: TextStyle(
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text(
+              'Ya, Hapus',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _hapusKonten(kontenId);
+    }
+  }
+
+  Future<void> _hapusKonten(String kontenId) async {
+    setState(() => _deletingIds.add(kontenId));
+
+    final res = await ApiService.deleteKonten(kontenId: kontenId);
+
+    if (!mounted) return;
+    setState(() => _deletingIds.remove(kontenId));
+
+    if (res.success) {
+      setState(() {
+        _listKontenSaya.removeWhere((raw) {
+          if (raw is! Map) return false;
+          final id = raw['id_konten'] ?? raw['id'] ?? raw['id_edukasi'];
+          return id?.toString() == kontenId;
+        });
+        UserAccountData.listKontenSaya.removeWhere((raw) {
+          if (raw is! Map) return false;
+          final id = raw['id_konten'] ?? raw['id'] ?? raw['id_edukasi'];
+          return id?.toString() == kontenId;
+        });
+      });
+      _showSnackBar(res.message, const Color(0xFF2E7D32));
+    } else {
+      _showSnackBar(res.message, Colors.redAccent);
+    }
   }
 
   Future<void> _kirimKonten() async {
@@ -1179,6 +1289,8 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
   }
 
   Widget _buildKartuKontenUser(Map<String, dynamic> item) {
+    final dynamic rawId = item['id_konten'] ?? item['id'] ?? item['id_edukasi'];
+    final String kontenIdStr = rawId?.toString() ?? '';
     final title = item['title']?.toString() ?? 'Konten Edukasi';
     final status =
         (item['status_moderasi']?.toString() ?? 'pending').toLowerCase();
@@ -1187,14 +1299,18 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
     final mediaUrl = item['media_url']?.toString() ?? '';
     final alasan = item['alasan_penolakan']?.toString();
     final youtubeId = KontenValidator.extractYoutubeId(mediaUrl);
+    final bool isApproved = status == 'approved' || status == 'accepted';
+    final bool isDeleting =
+        kontenIdStr.isNotEmpty && _deletingIds.contains(kontenIdStr);
 
+    final serverOrigin = ApiConfig.baseUrl.replaceFirst(RegExp(r'/api$'), '');
     String? thumbUrl;
     if (youtubeId != null) {
       thumbUrl = 'https://img.youtube.com/vi/$youtubeId/hqdefault.jpg';
     } else if (mediaUrl.isNotEmpty) {
       thumbUrl = (mediaUrl.startsWith('http://') || mediaUrl.startsWith('https://'))
           ? mediaUrl
-          : 'http://127.0.0.1:8000/${mediaUrl.startsWith('/') ? mediaUrl.substring(1) : mediaUrl}';
+          : '$serverOrigin/${mediaUrl.startsWith('/') ? mediaUrl.substring(1) : mediaUrl}';
     }
 
     Color badgeBg;
@@ -1202,7 +1318,7 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
     IconData badgeIcon;
     String labelStatus;
 
-    if (status == 'approved' || status == 'accepted') {
+    if (isApproved) {
       badgeBg = const Color(0xFFD1FAE5);
       badgeText = const Color(0xFF065F46);
       badgeIcon = Icons.check_circle_outline;
@@ -1377,6 +1493,52 @@ class _HalamanUploadKontenState extends State<HalamanUploadKonten>
                   ),
                 ],
               ),
+            ),
+          ],
+          if (isApproved && kontenIdStr.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Divider(height: 1, color: AppColors.cardBorder),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFEF2F2),
+                    foregroundColor: const Color(0xFFDC2626),
+                    side: const BorderSide(color: Color(0xFFFECACA)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: isDeleting
+                      ? null
+                      : () => _konfirmasiHapusKonten(item, kontenIdStr),
+                  icon: isDeleting
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFFDC2626),
+                          ),
+                        )
+                      : const Icon(Icons.delete_outline_rounded, size: 16),
+                  label: Text(
+                    isDeleting ? 'Menghapus...' : 'Hapus Konten',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ],

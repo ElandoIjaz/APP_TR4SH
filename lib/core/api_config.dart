@@ -198,4 +198,5 @@ class ApiConfig {
   static String detailEdukasi(dynamic id) => '$baseUrl/edukasi/$id';
   static String get uploadEdukasi => '$baseUrl/edukasi/upload';
   static String userKonten(dynamic userId) => '$baseUrl/edukasi/user/$userId';
+  static String deleteEdukasi(dynamic id) => '$baseUrl/edukasi/$id';
 }
