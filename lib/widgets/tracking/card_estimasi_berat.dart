@@ -3,7 +3,7 @@ import 'package:test23/core/app_colors.dart';
 
 class CardEstimasiBerat extends StatefulWidget {
   final String categoryName;
-  final double hargaPerKg; // Harga akurat dari database
+  final double hargaPerKg;
   final void Function(double totalWeight, double totalRupiah)? onInputSampah;
 
   const CardEstimasiBerat({
@@ -18,39 +18,32 @@ class CardEstimasiBerat extends StatefulWidget {
 }
 
 class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
-  double _currentWeightKg = 1.0; 
-  bool _isGramUnit = false;     
+  double _currentWeightKg = 1.0;
+  bool _isGramUnit = false;
 
   void _increment() {
     setState(() {
-      if (_isGramUnit) {
-        _currentWeightKg += 0.1; // Tambah 100 gram (ratusan gram)
-      } else {
-        _currentWeightKg += 0.5; // Tambah 0.5 kg
-      }
+      final step = _isGramUnit ? 0.1 : 0.5;
+      _currentWeightKg =
+          double.parse((_currentWeightKg + step).toStringAsFixed(1));
     });
   }
 
   void _decrement() {
     setState(() {
-      if (_isGramUnit) {
-        if (_currentWeightKg > 0.1) {
-          _currentWeightKg -= 0.1; // Kurang 100 gram (ratusan gram)
-        }
-      } else {
-        if (_currentWeightKg > 0.5) {
-          _currentWeightKg -= 0.5; // Kurang 0.5 kg
-        }
+      final step = _isGramUnit ? 0.1 : 0.5;
+      if (_currentWeightKg > step) {
+        _currentWeightKg =
+            double.parse((_currentWeightKg - step).toStringAsFixed(1));
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final double displayValue = _isGramUnit ? (_currentWeightKg * 1000) : _currentWeightKg;
+    final double displayValue =
+        _isGramUnit ? (_currentWeightKg * 1000) : _currentWeightKg;
     final String unitLabel = _isGramUnit ? 'gram' : 'kg';
-    
-    // Hitung total rupiah berdasarkan harga per kg database
     final double estimatedRupiah = _currentWeightKg * widget.hargaPerKg;
 
     return Container(
@@ -104,10 +97,7 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
               ),
             ],
           ),
-
           const SizedBox(height: 14),
-
-          // Preview Box
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -163,17 +153,17 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
               ],
             ),
           ),
-
           const SizedBox(height: 12),
-
-          // Toggle Satuan Kg / Gram
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               ChoiceChip(
-                label: const Text('Kilogram (Kg)', style: TextStyle(fontSize: 11)),
+                label: const Text(
+                  'Kilogram (Kg)',
+                  style: TextStyle(fontSize: 11),
+                ),
                 selected: !_isGramUnit,
-                onSelected: (selected) {
+                onSelected: (_) {
                   setState(() {
                     _isGramUnit = false;
                   });
@@ -182,13 +172,16 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
               ),
               const SizedBox(width: 8),
               ChoiceChip(
-                label: const Text('Gram (g)', style: TextStyle(fontSize: 11)),
+                label: const Text(
+                  'Gram (g)',
+                  style: TextStyle(fontSize: 11),
+                ),
                 selected: _isGramUnit,
-                onSelected: (selected) {
+                onSelected: (_) {
                   setState(() {
                     _isGramUnit = true;
-                    // Pembulatan ke ratusan gram terdekat ketika berpindah ke Gram
-                    _currentWeightKg = (_currentWeightKg * 10).round() / 10;
+                    _currentWeightKg =
+                        double.parse(_currentWeightKg.toStringAsFixed(1));
                     if (_currentWeightKg < 0.1) _currentWeightKg = 0.1;
                   });
                 },
@@ -196,10 +189,7 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
               ),
             ],
           ),
-
           const SizedBox(height: 10),
-
-          // Counter Row
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
@@ -212,7 +202,11 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
               children: [
                 IconButton(
                   onPressed: _decrement,
-                  icon: const Icon(Icons.remove, size: 20, color: AppColors.darkGreen),
+                  icon: const Icon(
+                    Icons.remove,
+                    size: 20,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
                 Text(
                   '${displayValue.toStringAsFixed(_isGramUnit ? 0 : 1)} $unitLabel',
@@ -224,22 +218,22 @@ class _CardEstimasiBeratState extends State<CardEstimasiBerat> {
                 ),
                 IconButton(
                   onPressed: _increment,
-                  icon: const Icon(Icons.add, size: 20, color: AppColors.darkGreen),
+                  icon: const Icon(
+                    Icons.add,
+                    size: 20,
+                    color: AppColors.darkGreen,
+                  ),
                 ),
               ],
             ),
           ),
-
           const SizedBox(height: 14),
-
           SizedBox(
             width: double.infinity,
             height: 48,
             child: ElevatedButton(
               onPressed: () {
-                if (widget.onInputSampah != null) {
-                  widget.onInputSampah!(_currentWeightKg, estimatedRupiah);
-                }
+                widget.onInputSampah?.call(_currentWeightKg, estimatedRupiah);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.limeAccent,

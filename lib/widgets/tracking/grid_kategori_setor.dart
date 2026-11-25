@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:test23/core/api_config.dart';
 import 'package:test23/core/app_colors.dart';
+import 'package:test23/data/models/tracking_setor_model.dart';
 
 class GridKategoriSetor extends StatefulWidget {
   final int initialSelectedIndex;
@@ -26,7 +27,7 @@ class GridKategoriSetor extends StatefulWidget {
 
 class _GridKategoriSetorState extends State<GridKategoriSetor> {
   int _selectedIndex = 0;
-  List<dynamic> _categories = [];
+  List<KategoriSampahModel> _categories = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -37,80 +38,92 @@ class _GridKategoriSetorState extends State<GridKategoriSetor> {
     _fetchCategoriesFromApi();
   }
 
-  /// Mengambil daftar kategori secara dinamis dari API Laravel
-Future<void> _fetchCategoriesFromApi() async {
-  try {
-    // Panggil langsung variabel dari ApiConfig
-    final response = await http
-        .get(Uri.parse(ApiConfig.kategoriSampah))
-        .timeout(const Duration(seconds: 10));
+  Future<void> _fetchCategoriesFromApi() async {
+    try {
+      final response = await http
+          .get(Uri.parse(ApiConfig.kategoriSampah))
+          .timeout(const Duration(seconds: 10));
 
-    if (!mounted) return;
+      if (!mounted) return;
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['success'] == true) {
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true && data['data'] is List) {
+          final parsed = (data['data'] as List)
+              .whereType()
+              .map(
+                (e) => KategoriSampahModel.fromJson(
+                  Map<String, dynamic>.from(e),
+                ),
+              )
+              .toList();
+
+          setState(() {
+            _categories = parsed;
+            _isLoading = false;
+          });
+
+          if (_categories.isNotEmpty) {
+            final safeIdx = _selectedIndex.clamp(0, _categories.length - 1);
+            final first = _categories[safeIdx];
+            widget.onCategorySelected?.call(
+              first.idKategori,
+              first.namaKategori,
+              'Kg / Gram',
+              0.5,
+              first.hargaPerKg,
+            );
+          }
+        } else {
+          setState(() {
+            _errorMessage =
+                data['message']?.toString() ?? 'Data kategori tidak tersedia';
+            _isLoading = false;
+          });
+        }
+      } else {
         setState(() {
-          _categories = data['data'];
+          _errorMessage =
+              'Gagal memuat kategori dari server (Code: ${response.statusCode})';
           _isLoading = false;
         });
-
-        if (_categories.isNotEmpty && widget.onCategorySelected != null) {
-          final first = _categories[_selectedIndex.clamp(0, _categories.length - 1)];
-          widget.onCategorySelected!(
-            first['id_kategori'] ?? 1,
-            first['nama_kategori'] ?? 'Lainnya',
-            'Kg / Gram',
-            0.5,
-            (first['harga_per_kg'] as num?)?.toDouble() ?? 3000.0,
-          );
-        }
       }
-    } else {
+    } catch (e) {
+      if (!mounted) return;
       setState(() {
-        _errorMessage = 'Gagal memuat kategori dari server (Code: ${response.statusCode})';
+        _errorMessage = 'Terjadi kesalahan koneksi: $e';
         _isLoading = false;
       });
     }
-  } catch (e) {
-    if (!mounted) return;
-    setState(() {
-      _errorMessage = 'Terjadi kesalahan koneksi: $e';
-      _isLoading = false;
-    });
   }
-}
 
-  void _selectCategory(Map<String, dynamic> cat) {
+  void _selectCategory(KategoriSampahModel cat) {
     final actualIndex = _categories.indexWhere(
-      (element) => element['id_kategori'] == cat['id_kategori'],
+      (element) => element.idKategori == cat.idKategori,
     );
 
     setState(() {
       _selectedIndex = actualIndex != -1 ? actualIndex : 0;
     });
 
-    if (widget.onCategorySelected != null) {
-      widget.onCategorySelected!(
-        cat['id_kategori'] as int,
-        cat['nama_kategori'] as String,
-        'Kg / Gram',
-        0.5,
-        (cat['harga_per_kg'] as num?)?.toDouble() ?? 3000.0,
-      );
-    }
+    widget.onCategorySelected?.call(
+      cat.idKategori,
+      cat.namaKategori,
+      'Kg / Gram',
+      0.5,
+      cat.hargaPerKg,
+    );
   }
 
-  /// Menampilkan BottomSheet berisi seluruh daftar kategori lengkap saat kartu "Lainnya" ditekan
   void _showAllCategoriesSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
+      builder: (sheetContext) => Container(
         padding: const EdgeInsets.all(24),
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.75,
+          maxHeight: MediaQuery.of(sheetContext).size.height * 0.75,
         ),
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -144,12 +157,10 @@ Future<void> _fetchCategoriesFromApi() async {
               child: ListView.separated(
                 shrinkWrap: true,
                 itemCount: _categories.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 8),
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
-                  final cat = _categories[index] as Map<String, dynamic>;
-                  final title = cat['nama_kategori'] ?? 'Kategori';
-                  final harga = (cat['harga_per_kg'] as num?)?.toDouble() ?? 3000.0;
-                  
+                  final cat = _categories[index];
+
                   return ListTile(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -158,13 +169,30 @@ Future<void> _fetchCategoriesFromApi() async {
                     tileColor: AppColors.bgScreen,
                     leading: const CircleAvatar(
                       backgroundColor: AppColors.mintSoft,
-                      child: Icon(Icons.recycling_rounded, color: AppColors.darkGreen, size: 18),
+                      child: Icon(
+                        Icons.recycling_rounded,
+                        color: AppColors.darkGreen,
+                        size: 18,
+                      ),
                     ),
-                    title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5)),
-                    subtitle: Text('Rp ${harga.toStringAsFixed(0)}/kg', style: const TextStyle(fontSize: 11, color: Color(0xFF1E8850), fontWeight: FontWeight.w700)),
+                    title: Text(
+                      cat.namaKategori,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13.5,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Rp ${cat.hargaPerKg.toStringAsFixed(0)}/kg',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF1E8850),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     onTap: () {
                       _selectCategory(cat);
-                      Navigator.pop(context);
+                      Navigator.pop(sheetContext);
                     },
                   );
                 },
@@ -230,7 +258,6 @@ Future<void> _fetchCategoriesFromApi() async {
             ],
           ),
           const SizedBox(height: 12),
-
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -245,7 +272,7 @@ Future<void> _fetchCategoriesFromApi() async {
               if (hasMore && index == displayList.length) {
                 return _buildLainnyaCard();
               }
-              return _buildAestheticCategoryCard(index, displayList[index]);
+              return _buildAestheticCategoryCard(displayList[index]);
             },
           ),
         ],
@@ -253,12 +280,9 @@ Future<void> _fetchCategoriesFromApi() async {
     );
   }
 
-  Widget _buildAestheticCategoryCard(int index, dynamic cat) {
+  Widget _buildAestheticCategoryCard(KategoriSampahModel cat) {
     final bool isSelected = _selectedIndex < _categories.length &&
-        _categories[_selectedIndex]['id_kategori'] == cat['id_kategori'];
-
-    final String title = cat['nama_kategori'] ?? 'Kategori';
-    final double harga = (cat['harga_per_kg'] as num?)?.toDouble() ?? 3000.0;
+        _categories[_selectedIndex].idKategori == cat.idKategori;
 
     return GestureDetector(
       onTap: () => _selectCategory(cat),
@@ -286,7 +310,8 @@ Future<void> _fetchCategoriesFromApi() async {
           children: [
             CircleAvatar(
               radius: 18,
-              backgroundColor: isSelected ? AppColors.darkGreen : AppColors.mintSoft,
+              backgroundColor:
+                  isSelected ? AppColors.darkGreen : AppColors.mintSoft,
               child: Icon(
                 Icons.recycling_rounded,
                 color: isSelected ? Colors.white : AppColors.darkGreen,
@@ -300,7 +325,7 @@ Future<void> _fetchCategoriesFromApi() async {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    title,
+                    cat.namaKategori,
                     style: const TextStyle(
                       fontSize: 13.5,
                       fontWeight: FontWeight.bold,
@@ -311,7 +336,7 @@ Future<void> _fetchCategoriesFromApi() async {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Rp ${harga.toStringAsFixed(0)}/kg',
+                    'Rp ${cat.hargaPerKg.toStringAsFixed(0)}/kg',
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -344,7 +369,7 @@ Future<void> _fetchCategoriesFromApi() async {
             ),
           ],
         ),
-         child: const Row(
+        child: const Row(
           children: [
             CircleAvatar(
               radius: 18,
