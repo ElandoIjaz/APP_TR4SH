@@ -29,7 +29,7 @@ class CardTrackingChart extends StatefulWidget {
 class _CardTrackingChartState extends State<CardTrackingChart>
     with SingleTickerProviderStateMixin {
   TrackingPeriodMode _periodMode = TrackingPeriodMode.mingguan;
-  String? _selectedCategory; // Kategori dinamis terpilih
+  String? _selectedCategory;
   int? _inspectedIndex;
 
   late AnimationController _animController;
@@ -47,23 +47,8 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     'Sab',
     'Min',
   ];
-  static const List<String> _weekFullNames = [
-    'Senin',
-    'Selasa',
-    'Rabu',
-    'Kamis',
-    'Jumat',
-    'Sabtu',
-    'Minggu',
-  ];
 
   static const List<String> _monthLabels = ['Mg 1', 'Mg 2', 'Mg 3', 'Mg 4'];
-  static const List<String> _monthFullNames = [
-    'Minggu 1 (Tgl 1-7)',
-    'Minggu 2 (Tgl 8-14)',
-    'Minggu 3 (Tgl 15-21)',
-    'Minggu 4 (Tgl 22+)',
-  ];
 
   @override
   void initState() {
@@ -152,9 +137,9 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     widget.onCategoryFilterChanged?.call('Semua');
   }
 
-  /// Membaca nilai rupiah riil per transaksi dari API, dengan fallback tarif per kategori
   double _parseItemIncome(Map item, double weight, String category) {
     const totalKeys = [
+      'total_rupiah',
       'estimasi_harga',
       'total_harga',
       'harga_total',
@@ -204,21 +189,21 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
   String _formatRupiah(double amount) {
     return amount.round().toString().replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]}.',
-    );
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        );
   }
 
-  /// Menghitung akumulasi berat secara dinamis sesuai periode aktif (Minggu Ini / Bulan Ini)
-  Map<String, double> _computeDynamicCategoryWeights() {
-    final records = widget.rawData;
-    final bool isZeroState =
-        UserAccountData.isNewAccount ||
+  bool get _isZeroState {
+    return UserAccountData.isNewAccount ||
         UserAccountData.isGuest ||
         widget.totalDisetor.startsWith('0.0') ||
         widget.totalDisetor.startsWith('0 kg');
+  }
 
-    if (isZeroState || records == null || records.isEmpty) return {};
+  Map<String, double> _computeDynamicCategoryWeights() {
+    final records = widget.rawData;
+    if (_isZeroState || records == null || records.isEmpty) return {};
 
     final now = DateTime.now();
     final Map<String, double> catMap = {};
@@ -229,13 +214,13 @@ class _CardTrackingChartState extends State<CardTrackingChart>
       final dt = _parseItemDate(item, now);
       if (!_isInActivePeriod(dt, now)) continue;
 
-      final weight =
-          double.tryParse((item['jumlah'] ?? item['bobot'])?.toString() ?? '0') ??
+      final weight = double.tryParse(
+            (item['jumlah'] ?? item['bobot'])?.toString() ?? '0',
+          ) ??
           0.0;
-      final cat =
-          (item['nama_kategori'] ?? item['kategori'] ?? 'Lainnya')
-              .toString()
-              .trim();
+      final cat = (item['nama_kategori'] ?? item['kategori'] ?? 'Lainnya')
+          .toString()
+          .trim();
 
       if (cat.isNotEmpty) {
         catMap[cat] = (catMap[cat] ?? 0.0) + weight;
@@ -247,16 +232,9 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     );
   }
 
-  /// Menghitung Ringkasan Data (Minggu ini & Bulan ini) beserta total uang riilnya
   Map<String, dynamic> _computeSummaryMetrics() {
     final records = widget.rawData;
-    final bool isZeroState =
-        UserAccountData.isNewAccount ||
-        UserAccountData.isGuest ||
-        widget.totalDisetor.startsWith('0.0') ||
-        widget.totalDisetor.startsWith('0 kg');
-
-    if (isZeroState || records == null || records.isEmpty) {
+    if (_isZeroState || records == null || records.isEmpty) {
       return {
         'weeklyKg': 0.0,
         'weeklyCount': 0,
@@ -269,7 +247,6 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     }
 
     final now = DateTime.now();
-
     double weeklyKg = 0.0;
     int weeklyCount = 0;
     double weeklyIncome = 0.0;
@@ -283,25 +260,25 @@ class _CardTrackingChartState extends State<CardTrackingChart>
       final cat =
           (item['nama_kategori'] ?? item['kategori'] ?? '').toString().trim();
 
-      // Filter jika kategori tertentu sedang dipilih
-      if (_selectedCategory != null && _selectedCategory != 'Semua') {
-        if (cat != _selectedCategory) continue;
+      if (_selectedCategory != null &&
+          _selectedCategory != 'Semua' &&
+          cat != _selectedCategory) {
+        continue;
       }
 
-      final weight =
-          double.tryParse((item['jumlah'] ?? item['bobot'])?.toString() ?? '0') ??
+      final weight = double.tryParse(
+            (item['jumlah'] ?? item['bobot'])?.toString() ?? '0',
+          ) ??
           0.0;
       final income = _parseItemIncome(item, weight, cat);
       final dt = _parseItemDate(item, now);
 
-      // Cek Minggu Ini
       if (_isInCurrentWeek(dt, now)) {
         weeklyKg += weight;
         weeklyCount++;
         weeklyIncome += income;
       }
 
-      // Cek Bulan Ini
       if (_isInCurrentMonth(dt, now)) {
         monthlyKg += weight;
         monthlyCount++;
@@ -320,16 +297,9 @@ class _CardTrackingChartState extends State<CardTrackingChart>
     };
   }
 
-  /// Menghitung bobot untuk titik grafik sesuai periode aktif
   List<double> _calculateChartWeights() {
     final records = widget.rawData;
-    final bool isZeroState =
-        UserAccountData.isNewAccount ||
-        UserAccountData.isGuest ||
-        widget.totalDisetor.startsWith('0.0') ||
-        widget.totalDisetor.startsWith('0 kg');
-
-    if (isZeroState || records == null || records.isEmpty) {
+    if (_isZeroState || records == null || records.isEmpty) {
       return _periodMode == TrackingPeriodMode.mingguan
           ? [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
           : [0.0, 0.0, 0.0, 0.0];
@@ -343,16 +313,18 @@ class _CardTrackingChartState extends State<CardTrackingChart>
         if (item is! Map) continue;
 
         if (_selectedCategory != null && _selectedCategory != 'Semua') {
-          final cat =
-              (item['nama_kategori'] ?? item['kategori'] ?? '').toString().trim();
+          final cat = (item['nama_kategori'] ?? item['kategori'] ?? '')
+              .toString()
+              .trim();
           if (cat != _selectedCategory) continue;
         }
 
         final dt = _parseItemDate(item, now);
         if (!_isInCurrentWeek(dt, now)) continue;
 
-        final weight =
-            double.tryParse((item['jumlah'] ?? item['bobot'])?.toString() ?? '0') ??
+        final weight = double.tryParse(
+              (item['jumlah'] ?? item['bobot'])?.toString() ?? '0',
+            ) ??
             0.0;
         final idx = (dt.weekday - 1).clamp(0, 6);
         dayWeights[idx] += weight;
@@ -366,23 +338,28 @@ class _CardTrackingChartState extends State<CardTrackingChart>
         if (item is! Map) continue;
 
         if (_selectedCategory != null && _selectedCategory != 'Semua') {
-          final cat =
-              (item['nama_kategori'] ?? item['kategori'] ?? '').toString().trim();
+          final cat = (item['nama_kategori'] ?? item['kategori'] ?? '')
+              .toString()
+              .trim();
           if (cat != _selectedCategory) continue;
         }
 
         final dt = _parseItemDate(item, now);
         if (!_isInCurrentMonth(dt, now)) continue;
 
-        final weight =
-            double.tryParse((item['jumlah'] ?? item['bobot'])?.toString() ?? '0') ??
+        final weight = double.tryParse(
+              (item['jumlah'] ?? item['bobot'])?.toString() ?? '0',
+            ) ??
             0.0;
         final day = dt.day;
-        int weekIdx = day <= 7 ? 0 : (day <= 14 ? 1 : (day <= 21 ? 2 : 3));
+        final int weekIdx =
+            day <= 7 ? 0 : (day <= 14 ? 1 : (day <= 21 ? 2 : 3));
         weekWeights[weekIdx] += weight;
       }
 
-      return weekWeights.map((w) => double.parse(w.toStringAsFixed(1))).toList();
+      return weekWeights
+          .map((w) => double.parse(w.toStringAsFixed(1)))
+          .toList();
     }
   }
 
@@ -430,19 +407,17 @@ class _CardTrackingChartState extends State<CardTrackingChart>
 
     final isWeekly = _periodMode == TrackingPeriodMode.mingguan;
     final activeLabels = isWeekly ? _weekLabels : _monthLabels;
-    final activeFullNames = isWeekly ? _weekFullNames : _monthFullNames;
 
     final double currentPeriodKg = isWeekly ? weeklyKg : monthlyKg;
     final int currentPeriodCount = isWeekly ? weeklyCount : monthlyCount;
     final double estimatedIncome = isWeekly ? weeklyIncome : monthlyIncome;
 
-    String mainWeightNumber = currentPeriodKg.toStringAsFixed(1);
+    final String mainWeightNumber = currentPeriodKg.toStringAsFixed(1);
     final String trendBadgeText = summary['hasData']
         ? '+$currentPeriodCount setoran'
         : widget.trendPercent;
 
     final dynamicCategoryWeights = _computeDynamicCategoryWeights();
-
     final peakIdx = _findPeakIndex(_currentWeights);
     final activeIndex = (_inspectedIndex ?? peakIdx).clamp(
       0,
@@ -467,7 +442,6 @@ class _CardTrackingChartState extends State<CardTrackingChart>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header Row ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -512,22 +486,21 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                     _buildPeriodPill(
                       label: 'Per Minggu',
                       isSelected: isWeekly,
-                      onTap: () => _switchPeriodMode(TrackingPeriodMode.mingguan),
+                      onTap: () =>
+                          _switchPeriodMode(TrackingPeriodMode.mingguan),
                     ),
                     _buildPeriodPill(
                       label: 'Per Bulan',
                       isSelected: !isWeekly,
-                      onTap: () => _switchPeriodMode(TrackingPeriodMode.bulanan),
+                      onTap: () =>
+                          _switchPeriodMode(TrackingPeriodMode.bulanan),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-
           const SizedBox(height: 10),
-
-          // ── Summary Cards ──
           Row(
             children: [
               Expanded(
@@ -553,10 +526,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
               ),
             ],
           ),
-
           const SizedBox(height: 10),
-
-          // ── Uang Hasil Jual & Trend Badge ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -606,7 +576,6 @@ class _CardTrackingChartState extends State<CardTrackingChart>
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Badges Uang Hasil Jual (Rupiah)
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
@@ -660,10 +629,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
               ),
             ],
           ),
-
           const SizedBox(height: 8),
-
-          // ── Curved Line Chart ──
           GestureDetector(
             onTapUp: (details) {
               final box = context.findRenderObject() as RenderBox?;
@@ -699,27 +665,20 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                       animationProgress: _animation.value,
                       activeIndex: activeIndex,
                       pointLabels: activeLabels,
-                      pointFullNames: activeFullNames,
                     ),
                   );
                 },
               ),
             ),
           ),
-
           const SizedBox(height: 3),
-
-          // ── Label X-Axis ──
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: List.generate(activeLabels.length, (i) {
               return _buildAxisLabel(i, activeLabels[i], activeIndex == i);
             }),
           ),
-
           const SizedBox(height: 12),
-
-          // ── Kategori Dinamis berdasarkan Transaksi Asli Database ──
           const Text(
             'Kategori Disetorkan:',
             style: TextStyle(
@@ -751,7 +710,6 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                   spacing: 6,
                   runSpacing: 6,
                   children: [
-                    // Chip untuk Tampilkan Semua
                     _buildDynamicChip(
                       label: 'Semua',
                       weight: null,
@@ -764,9 +722,7 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                           _selectedCategory = 'Semua';
                           _updateWeights();
                         });
-                        if (widget.onCategoryFilterChanged != null) {
-                          widget.onCategoryFilterChanged!('Semua');
-                        }
+                        widget.onCategoryFilterChanged?.call('Semua');
                       },
                     ),
                     ...dynamicCategoryWeights.entries
@@ -790,9 +746,9 @@ class _CardTrackingChartState extends State<CardTrackingChart>
                             _selectedCategory = isSelected ? 'Semua' : catName;
                             _updateWeights();
                           });
-                          if (widget.onCategoryFilterChanged != null) {
-                            widget.onCategoryFilterChanged!(_selectedCategory!);
-                          }
+                          widget.onCategoryFilterChanged?.call(
+                            _selectedCategory!,
+                          );
                         },
                       );
                     }),
@@ -993,7 +949,6 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
   final double animationProgress;
   final int activeIndex;
   final List<String> pointLabels;
-  final List<String> pointFullNames;
 
   _DynamicCurvedLineChartPainter({
     required this.weights,
@@ -1001,7 +956,6 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
     this.animationProgress = 1.0,
     required this.activeIndex,
     required this.pointLabels,
-    required this.pointFullNames,
   });
 
   @override
@@ -1044,7 +998,6 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
       points.add(Offset(x, y));
     }
 
-    // Grid Horizontal
     final gridPaint = Paint()
       ..color = const Color(0xFFEAF2ED)
       ..strokeWidth = 1.0
@@ -1055,7 +1008,6 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
       canvas.drawLine(Offset(padding, gy), Offset(w - padding, gy), gridPaint);
     }
 
-    // Gradient Area
     final areaPath = Path()..moveTo(points.first.dx, points.first.dy);
     for (int i = 0; i < points.length - 1; i++) {
       final p0 = points[i];
@@ -1085,7 +1037,6 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     canvas.drawPath(areaPath, areaPaint);
 
-    // Garis Kurva
     final linePath = Path()..moveTo(points.first.dx, points.first.dy);
     for (int i = 0; i < points.length - 1; i++) {
       final p0 = points[i];
@@ -1102,7 +1053,6 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
     canvas.drawPath(linePath, linePaint);
 
-    // Titik Node
     final outerPointPaint = Paint()
       ..color = AppColors.darkGreen
       ..style = PaintingStyle.stroke
@@ -1134,7 +1084,6 @@ class _DynamicCurvedLineChartPainter extends CustomPainter {
       }
     }
 
-    // Tooltip
     if (activeIndex >= 0 && activeIndex < points.length) {
       final activePt = points[activeIndex];
       final activeWeight = weights[activeIndex];
