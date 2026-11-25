@@ -118,7 +118,8 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
             'Authorization': 'Bearer $token',
         },
         body: jsonEncode(payload),
-      );
+      )
+      .timeout(const Duration(seconds: 15));
 
       final data = jsonDecode(response.body);
 
@@ -259,7 +260,7 @@ class _HalamanKeranjangState extends State<HalamanKeranjang> {
                   const SizedBox(height: 14),
 
                   // ── 1. Select All & Delete Action ──
-                  Padding(
+                  Padding( 
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
