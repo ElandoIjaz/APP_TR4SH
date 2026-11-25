@@ -184,13 +184,20 @@ class _HalamanKontenState extends State<HalamanKonten> {
     final userId = _resolveActiveUserId();
     if (userId != null && userId > 0) {
       try {
+        final token = await ApiService.getToken();
         final uri = Uri.parse(
           '${ApiConfig.baseUrl}/simpan-konten?id_user=$userId',
         );
-        final res = await http.get(
-          uri,
-          headers: {'Accept': 'application/json'},
-        );
+        final res = await http
+            .get(
+              uri,
+              headers: {
+                'Accept': 'application/json',
+                if (token != null && token.isNotEmpty)
+                  'Authorization': 'Bearer $token',
+              },
+            )
+            .timeout(const Duration(seconds: 10));
         if (res.statusCode >= 200 && res.statusCode < 300 && mounted) {
           final decoded = jsonDecode(res.body);
           if (decoded is Map &&
@@ -256,19 +263,24 @@ class _HalamanKontenState extends State<HalamanKonten> {
 
     if (userId != null && userId > 0 && numericId != null) {
       try {
+        final token = await ApiService.getToken();
         final uri = Uri.parse('${ApiConfig.baseUrl}/simpan-konten/toggle');
-        final res = await http.post(
-          uri,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: jsonEncode({
-            'id_user': userId,
-            'sumber_konten': sumber,
-            'konten_id': numericId,
-          }),
-        );
+        final res = await http
+            .post(
+              uri,
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                if (token != null && token.isNotEmpty)
+                  'Authorization': 'Bearer $token',
+              },
+              body: jsonEncode({
+                'id_user': userId,
+                'sumber_konten': sumber,
+                'konten_id': numericId,
+              }),
+            )
+            .timeout(const Duration(seconds: 10));
         if (res.statusCode >= 200 && res.statusCode < 300 && mounted) {
           final decoded = jsonDecode(res.body);
           if (decoded is Map && decoded['saved'] is bool) {

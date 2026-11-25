@@ -30,6 +30,7 @@ class SectionRiwayatPengajuan extends StatelessWidget {
       if (selectedTabStatus == 'semua') return true;
       if (selectedTabStatus == 'pending') return item.isPending;
       if (selectedTabStatus == 'accepted') return item.isAccepted;
+      if (selectedTabStatus == 'denied') return item.isDenied;
       return true;
     }).toList();
 
@@ -111,10 +112,12 @@ class SectionRiwayatPengajuan extends StatelessWidget {
           Row(
             children: [
               _buildTabButton('Semua', 'semua'),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _buildTabButton('Pending', 'pending'),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               _buildTabButton('Accepted', 'accepted'),
+              const SizedBox(width: 6),
+              _buildTabButton('Denied', 'denied'),
             ],
           ),
           const SizedBox(height: 12),
@@ -178,7 +181,7 @@ class SectionRiwayatPengajuan extends StatelessWidget {
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: displayedList.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, index) =>
                       _buildRiwayatCard(context, displayedList[index]),
                 ),
@@ -290,7 +293,7 @@ class SectionRiwayatPengajuan extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                '${item.jumlah} ${item.satuan}',
+                                '${item.jumlah.toStringAsFixed(1)} ${item.satuan}',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w800,
@@ -314,30 +317,38 @@ class SectionRiwayatPengajuan extends StatelessWidget {
                     const SizedBox(height: 3),
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 6,
-                            vertical: 1.5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: catColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            item.namaKategori,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: catColor,
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 1.5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: catColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              item.namaKategori,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: catColor,
+                              ),
                             ),
                           ),
                         ),
                         const SizedBox(width: 6),
-                        Text(
-                          tgl,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey.shade600,
+                        Expanded(
+                          child: Text(
+                            tgl,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ),
                       ],
