@@ -10,10 +10,11 @@ import 'package:test23/pages/beranda/halaman_peta_cabang.dart';
 import 'package:test23/pages/konten/halaman_konten.dart';
 import 'package:test23/pages/konten/halaman_upload_konten.dart';
 import 'package:test23/pages/main_navigation.dart';
-import 'package:test23/widgets/beranda/card_riwayat_sampah.dart';
+import 'package:test23/widgets/beranda/card_bank_sampah.dart';
 import 'package:test23/widgets/beranda/card_video_tutorial.dart';
 import 'package:test23/widgets/beranda/card_workshop.dart';
 import 'package:test23/widgets/beranda/grid_jenis_sampah.dart';
+import 'package:test23/widgets/tracking/card_tracking_chart.dart';
 import 'package:test23/widgets/umum/auth_required_modal.dart';
 import 'package:test23/widgets/umum/tr4sh_brand_logo.dart';
 
@@ -63,7 +64,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
           message.isNotEmpty
               ? message
               : 'Akun Anda sedang diblokir atau dinonaktifkan oleh Administrator TR4SH.',
-          style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.4),
+          style: const TextStyle(
+            fontSize: 14,
+            color: Colors.black87,
+            height: 1.4,
+          ),
         ),
         actions: [
           ElevatedButton(
@@ -77,9 +82,14 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.redAccent,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
-            child: const Text('Ke Halaman Login', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Ke Halaman Login',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -112,9 +122,8 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       return;
     }
 
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HalamanNotifikasi()),
-    );
+    await Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const HalamanNotifikasi()));
     _loadNotifikasiStatus();
   }
 
@@ -137,14 +146,16 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       final res = await ApiService.fetchRiwayatSetor();
       if (res.success && res.data is Map && mounted) {
         final dataMap = res.data as Map;
-        final rawItems =
-            (dataMap['items'] is List) ? (dataMap['items'] as List) : [];
+        final rawItems = (dataMap['items'] is List)
+            ? (dataMap['items'] as List)
+            : [];
 
         // Filter hanya setoran yang sudah diverifikasi (accepted)
         final acceptedItems = rawItems.where((item) {
           if (item is! Map) return false;
-          final status =
-              (item['status_verifikasi'] ?? '').toString().toLowerCase();
+          final status = (item['status_verifikasi'] ?? '')
+              .toString()
+              .toLowerCase();
           return status == 'accepted';
         }).toList();
 
@@ -152,7 +163,8 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
         double totalKg = 0.0;
         for (final item in acceptedItems) {
           if (item is Map) {
-            totalKg += double.tryParse(
+            totalKg +=
+                double.tryParse(
                   (item['jumlah'] ?? item['bobot'] ?? '0').toString(),
                 ) ??
                 0.0;
@@ -194,7 +206,9 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
         if (mounted) _showAccountBlockedDialog(res.message);
         return;
       }
-      if (res.success && res.data is Map && res.data['edukasi_terbaru'] is List) {
+      if (res.success &&
+          res.data is Map &&
+          res.data['edukasi_terbaru'] is List) {
         final list = res.data['edukasi_terbaru'] as List;
         _cacheEdukasi = list;
         if (mounted) {
@@ -247,9 +261,7 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => HalamanKonten(
-          initialSelectedKonten: item,
-        ),
+        builder: (_) => HalamanKonten(initialSelectedKonten: item),
       ),
     );
   }
@@ -269,9 +281,8 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
   }
 
   void _navigateToMap() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HalamanPetaCabang()),
-    );
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const HalamanPetaCabang()));
   }
 
   void _navigateToUploadKonten() {
@@ -285,128 +296,8 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
       );
       return;
     }
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HalamanUploadKonten()),
-    );
-  }
-
-  Widget _buildCustomCardBankSampah() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.darkGreen,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet_rounded,
-                      size: 14,
-                      color: AppColors.limeAccent,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'Bank Sampah Digital',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              InkWell(
-                onTap: _navigateToMap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: AppColors.limeAccent,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.map_rounded,
-                        size: 13,
-                        color: AppColors.darkGreen,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        'Cari Cabang',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.darkGreen,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Setor Sampah Jadi Berkah',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Ubah limbah pilah harianmu menjadi tambahan saldo rupiah secara instan.',
-            style: TextStyle(
-              color: Color(0xFFB8D8C9),
-              fontSize: 12,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 14),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.limeAccent,
-              foregroundColor: AppColors.darkGreen,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            ),
-            onPressed: _navigateToTracking,
-            icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-            label: const Text(
-              'Mulai Setor',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-          ),
-        ],
-      ),
-    );
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => const HalamanUploadKonten()));
   }
 
   Widget _buildKontenBaruEdukasiCarousel() {
@@ -458,8 +349,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   : <String, dynamic>{};
               final title = itemMap['title']?.toString() ?? 'Konten Edukasi';
               final mediaUrl = itemMap['media_url']?.toString() ?? '';
-              final isVideo = KontenValidator.extractYoutubeId(mediaUrl) != null ||
-                  (itemMap['tipe_media']?.toString().toLowerCase().contains('video') ??
+              final isVideo =
+                  KontenValidator.extractYoutubeId(mediaUrl) != null ||
+                  (itemMap['tipe_media']?.toString().toLowerCase().contains(
+                        'video',
+                      ) ??
                       false);
               final imgUrl = _resolveMediaImageUrl(mediaUrl);
 
@@ -816,21 +710,29 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildCustomCardBankSampah(),
+                CardBankSampah(
+                  onMulaiSetorTap: _navigateToTracking,
+                  onCariCabangTap: _navigateToMap,
+                ),
                 const SizedBox(height: 16),
                 RepaintBoundary(
-                  child: CardRiwayatSampah(
-                    rawData: (UserAccountData.isGuest || UserAccountData.isNewAccount)
+                  child: CardTrackingChart(
+                    isBeranda: true,
+                    rawData:
+                        (UserAccountData.isGuest ||
+                            UserAccountData.isNewAccount)
                         ? const []
                         : _listSampah,
-                    totalWeight:
-                        (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                            ? '0.0'
-                            : _totalKg.toStringAsFixed(1),
-                    trendBadge:
-                        (UserAccountData.isGuest || UserAccountData.isNewAccount)
-                            ? '+0 setoran'
-                            : '+$_totalCount setoran',
+                    totalDisetor:
+                        (UserAccountData.isGuest ||
+                            UserAccountData.isNewAccount)
+                        ? '0.0 kg'
+                        : '${_totalKg.toStringAsFixed(1)} kg',
+                    trendPercent:
+                        (UserAccountData.isGuest ||
+                            UserAccountData.isNewAccount)
+                        ? '+0 setoran'
+                        : '+$_totalCount setoran',
                   ),
                 ),
                 const SizedBox(height: 22),
@@ -838,9 +740,11 @@ class _HalamanBerandaState extends State<HalamanBeranda> {
                   onPlayTap: () => _bukaHalamanKonten(firstItem),
                   onSeeAllTap: () => _bukaHalamanKonten(),
                   thumbnailUrl: _resolveMediaImageUrl(firstUrl),
-                  title: firstItem?['title']?.toString() ??
+                  title:
+                      firstItem?['title']?.toString() ??
                       'Panduan Pilah Sampah Rumah Tangga',
-                  subtitle: firstItem?['description']?.toString() ??
+                  subtitle:
+                      firstItem?['description']?.toString() ??
                       'Langkah mudah memisahkan sampah organik & anorganik',
                 ),
                 if (_listEdukasi.isNotEmpty) ...[

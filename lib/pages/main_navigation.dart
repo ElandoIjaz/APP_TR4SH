@@ -15,10 +15,14 @@ import 'package:test23/widgets/umum/bottom_nav_bar.dart';
 class MainNavigationPage extends StatefulWidget {
   const MainNavigationPage({super.key});
 
-  // Helper static agar halaman anak bisa memicu perpindahan tab utama
+  // Helper static agar halaman tab maupun sub-halaman (Navigator.push) bisa memicu pindah tab
   static void jumpToTab(BuildContext context, int index) {
-    final state = context.findAncestorStateOfType<_MainNavigationPageState>();
-    state?.switchToTab(index);
+    final ancestorState =
+        context.findAncestorStateOfType<_MainNavigationPageState>();
+    final state = ancestorState ?? _MainNavigationPageState._activeState;
+    if (state != null && state.mounted) {
+      state.switchToTab(index, immediate: ancestorState == null);
+    }
   }
 
   @override
@@ -26,6 +30,8 @@ class MainNavigationPage extends StatefulWidget {
 }
 
 class _MainNavigationPageState extends State<MainNavigationPage> {
+  static _MainNavigationPageState? _activeState;
+
   late final PageController _pageController;
   int _currentIndex = 0;
 
@@ -41,11 +47,15 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   @override
   void initState() {
     super.initState();
+    _activeState = this;
     _pageController = PageController(initialPage: 0);
   }
 
   @override
   void dispose() {
+    if (_activeState == this) {
+      _activeState = null;
+    }
     _pageController.dispose();
     super.dispose();
   }
@@ -66,7 +76,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   }
 
   // Method publik untuk mengontrol perpindahan halaman dari luar/dalam
-  void switchToTab(int index) {
+  void switchToTab(int index, {bool immediate = false}) {
     if (index == _currentIndex) return;
     if (!_canNavigateToTab(index)) return;
 
@@ -76,9 +86,11 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
       _currentIndex = index;
     });
 
-    // Jika lompat lebih dari 1 tab (misal Akun -> Beranda), langsung jumpToPage
-    // agar tidak tersendat melewati halaman berat di tengahnya
-    if (distance > 1) {
+    if (!_pageController.hasClients) return;
+
+    // Jika dari sub-halaman (Navigator.push) atau lompat > 1 tab, langsung jumpToPage
+    // agar tidak bentrok dengan animasi pop halaman
+    if (immediate || distance > 1) {
       _pageController.jumpToPage(index);
     } else {
       _pageController.animateToPage(
@@ -95,6 +107,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   Widget build(BuildContext context) {
+    _activeState = this;
     return Scaffold(
       body: PageView(
         controller: _pageController,

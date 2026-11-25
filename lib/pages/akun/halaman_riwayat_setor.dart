@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:test23/core/app_colors.dart';
 import 'package:test23/data/api_service.dart';
 import 'package:test23/data/user_account_data.dart';
-import 'package:test23/pages/tracking/halaman_tracking.dart';
+import 'package:test23/pages/main_navigation.dart';
 
 class HalamanRiwayatSetor extends StatefulWidget {
   const HalamanRiwayatSetor({super.key});
@@ -266,10 +266,8 @@ class _HalamanRiwayatSetorState extends State<HalamanRiwayatSetor> {
               ),
             ),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const HalamanTracking()),
-              ).then((_) => _loadData());
+              MainNavigationPage.jumpToTab(context, 3);
+              Navigator.of(context).popUntil((route) => route.isFirst);
             },
             icon: const Icon(
               Icons.add_circle_outline_rounded,
