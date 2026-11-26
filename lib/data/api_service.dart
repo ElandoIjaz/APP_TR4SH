@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:test23/core/api_config.dart';
 import 'package:test23/data/user_account_data.dart';
-import 'package:test23/models/komentar_model.dart';
 import 'models/api_response.dart';
 export 'models/api_response.dart';
 
@@ -706,13 +705,18 @@ class ApiService {
           .timeout(const Duration(seconds: 4));
 
       final Map<String, dynamic> body = _parseJson(response.body);
-      final bool isBlocked = (response.statusCode == 403 || body['is_blocked'] == true);
+      final bool sessionInvalid = response.statusCode == 401 ||
+          response.statusCode == 403 ||
+          response.statusCode == 404 ||
+          body['is_blocked'] == true;
 
-      if (isBlocked) await clearSession();
+      if (sessionInvalid) {
+        await clearSession();
+      }
 
       return ApiResponse(
-        success: !isBlocked && response.statusCode == 200,
-        message: body['message'] ?? 'Status aktif.',
+        success: !sessionInvalid && response.statusCode == 200,
+        message: body['message']?.toString() ?? 'Status aktif.',
         data: body,
         statusCode: response.statusCode,
       );
@@ -938,82 +942,6 @@ class ApiService {
       return {'data': decoded};
     } catch (_) {
       return {'message': source};
-    }
-  }
-/// GET Komentar berdasarkan ID Edukasi
-  static Future<ApiResponse> fetchKomentar(int edukasiId) async {
-    try {
-      final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/edukasi/$edukasiId/komentar'),
-        headers: {'Accept': 'application/json'},
-      ).timeout(_timeoutDuration);
-
-      final body = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && body['success'] == true) {
-        final List items = body['data'] ?? [];
-        final listKomentar = items.map((e) => KomentarModel.fromJson(e)).toList();
-        return ApiResponse(
-          success: true,
-          message: 'Berhasil mengambil komentar',
-          data: listKomentar,
-          statusCode: response.statusCode,
-        );
-      } else {
-        return ApiResponse(
-          success: false,
-          message: body['message'] ?? 'Gagal mengambil data komentar',
-          statusCode: response.statusCode,
-        );
-      }
-    } catch (e) {
-      return ApiResponse(
-        success: false,
-        message: 'Kesalahan jaringan: $e',
-        statusCode: 500,
-      );
-    }
-  }
-
-  /// POST Kirim Komentar Baru (Public/Guest)
-  static Future<ApiResponse> sendKomentar({
-    required int edukasiId,
-    required String nama,
-    required String isiKomentar,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/edukasi/$edukasiId/komentar'),
-        headers: (await _getHeaders()).cast<String, String>(),
-        body: jsonEncode({
-          'nama': nama.isEmpty ? 'Tamu TR4SH' : nama,
-          'isi_komentar': isiKomentar,
-        }),
-      ).timeout(_timeoutDuration);
-
-      final body = jsonDecode(response.body);
-
-      if ((response.statusCode == 200 || response.statusCode == 201) && body['success'] == true) {
-        final komentarBaru = KomentarModel.fromJson(body['data']);
-        return ApiResponse(
-          success: true,
-          message: 'Komentar berhasil dikirim',
-          data: komentarBaru,
-          statusCode: response.statusCode,
-        );
-      } else {
-        return ApiResponse(
-          success: false,
-          message: body['message'] ?? 'Gagal mengirim komentar',
-          statusCode: response.statusCode,
-        );
-      }
-    } catch (e) {
-      return ApiResponse(
-        success: false,
-        message: 'Kesalahan jaringan: $e',
-        statusCode: 500,
-      );
     }
   }
 

@@ -67,7 +67,7 @@ class SpesifikasiCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 11.5,
                 color: AppColors.darkGreen,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w700,  
               ),
             ),
           ),
